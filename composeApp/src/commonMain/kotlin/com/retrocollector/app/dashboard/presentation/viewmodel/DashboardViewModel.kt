@@ -9,6 +9,7 @@ import com.retrocollector.app.dashboard.domain.usecase.SaveGameUseCase
 import com.retrocollector.app.dossier.domain.usecase.SendFollowUpChatUseCase
 import com.retrocollector.app.scanner.domain.usecase.AnalyzeGameWithGeminiUseCase
 import com.retrocollector.app.settings.domain.model.AppSettings
+import com.retrocollector.app.settings.domain.usecase.TestGeminiConnectionUseCase
 import com.retrocollector.app.settings.domain.usecase.UpdateSettingsUseCase
 import androidx.compose.runtime.Immutable
 import kotlinx.coroutines.CoroutineDispatcher
@@ -43,6 +44,7 @@ class DashboardViewModel(
     private val analyzeGameUseCase: AnalyzeGameWithGeminiUseCase,
     private val sendFollowUpChatUseCase: SendFollowUpChatUseCase,
     private val updateSettingsUseCase: UpdateSettingsUseCase,
+    private val testGeminiConnectionUseCase: TestGeminiConnectionUseCase = TestGeminiConnectionUseCase(repository),
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val scope: CoroutineScope = CoroutineScope(dispatcher)
 ) {
@@ -155,6 +157,13 @@ class DashboardViewModel(
     fun saveSettings(newSettings: AppSettings) {
         updateSettingsUseCase(newSettings)
         closeSettings()
+    }
+
+    fun testGeminiConnection(apiKey: String, onResult: (Result<String>) -> Unit) {
+        scope.launch {
+            val result = testGeminiConnectionUseCase(apiKey)
+            onResult(result)
+        }
     }
 
     fun sendFollowUpMessage(question: String, imageBase64: String? = null) {

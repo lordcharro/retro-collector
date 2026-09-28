@@ -83,6 +83,10 @@ class GameRepositoryImpl(
         }
     }
 
+    override suspend fun testGeminiConnection(apiKey: String): Result<String> {
+        return geminiDataSource.testConnection(apiKey)
+    }
+
     override suspend fun inspectGameWithAi(
         query: String,
         imageBase64: String?,

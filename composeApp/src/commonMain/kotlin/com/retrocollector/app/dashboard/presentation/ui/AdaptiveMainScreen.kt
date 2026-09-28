@@ -80,7 +80,8 @@ fun AdaptiveMainScreen(
             SettingsDialog(
                 settings = state.settings,
                 onSaveSettings = viewModel::saveSettings,
-                onDismiss = viewModel::closeSettings
+                onDismiss = viewModel::closeSettings,
+                onTestGeminiConnection = viewModel::testGeminiConnection
             )
         }
     }

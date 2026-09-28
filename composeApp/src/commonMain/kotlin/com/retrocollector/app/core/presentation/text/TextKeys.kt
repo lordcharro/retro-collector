@@ -95,9 +95,9 @@ object TextKeys {
     object Settings {
         const val TITLE = "Settings & Integrations"
         const val GEMINI_SECTION = "Vision Intelligence Engine"
-        const val GEMINI_MODEL = "FLASH 1.5"
+        const val GEMINI_MODEL = "FLASH 3.8"
         const val GEMINI_API_KEY_LABEL = "Google Gemini API Key"
-        const val GEMINI_API_KEY_HINT = "Enter AIzaSy... key"
+        const val GEMINI_API_KEY_HINT = "Enter API key (AQ.A... or AIzaSy...)"
         const val GEMINI_EXPLAINER = "Used for real-time OCR spine recognition and European multi-language verification (detects USK forced German dubs & UK English codes)."
         const val GEMINI_TEST_BUTTON = "Test API Connection"
         const val CURRENCY_SECTION = "Regional Pricing & Market Feeds"

@@ -47,6 +47,7 @@ class GetDashboardGamesUseCaseTest {
             _settings.value = settings
         }
         override suspend fun syncFromFirestore(): Result<Unit> = Result.success(Unit)
+        override suspend fun testGeminiConnection(apiKey: String): Result<String> = Result.success("OK")
         override suspend fun inspectGameWithAi(
             query: String,
             imageBase64: String?,

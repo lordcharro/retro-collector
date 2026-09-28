@@ -30,6 +30,7 @@ fun SettingsDialog(
     settings: AppSettings,
     onSaveSettings: (AppSettings) -> Unit,
     onDismiss: () -> Unit,
+    onTestGeminiConnection: ((String, (Result<String>) -> Unit) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var geminiKey by remember { mutableStateOf(settings.geminiApiKey) }
@@ -38,6 +39,7 @@ fun SettingsDialog(
     var isScraperEnabled by remember { mutableStateOf(settings.isScraperEnabled) }
     var isKeyVisible by remember { mutableStateOf(false) }
     var testStatusMessage by remember { mutableStateOf<String?>(null) }
+    var isTestingGemini by remember { mutableStateOf(false) }
 
     var isGeminiFocused by remember { mutableStateOf(false) }
     var isFirebaseFocused by remember { mutableStateOf(false) }
@@ -240,29 +242,46 @@ fun SettingsDialog(
                         ) {
                             Button(
                                 onClick = {
-                                    if (geminiKey.isNotBlank()) {
-                                        testStatusMessage = TextKeys.Settings.STATUS_CONNECTED
+                                    val trimmedKey = geminiKey.trim()
+                                    if (trimmedKey.isNotBlank()) {
+                                        if (onTestGeminiConnection != null) {
+                                            isTestingGemini = true
+                                            testStatusMessage = "A testar ligação..."
+                                            onTestGeminiConnection(trimmedKey) { result ->
+                                                isTestingGemini = false
+                                                result.fold(
+                                                    onSuccess = { msg -> testStatusMessage = msg },
+                                                    onFailure = { err -> testStatusMessage = err.message ?: TextKeys.Settings.STATUS_FAILED }
+                                                )
+                                            }
+                                        } else {
+                                            testStatusMessage = TextKeys.Settings.STATUS_CONNECTED
+                                        }
                                     } else {
                                         testStatusMessage = TextKeys.Settings.STATUS_FAILED
                                     }
                                 },
+                                enabled = !isTestingGemini,
                                 colors = ButtonDefaults.buttonColors(containerColor = SurfaceElevated),
                                 shape = RoundedCornerShape(4.dp),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                             ) {
                                 Text(
-                                    text = "⚡ " + TextKeys.Settings.GEMINI_TEST_BUTTON,
+                                    text = if (isTestingGemini) "⏳ A testar..." else "⚡ " + TextKeys.Settings.GEMINI_TEST_BUTTON,
                                     style = LabelFilterStyle,
                                     color = TextPrimary
                                 )
                             }
 
                             testStatusMessage?.let { msg ->
-                                val isSuccess = msg == TextKeys.Settings.STATUS_CONNECTED
+                                val isSuccess = msg == TextKeys.Settings.STATUS_CONNECTED ||
+                                    msg.startsWith("Ligação") ||
+                                    msg.startsWith("Connection")
                                 Text(
                                     text = msg,
                                     style = BodySm.copy(fontSize = 11.sp),
-                                    color = if (isSuccess) StatusEnglishFg else StatusRiskFg
+                                    color = if (isSuccess) StatusEnglishFg else StatusRiskFg,
+                                    modifier = Modifier.weight(1f, fill = false).padding(start = 8.dp)
                                 )
                             }
                         }

@@ -87,6 +87,33 @@ class GeminiRemoteDataSource(
         ```
     """.trimIndent()
 
+    suspend fun testConnection(apiKey: String): Result<String> {
+        if (apiKey.isBlank()) {
+            return Result.failure(IllegalArgumentException("Chave da API do Gemini não configurada."))
+        }
+
+        return try {
+            val requestBody = GeminiRequest(
+                contents = listOf(GeminiContent(role = "user", parts = listOf(GeminiPart(text = "ping"))))
+            )
+            val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=$apiKey"
+            val response: GeminiResponse = client.post(url) {
+                contentType(ContentType.Application.Json)
+                setBody(requestBody)
+            }.body()
+
+            if (response.error != null) {
+                Result.failure(Exception("Google API: ${response.error.message ?: "Erro (${response.error.code})" }"))
+            } else {
+                Result.success("Ligação com Gemini 3.8 Flash estabelecida com sucesso!")
+            }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(Exception(e.message ?: "Erro de ligação à API"))
+        }
+    }
+
     suspend fun inspectGame(
         query: String,
         imageBase64: String? = null,
@@ -112,7 +139,7 @@ class GeminiRemoteDataSource(
                 systemInstruction = GeminiContent(parts = listOf(GeminiPart(text = tacticalSystemPrompt)))
             )
 
-            val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey"
+            val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=$apiKey"
             val response: GeminiResponse = client.post(url) {
                 contentType(ContentType.Application.Json)
                 setBody(requestBody)
@@ -123,7 +150,9 @@ class GeminiRemoteDataSource(
             }
 
             val candidate = response.candidates?.firstOrNull()
-            val responseText = candidate?.content?.parts?.joinToString("\n") { it.text ?: "" }
+            val responseText = candidate?.content?.parts
+                ?.filter { it.thought != true }
+                ?.joinToString("\n") { it.text ?: "" }
                 ?: return Result.failure(Exception("Resposta vazia da API do Gemini."))
 
             val durationSeconds = ((Clock.System.now().toEpochMilliseconds() - startTime) / 1000.0)

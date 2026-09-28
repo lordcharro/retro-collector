@@ -15,6 +15,7 @@ import com.retrocollector.app.dashboard.presentation.ui.AdaptiveMainScreen
 import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardViewModel
 import com.retrocollector.app.dossier.domain.usecase.SendFollowUpChatUseCase
 import com.retrocollector.app.scanner.domain.usecase.AnalyzeGameWithGeminiUseCase
+import com.retrocollector.app.settings.domain.usecase.TestGeminiConnectionUseCase
 import com.retrocollector.app.settings.domain.usecase.UpdateSettingsUseCase
 
 @Composable
@@ -28,7 +29,8 @@ fun App() {
             deleteGameUseCase = DeleteGameUseCase(repository),
             analyzeGameUseCase = AnalyzeGameWithGeminiUseCase(repository),
             sendFollowUpChatUseCase = SendFollowUpChatUseCase(repository),
-            updateSettingsUseCase = UpdateSettingsUseCase(repository)
+            updateSettingsUseCase = UpdateSettingsUseCase(repository),
+            testGeminiConnectionUseCase = TestGeminiConnectionUseCase(repository)
         )
     }
 

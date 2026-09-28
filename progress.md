@@ -57,14 +57,16 @@ Este ficheiro resume o estado atual do desenvolvimento, os artefactos gerados, e
    * **Zero Quebra Vertical (`softWrap = false`, `maxLines = 1`)**: Badges de produto (`DOL-P-GZLP`), preços em CHF e tags de idioma nunca quebram letras na vertical.
    * **Layout Responsivo (`FlowRow` & `BoxWithConstraints`)**: Matriz de SKUs e Radar de Preço Suíço adaptam-se dinamicamente (passam para linha seguinte ou empilham-se) caso a coluna do dossier seja estreita.
 
-### 🔹 Fase 3: Ligar a Inteligência Artificial (Google Gemini Flash)
+### 🔹 Fase 3: Ligar a Inteligência Artificial (Google Gemini Flash 3.8)
 1. **Obter chave de API gratuita**:
-   * Criar ou aceder a uma chave em [Google AI Studio](https://aistudio.google.com/).
-2. **Configurar na Aplicação**:
+   * Criar ou aceder a uma chave em [Google AI Studio](https://aistudio.google.com/app/apikey).
+   * *Nota sobre formatos de chave*: As chaves da Google podem começar tanto pelo formato clássico (`AIzaSy...`) como pelo formato recente (`AQ.A...` ou `AQ.AB...`). Ambos os formatos são 100% suportados e válidos.
+2. **Configurar e Validar na Aplicação**:
    * Abrir a app (Mac ou Android), aceder ao menu **⚙️ Definições**.
-   * Inserir a chave e premir **"Testar Conexão Gemini"**.
+   * Inserir a chave e premir **"Testar Conexão Gemini"** (o botão executa uma validação em tempo real contra a Google API e indica se a ligação foi bem-sucedida).
+   * Premir **"Save Settings"**.
 3. **Testar o "⚡ Quick Scan"**:
-   * Colar um link de um leilão de retrogaming do Ricardo.ch.
+   * Colar um link de um leilão de retrogaming do Ricardo.ch ou Tutti.ch.
    * Carregar uma fotografia de uma lombada/capa física para o Gemini ler o código e confirmar os idiomas de áudio e legendas.
 
 ### 🔹 Fase 4: Sincronização Cloud (Firebase Firestore)

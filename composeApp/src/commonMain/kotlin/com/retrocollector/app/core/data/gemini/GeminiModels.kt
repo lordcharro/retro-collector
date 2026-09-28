@@ -23,6 +23,7 @@ data class GeminiContent(
 @Serializable
 data class GeminiPart(
     val text: String? = null,
+    val thought: Boolean? = null,
     @SerialName("inline_data") val inlineData: GeminiInlineData? = null
 )
 
