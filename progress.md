@@ -57,13 +57,17 @@ Este ficheiro resume o estado atual do desenvolvimento, os artefactos gerados, e
    * **Zero Quebra Vertical (`softWrap = false`, `maxLines = 1`)**: Badges de produto (`DOL-P-GZLP`), preços em CHF e tags de idioma nunca quebram letras na vertical.
    * **Layout Responsivo (`FlowRow` & `BoxWithConstraints`)**: Matriz de SKUs e Radar de Preço Suíço adaptam-se dinamicamente (passam para linha seguinte ou empilham-se) caso a coluna do dossier seja estreita.
 
-### 🔹 Fase 3: Ligar a Inteligência Artificial (Google Gemini Flash 3.8)
+### 🔹 Fase 3: Ligar a Inteligência Artificial (Google Gemini Multi-Model)
 1. **Obter chave de API gratuita**:
    * Criar ou aceder a uma chave em [Google AI Studio](https://aistudio.google.com/app/apikey).
    * *Nota sobre formatos de chave*: As chaves da Google podem começar tanto pelo formato clássico (`AIzaSy...`) como pelo formato recente (`AQ.A...` ou `AQ.AB...`). Ambos os formatos são 100% suportados e válidos.
 2. **Configurar e Validar na Aplicação**:
    * Abrir a app (Mac ou Android), aceder ao menu **⚙️ Definições**.
-   * Inserir a chave e premir **"Testar Conexão Gemini"** (o botão executa uma validação em tempo real contra a Google API e indica se a ligação foi bem-sucedida).
+   * Escolher o modelo Gemini preferido nos chips interativos:
+     * **`2.5 Flash (Estável)`**: Altamente recomendado para uso contínuo, sem erros de capacidade.
+     * **`2.5 Lite (Rápido)`**: Para máxima velocidade e menor consumo de quota.
+     * **`3.8 Flash (Preview)`**: Novo modelo com raciocínio profundo (possui fallback automático transparente para 2.5 Flash caso haja picos de procura na tier gratuita).
+   * Inserir a chave e premir **"Testar Conexão Gemini"** para validar o modelo em tempo real.
    * Premir **"Save Settings"**.
 3. **Testar o "⚡ Quick Scan"**:
    * Colar um link de um leilão de retrogaming do Ricardo.ch ou Tutti.ch.
