@@ -159,9 +159,9 @@ class DashboardViewModel(
         closeSettings()
     }
 
-    fun testGeminiConnection(apiKey: String, onResult: (Result<String>) -> Unit) {
+    fun testGeminiConnection(apiKey: String, model: String = "gemini-2.5-flash", onResult: (Result<String>) -> Unit) {
         scope.launch {
-            val result = testGeminiConnectionUseCase(apiKey)
+            val result = testGeminiConnectionUseCase(apiKey, model)
             onResult(result)
         }
     }

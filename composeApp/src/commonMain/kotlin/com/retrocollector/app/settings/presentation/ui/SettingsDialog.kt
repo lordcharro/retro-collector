@@ -30,16 +30,25 @@ fun SettingsDialog(
     settings: AppSettings,
     onSaveSettings: (AppSettings) -> Unit,
     onDismiss: () -> Unit,
-    onTestGeminiConnection: ((String, (Result<String>) -> Unit) -> Unit)? = null,
+    onTestGeminiConnection: ((String, String, (Result<String>) -> Unit) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var geminiKey by remember { mutableStateOf(settings.geminiApiKey) }
+    var selectedModel by remember { mutableStateOf(settings.geminiModel.ifBlank { "gemini-2.5-flash" }) }
     var firebaseProjectId by remember { mutableStateOf(settings.firebaseProjectId) }
     var selectedCurrency by remember { mutableStateOf(settings.defaultCurrency.ifBlank { "CHF" }) }
     var isScraperEnabled by remember { mutableStateOf(settings.isScraperEnabled) }
     var isKeyVisible by remember { mutableStateOf(false) }
     var testStatusMessage by remember { mutableStateOf<String?>(null) }
     var isTestingGemini by remember { mutableStateOf(false) }
+
+    val geminiModels = remember {
+        listOf(
+            "gemini-2.5-flash" to "2.5 Flash (Estável)",
+            "gemini-2.5-flash-lite" to "2.5 Lite (Rápido)",
+            "gemini-3.8-flash" to "3.8 Flash (Preview)"
+        )
+    }
 
     var isGeminiFocused by remember { mutableStateOf(false) }
     var isFirebaseFocused by remember { mutableStateOf(false) }
@@ -156,7 +165,7 @@ fun SettingsDialog(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
-                                text = TextKeys.Settings.GEMINI_MODEL,
+                                text = selectedModel.replace("gemini-", "").uppercase(),
                                 style = CodeSkuStyle.copy(fontSize = 10.sp),
                                 color = StatusEnglishFg
                             )
@@ -180,8 +189,62 @@ fun SettingsDialog(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = "Model Throughput", style = BodySm.copy(fontSize = 11.sp), color = TextSecondary)
-                            Text(text = "Avg response: ~640ms", style = CodeSkuStyle.copy(fontSize = 11.sp), color = StatusEnglishFg)
+                            Text(
+                                text = "Model Throughput",
+                                style = BodySm.copy(fontSize = 11.sp),
+                                color = TextSecondary
+                            )
+                            Text(
+                                text = if (selectedModel.contains("lite")) {
+                                    "Ultra-low latency (~280ms)"
+                                } else {
+                                    "Avg response: ~550ms"
+                                },
+                                style = CodeSkuStyle.copy(fontSize = 11.sp),
+                                color = StatusEnglishFg
+                            )
+                        }
+
+                        // Model Selector Chips
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(text = "ACTIVE MODEL", style = LabelFilterStyle, color = TextPrimary)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                geminiModels.forEach { (modelId, label) ->
+                                    val isSelected = selectedModel == modelId
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .background(
+                                                if (isSelected) SurfaceCard else SurfaceBase,
+                                                RoundedCornerShape(4.dp)
+                                            )
+                                            .border(
+                                                1.dp,
+                                                if (isSelected) StatusEnglishFg else BorderSubtle,
+                                                RoundedCornerShape(4.dp)
+                                            )
+                                            .clickable {
+                                                selectedModel = modelId
+                                                testStatusMessage = null
+                                            }
+                                            .padding(vertical = 8.dp, horizontal = 4.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = label,
+                                            style = CodeSkuStyle.copy(
+                                                fontSize = 10.sp,
+                                                color = if (isSelected) StatusEnglishFg else TextSecondary
+                                            ),
+                                            maxLines = 1,
+                                            softWrap = false
+                                        )
+                                    }
+                                }
+                            }
                         }
 
                         // API Key Input
@@ -247,7 +310,7 @@ fun SettingsDialog(
                                         if (onTestGeminiConnection != null) {
                                             isTestingGemini = true
                                             testStatusMessage = "A testar ligação..."
-                                            onTestGeminiConnection(trimmedKey) { result ->
+                                            onTestGeminiConnection(trimmedKey, selectedModel) { result ->
                                                 isTestingGemini = false
                                                 result.fold(
                                                     onSuccess = { msg -> testStatusMessage = msg },
@@ -480,6 +543,7 @@ fun SettingsDialog(
                         onSaveSettings(
                             settings.copy(
                                 geminiApiKey = geminiKey.trim(),
+                                geminiModel = selectedModel,
                                 firebaseProjectId = firebaseProjectId.trim(),
                                 defaultCurrency = selectedCurrency,
                                 isScraperEnabled = isScraperEnabled

@@ -87,16 +87,18 @@ class GeminiRemoteDataSource(
         ```
     """.trimIndent()
 
-    suspend fun testConnection(apiKey: String): Result<String> {
+    suspend fun testConnection(apiKey: String, model: String = "gemini-2.5-flash"): Result<String> {
         if (apiKey.isBlank()) {
             return Result.failure(IllegalArgumentException("Chave da API do Gemini não configurada."))
         }
+
+        val targetModel = model.ifBlank { "gemini-2.5-flash" }
 
         return try {
             val requestBody = GeminiRequest(
                 contents = listOf(GeminiContent(role = "user", parts = listOf(GeminiPart(text = "ping"))))
             )
-            val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=$apiKey"
+            val url = "https://generativelanguage.googleapis.com/v1beta/models/$targetModel:generateContent?key=$apiKey"
             val response: GeminiResponse = client.post(url) {
                 contentType(ContentType.Application.Json)
                 setBody(requestBody)
@@ -105,7 +107,7 @@ class GeminiRemoteDataSource(
             if (response.error != null) {
                 Result.failure(Exception("Google API: ${response.error.message ?: "Erro (${response.error.code})" }"))
             } else {
-                Result.success("Ligação com Gemini 3.8 Flash estabelecida com sucesso!")
+                Result.success("Ligação com $targetModel estabelecida com sucesso!")
             }
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
@@ -117,12 +119,32 @@ class GeminiRemoteDataSource(
     suspend fun inspectGame(
         query: String,
         imageBase64: String? = null,
-        apiKey: String
+        apiKey: String,
+        model: String = "gemini-2.5-flash"
     ): Result<Pair<String, StitchGeminiStructuredVerdict?>> {
         if (apiKey.isBlank()) {
             return Result.failure(IllegalArgumentException("Chave da API do Gemini não configurada. Acede às Definições para inserir a chave."))
         }
 
+        val primaryModel = model.ifBlank { "gemini-2.5-flash" }
+        val result = executeInspect(query, imageBase64, apiKey, primaryModel)
+
+        // Se falhar devido a pico de procura temporário no modelo solicitado, tenta fallback automático para gemini-2.5-flash
+        if (result.isFailure && primaryModel != "gemini-2.5-flash") {
+            val errMsg = result.exceptionOrNull()?.message.orEmpty()
+            if (errMsg.contains("demand", ignoreCase = true) || errMsg.contains("503") || errMsg.contains("unavailable", ignoreCase = true)) {
+                return executeInspect(query, imageBase64, apiKey, "gemini-2.5-flash")
+            }
+        }
+        return result
+    }
+
+    private suspend fun executeInspect(
+        query: String,
+        imageBase64: String?,
+        apiKey: String,
+        model: String
+    ): Result<Pair<String, StitchGeminiStructuredVerdict?>> {
         val startTime = Clock.System.now().toEpochMilliseconds()
 
         return try {
@@ -139,7 +161,7 @@ class GeminiRemoteDataSource(
                 systemInstruction = GeminiContent(parts = listOf(GeminiPart(text = tacticalSystemPrompt)))
             )
 
-            val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=$apiKey"
+            val url = "https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey"
             val response: GeminiResponse = client.post(url) {
                 contentType(ContentType.Application.Json)
                 setBody(requestBody)

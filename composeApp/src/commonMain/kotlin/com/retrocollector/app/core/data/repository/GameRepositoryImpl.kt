@@ -83,8 +83,8 @@ class GameRepositoryImpl(
         }
     }
 
-    override suspend fun testGeminiConnection(apiKey: String): Result<String> {
-        return geminiDataSource.testConnection(apiKey)
+    override suspend fun testGeminiConnection(apiKey: String, model: String): Result<String> {
+        return geminiDataSource.testConnection(apiKey, model)
     }
 
     override suspend fun inspectGameWithAi(
@@ -94,7 +94,8 @@ class GameRepositoryImpl(
         askingPriceChf: Double?
     ): Result<Pair<ChatMessage, GameItem?>> {
         val apiKey = _settings.value.geminiApiKey
-        val result = geminiDataSource.inspectGame(query, imageBase64, apiKey)
+        val model = _settings.value.geminiModel.ifBlank { "gemini-2.5-flash" }
+        val result = geminiDataSource.inspectGame(query, imageBase64, apiKey, model)
 
         return result.map { (replyText, verdict) ->
             val nowMs = Clock.System.now().toEpochMilliseconds()
@@ -171,7 +172,8 @@ class GameRepositoryImpl(
             userMessage
         }
 
-        val result = geminiDataSource.inspectGame(prompt, imageBase64, apiKey)
+        val model = _settings.value.geminiModel.ifBlank { "gemini-2.5-flash" }
+        val result = geminiDataSource.inspectGame(prompt, imageBase64, apiKey, model)
         return result.map { (replyText, verdict) ->
             val aiMsg = ChatMessage(
                 id = "ai_${Clock.System.now().toEpochMilliseconds()}",

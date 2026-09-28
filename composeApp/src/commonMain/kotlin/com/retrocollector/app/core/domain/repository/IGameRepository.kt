@@ -17,7 +17,7 @@ interface IGameRepository {
     fun addChatMessage(message: ChatMessage)
     fun updateSettings(settings: AppSettings)
     suspend fun syncFromFirestore(): Result<Unit>
-    suspend fun testGeminiConnection(apiKey: String): Result<String>
+    suspend fun testGeminiConnection(apiKey: String, model: String = "gemini-2.5-flash"): Result<String>
 
     suspend fun inspectGameWithAi(
         query: String,
