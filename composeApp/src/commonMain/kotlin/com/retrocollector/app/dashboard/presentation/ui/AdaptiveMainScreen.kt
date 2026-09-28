@@ -19,6 +19,21 @@ fun AdaptiveMainScreen(
     val state by viewModel.uiState.collectAsState()
     var mobileDetailGame by remember { mutableStateOf<GameItem?>(null) }
 
+    val actions = remember(viewModel) {
+        DashboardActions(
+            onStatusSelect = viewModel::onStatusSelect,
+            onPlatformSelect = viewModel::onPlatformSelect,
+            onSearchQueryChange = viewModel::onSearchQueryChange,
+            onToggleEnglishOnly = viewModel::toggleEnglishOnlyFilter,
+            onToggleUskAlerts = viewModel::toggleUskAlertsFilter,
+            onGameSelected = viewModel::onGameSelected,
+            onUpdateGameStatus = viewModel::updateGameStatus,
+            onOpenScanDialog = viewModel::openScanDialog,
+            onOpenSettings = viewModel::openSettings,
+            onSendFollowUpMessage = viewModel::sendFollowUpMessage
+        )
+    }
+
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val isDesktop = maxWidth >= 850.dp
 
@@ -26,7 +41,7 @@ fun AdaptiveMainScreen(
             // Ecrã largo (macOS Desktop e Web Wasm): Split-View de duas colunas
             DesktopWorkstationScreen(
                 state = state,
-                viewModel = viewModel
+                actions = actions
             )
         } else {
             // Ecrã estreito (Android Phone): Navegação com ecrã móvel
@@ -34,14 +49,15 @@ fun AdaptiveMainScreen(
                 val activeGame = state.games.find { it.id == mobileDetailGame?.id } ?: mobileDetailGame!!
                 MobileGameDetailScreen(
                     game = activeGame,
-                    state = state,
-                    viewModel = viewModel,
-                    onBack = { mobileDetailGame = null }
+                    chatMessages = state.activeChatMessages,
+                    onBack = { mobileDetailGame = null },
+                    onUpdateGameStatus = viewModel::updateGameStatus,
+                    onSendFollowUpMessage = viewModel::sendFollowUpMessage
                 )
             } else {
                 MobileFieldDashboardScreen(
                     state = state,
-                    viewModel = viewModel,
+                    actions = actions,
                     onNavigateToDetail = { game ->
                         mobileDetailGame = game
                     }
@@ -52,17 +68,19 @@ fun AdaptiveMainScreen(
         // Modais globais
         if (state.isScanDialogOpen) {
             QuickScanDialog(
-                state = state,
-                viewModel = viewModel,
-                onDismiss = { viewModel.closeScanDialog() }
+                currency = state.settings.defaultCurrency.ifBlank { "CHF" },
+                isAnalyzing = state.isAnalyzing,
+                statusMessage = state.statusMessage,
+                onAnalyze = viewModel::analyzeNewGame,
+                onDismiss = viewModel::closeScanDialog
             )
         }
 
         if (state.isSettingsOpen) {
             SettingsDialog(
-                state = state,
-                viewModel = viewModel,
-                onDismiss = { viewModel.closeSettings() }
+                settings = state.settings,
+                onSaveSettings = viewModel::saveSettings,
+                onDismiss = viewModel::closeSettings
             )
         }
     }

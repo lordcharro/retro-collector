@@ -5,6 +5,7 @@ import com.retrocollector.app.core.data.firestore.FirestoreService
 import com.retrocollector.app.settings.domain.model.AppSettings
 import com.retrocollector.app.core.domain.model.*
 import com.retrocollector.app.core.domain.repository.IGameRepository
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,10 +16,11 @@ import kotlinx.datetime.Clock
 
 class GameRepositoryImpl(
     private val firestoreService: FirestoreService = FirestoreService(),
-    private val geminiDataSource: GeminiRemoteDataSource = GeminiRemoteDataSource()
+    private val geminiDataSource: GeminiRemoteDataSource = GeminiRemoteDataSource(),
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : IGameRepository {
 
-    private val scope = CoroutineScope(Dispatchers.Default)
+    private val scope = CoroutineScope(ioDispatcher)
 
     private val _settings = MutableStateFlow(AppSettings())
     override val settings: StateFlow<AppSettings> = _settings.asStateFlow()

@@ -59,6 +59,8 @@ class FirestoreService(
             } ?: emptyList()
 
             Result.success(games)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -100,6 +102,8 @@ class FirestoreService(
             }
 
             Result.success(response.status.isSuccess())
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -114,6 +118,8 @@ class FirestoreService(
             val url = "https://firestore.googleapis.com/v1/projects/$projectId/databases/(default)/documents/games/$gameId"
             val response = client.delete(url)
             Result.success(response.status.isSuccess())
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }

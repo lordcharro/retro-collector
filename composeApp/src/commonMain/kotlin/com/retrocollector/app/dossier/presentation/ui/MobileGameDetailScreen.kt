@@ -21,15 +21,15 @@ import com.retrocollector.app.core.domain.model.GameItem
 import com.retrocollector.app.core.presentation.components.*
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
-import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
-import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardViewModel
+import com.retrocollector.app.core.domain.model.ChatMessage
 
 @Composable
 fun MobileGameDetailScreen(
     game: GameItem,
-    state: DashboardUiState,
-    viewModel: DashboardViewModel,
+    chatMessages: List<ChatMessage>,
     onBack: () -> Unit,
+    onUpdateGameStatus: (GameItem, CollectionStatus) -> Unit = { _, _ -> },
+    onSendFollowUpMessage: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var followUpQuestion by remember { mutableStateOf("") }
@@ -101,7 +101,7 @@ fun MobileGameDetailScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .background(bg, RoundedCornerShape(4.dp))
-                                    .clickable { viewModel.updateGameStatus(game, status) }
+                                    .clickable { onUpdateGameStatus(game, status) }
                                     .padding(vertical = 6.dp),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -224,7 +224,7 @@ fun MobileGameDetailScreen(
                     Text(text = "💬 " + TextKeys.Dossier.CHAT_TITLE, style = HeadlineSm, color = TextPrimary)
                 }
 
-                items(state.activeChatMessages, key = { it.id }) { msg ->
+                items(chatMessages, key = { it.id }) { msg ->
                     GeminiChatBubble(message = msg)
                 }
             }
@@ -269,7 +269,7 @@ fun MobileGameDetailScreen(
                         onClick = {
                             val q = followUpQuestion.trim()
                             if (q.isNotEmpty()) {
-                                viewModel.sendFollowUpMessage(q)
+                                onSendFollowUpMessage(q)
                                 followUpQuestion = ""
                             }
                         },

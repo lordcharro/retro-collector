@@ -12,6 +12,8 @@ import androidx.compose.ui.unit.dp
 import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.presentation.theme.*
 
+import org.jetbrains.compose.ui.tooling.preview.Preview
+
 @Composable
 fun PlatformBadge(
     platform: ConsolePlatform,
@@ -36,3 +38,12 @@ fun PlatformBadge(
         )
     }
 }
+
+@Preview
+@Composable
+internal fun PlatformBadgePreview() {
+    RetroTactileTheme {
+        PlatformBadge(platform = ConsolePlatform.GAMECUBE)
+    }
+}
+

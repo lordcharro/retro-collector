@@ -23,31 +23,33 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
-import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
-import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardViewModel
+import com.retrocollector.app.settings.domain.model.AppSettings
 
 @Composable
 fun SettingsDialog(
-    state: DashboardUiState,
-    viewModel: DashboardViewModel,
-    onDismiss: () -> Unit
+    settings: AppSettings,
+    onSaveSettings: (AppSettings) -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    var geminiKey by remember { mutableStateOf(state.settings.geminiApiKey) }
-    var firebaseProjectId by remember { mutableStateOf(state.settings.firebaseProjectId) }
-    var selectedCurrency by remember { mutableStateOf(state.settings.defaultCurrency.ifBlank { "CHF" }) }
-    var isScraperEnabled by remember { mutableStateOf(state.settings.isScraperEnabled) }
+    var geminiKey by remember { mutableStateOf(settings.geminiApiKey) }
+    var firebaseProjectId by remember { mutableStateOf(settings.firebaseProjectId) }
+    var selectedCurrency by remember { mutableStateOf(settings.defaultCurrency.ifBlank { "CHF" }) }
+    var isScraperEnabled by remember { mutableStateOf(settings.isScraperEnabled) }
     var isKeyVisible by remember { mutableStateOf(false) }
     var testStatusMessage by remember { mutableStateOf<String?>(null) }
 
     var isGeminiFocused by remember { mutableStateOf(false) }
     var isFirebaseFocused by remember { mutableStateOf(false) }
 
-    val currencies = listOf(
-        "CHF" to "Swiss Fr.",
-        "EUR" to "Euro",
-        "GBP" to "Pound",
-        "USD" to "Dollar"
-    )
+    val currencies = remember {
+        listOf(
+            "CHF" to "Swiss Fr.",
+            "EUR" to "Euro",
+            "GBP" to "Pound",
+            "USD" to "Dollar"
+        )
+    }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -57,7 +59,7 @@ fun SettingsDialog(
             shape = RoundedCornerShape(8.dp),
             color = SurfaceCard,
             border = BorderStroke(1.dp, BorderStrong),
-            modifier = Modifier
+            modifier = modifier
                 .widthIn(max = 560.dp)
                 .fillMaxWidth(0.94f)
                 .fillMaxHeight(0.90f)
@@ -456,9 +458,8 @@ fun SettingsDialog(
                 // Botão de Gravação Principal
                 Button(
                     onClick = {
-                        val currentSettings = state.settings
-                        viewModel.saveSettings(
-                            currentSettings.copy(
+                        onSaveSettings(
+                            settings.copy(
                                 geminiApiKey = geminiKey.trim(),
                                 firebaseProjectId = firebaseProjectId.trim(),
                                 defaultCurrency = selectedCurrency,

@@ -14,7 +14,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.GameItem
+import com.retrocollector.app.core.domain.model.LanguageStatus
 import com.retrocollector.app.core.presentation.theme.*
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun GameListItemRow(
@@ -150,3 +152,26 @@ fun GameListItemRow(
         }
     }
 }
+
+@Preview
+@Composable
+internal fun GameListItemRowPreview() {
+    RetroTactileTheme {
+        GameListItemRow(
+            game = GameItem(
+                id = "gc_re4",
+                title = "Resident Evil 4",
+                franchiseName = "Resident Evil",
+                platform = ConsolePlatform.GAMECUBE,
+                releaseYear = "2005",
+                productCode = "DOL-P-G4BE",
+                spottedLocation = "Brockenhaus Bern",
+                askingPriceChf = 35.0,
+                languageStatus = LanguageStatus.SUBS_ONLY
+            ),
+            isSelected = true,
+            onClick = {}
+        )
+    }
+}
+

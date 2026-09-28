@@ -19,14 +19,14 @@ import androidx.compose.ui.window.DialogProperties
 import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
-import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
-import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardViewModel
-
 @Composable
 fun QuickScanDialog(
-    state: DashboardUiState,
-    viewModel: DashboardViewModel,
-    onDismiss: () -> Unit
+    currency: String = "CHF",
+    isAnalyzing: Boolean = false,
+    statusMessage: String? = null,
+    onAnalyze: (query: String, imageBase64: String?, spottedLocation: String, askingPriceChf: Double?) -> Unit = { _, _, _, _ -> },
+    onDismiss: () -> Unit = {},
+    modifier: Modifier = Modifier
 ) {
     var query by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("Ricardo.ch") }
@@ -42,7 +42,7 @@ fun QuickScanDialog(
             shape = RoundedCornerShape(8.dp),
             color = SurfaceCard,
             border = BorderStroke(1.dp, BorderStrong),
-            modifier = Modifier
+            modifier = modifier
                 .widthIn(max = 520.dp)
                 .fillMaxWidth(0.92f)
                 .padding(16.dp)
@@ -126,7 +126,7 @@ fun QuickScanDialog(
 
                 // Campo: Preço Pedido
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    val curr = state.settings.defaultCurrency.ifBlank { "CHF" }
+                    val curr = currency.ifBlank { "CHF" }
                     Text(text = "${TextKeys.Radar.ASKING_PRICE} ($curr)", style = LabelFilterStyle, color = TextPrimary)
                     androidx.compose.foundation.text.BasicTextField(
                         value = priceChfStr,
@@ -150,9 +150,9 @@ fun QuickScanDialog(
                     )
                 }
 
-                if (state.statusMessage != null) {
+                if (statusMessage != null) {
                     Text(
-                        text = state.statusMessage,
+                        text = statusMessage,
                         style = BodySm,
                         color = StatusEditionFg
                     )
@@ -164,21 +164,16 @@ fun QuickScanDialog(
                         val q = query.trim()
                         if (q.isNotEmpty()) {
                             val price = priceChfStr.toDoubleOrNull()
-                            viewModel.analyzeNewGame(
-                                query = q,
-                                imageBase64 = null,
-                                spottedLocation = location,
-                                askingPriceChf = price
-                            )
+                            onAnalyze(q, null, location, price)
                         }
                     },
-                    enabled = !state.isAnalyzing && query.isNotBlank(),
+                    enabled = !isAnalyzing && query.isNotBlank(),
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = ConsoleGamecube),
                     shape = RoundedCornerShape(4.dp),
                     contentPadding = PaddingValues(vertical = 12.dp)
                 ) {
-                    if (state.isAnalyzing) {
+                    if (isAnalyzing) {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(text = TextKeys.Scanner.ANALYZING, style = LabelFilterStyle)

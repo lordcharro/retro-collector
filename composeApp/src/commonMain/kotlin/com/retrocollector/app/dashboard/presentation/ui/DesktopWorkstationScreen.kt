@@ -22,12 +22,11 @@ import com.retrocollector.app.core.presentation.components.*
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
-import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardViewModel
 
 @Composable
 fun DesktopWorkstationScreen(
     state: DashboardUiState,
-    viewModel: DashboardViewModel,
+    actions: DashboardActions = DashboardActions(),
     modifier: Modifier = Modifier
 ) {
     var followUpQuestion by remember { mutableStateOf("") }
@@ -93,7 +92,7 @@ fun DesktopWorkstationScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(if (state.selectedStatus == null) SurfaceElevated else Color.Transparent, RoundedCornerShape(4.dp))
-                        .clickable { viewModel.onStatusSelect(null) }
+                        .clickable { actions.onStatusSelect(null) }
                         .padding(horizontal = 8.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -109,12 +108,14 @@ fun DesktopWorkstationScreen(
                 }
 
                 // Item: Watchlist / Hunting
-                val huntingCount = state.games.count { it.collectionStatus == CollectionStatus.HUNTING }
+                val huntingCount = remember(state.games) {
+                    state.games.count { it.collectionStatus == CollectionStatus.HUNTING }
+                }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(if (state.selectedStatus == CollectionStatus.HUNTING) SurfaceElevated else Color.Transparent, RoundedCornerShape(4.dp))
-                        .clickable { viewModel.onStatusSelect(CollectionStatus.HUNTING) }
+                        .clickable { actions.onStatusSelect(CollectionStatus.HUNTING) }
                         .padding(horizontal = 8.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -141,7 +142,7 @@ fun DesktopWorkstationScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { viewModel.openSettings() }
+                        .clickable { actions.onOpenSettings() }
                         .padding(horizontal = 8.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -163,7 +164,8 @@ fun DesktopWorkstationScreen(
                     modifier = Modifier.padding(vertical = 6.dp, horizontal = 6.dp)
                 )
 
-                ConsolePlatform.entries.forEach { platform ->
+                val platforms = remember { ConsolePlatform.entries }
+                platforms.forEach { platform ->
                     val isSelected = state.selectedPlatform == platform
                     val color = when (platform) {
                         ConsolePlatform.N64 -> ConsoleN64
@@ -176,7 +178,7 @@ fun DesktopWorkstationScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(if (isSelected) SurfaceElevated else Color.Transparent, RoundedCornerShape(4.dp))
-                            .clickable { viewModel.onPlatformSelect(platform) }
+                            .clickable { actions.onPlatformSelect(platform) }
                             .padding(horizontal = 8.dp, vertical = 6.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -245,7 +247,7 @@ fun DesktopWorkstationScreen(
                     Text(text = "🔍", fontSize = 12.sp)
                     androidx.compose.foundation.text.BasicTextField(
                         value = state.searchQuery,
-                        onValueChange = { viewModel.onSearchQueryChange(it) },
+                        onValueChange = { actions.onSearchQueryChange(it) },
                         textStyle = CodeSkuStyle.copy(color = TextPrimary),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -275,7 +277,7 @@ fun DesktopWorkstationScreen(
                             .height(32.dp)
                             .background(SurfaceBase, RoundedCornerShape(4.dp))
                             .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
-                            .clickable { viewModel.openSettings() }
+                            .clickable { actions.onOpenSettings() }
                             .padding(horizontal = 10.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -298,7 +300,7 @@ fun DesktopWorkstationScreen(
 
                     // Botão Quick Scan elegante (altura 32dp alinhada)
                     Button(
-                        onClick = { viewModel.openScanDialog() },
+                        onClick = { actions.onOpenScanDialog() },
                         colors = ButtonDefaults.buttonColors(containerColor = ConsoleGamecube),
                         shape = RoundedCornerShape(4.dp),
                         modifier = Modifier.height(32.dp).defaultMinSize(minHeight = 32.dp),
@@ -345,7 +347,7 @@ fun DesktopWorkstationScreen(
                                 Row(
                                     modifier = Modifier
                                         .background(if (isSelected) color else SurfaceElevated, RoundedCornerShape(4.dp))
-                                        .clickable { viewModel.onPlatformSelect(platform) }
+                                        .clickable { actions.onPlatformSelect(platform) }
                                         .padding(horizontal = 8.dp, vertical = 5.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -368,7 +370,7 @@ fun DesktopWorkstationScreen(
                             Box(
                                 modifier = Modifier
                                     .background(if (state.filterEnglishOnly) StatusEnglishBg else SurfaceElevated, RoundedCornerShape(4.dp))
-                                    .clickable { viewModel.toggleEnglishOnlyFilter() }
+                                    .clickable { actions.onToggleEnglishOnly() }
                                     .padding(horizontal = 6.dp, vertical = 3.dp)
                             ) {
                                 Text(text = TextKeys.Dashboard.FILTER_ENGLISH_ONLY, style = LabelBadgeStyle, color = StatusEnglishFg)
@@ -377,7 +379,7 @@ fun DesktopWorkstationScreen(
                             Box(
                                 modifier = Modifier
                                     .background(if (state.filterUskAlertsOnly) StatusRiskBg else SurfaceElevated, RoundedCornerShape(4.dp))
-                                    .clickable { viewModel.toggleUskAlertsFilter() }
+                                    .clickable { actions.onToggleUskAlerts() }
                                     .padding(horizontal = 6.dp, vertical = 3.dp)
                             ) {
                                 Text(text = TextKeys.Dashboard.FILTER_USK_ALERTS, style = LabelBadgeStyle, color = StatusRiskFg)
@@ -396,7 +398,7 @@ fun DesktopWorkstationScreen(
                             GameListItemRow(
                                 game = game,
                                 isSelected = state.selectedGame?.id == game.id,
-                                onClick = { viewModel.onGameSelected(game) }
+                                onClick = { actions.onGameSelected(game) }
                             )
                             HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
                         }
@@ -459,7 +461,7 @@ fun DesktopWorkstationScreen(
                                     Box(
                                         modifier = Modifier
                                             .background(bg, RoundedCornerShape(3.dp))
-                                            .clickable { viewModel.updateGameStatus(game, status) }
+                                            .clickable { actions.onUpdateGameStatus(game, status) }
                                             .padding(horizontal = 8.dp, vertical = 4.dp)
                                     ) {
                                         Text(text = "${status.icon} ${status.label}", style = LabelFilterStyle, color = TextPrimary)
@@ -584,7 +586,7 @@ fun DesktopWorkstationScreen(
                                     onClick = {
                                         val q = followUpQuestion.trim()
                                         if (q.isNotEmpty()) {
-                                            viewModel.sendFollowUpMessage(q)
+                                            actions.onSendFollowUpMessage(q)
                                             followUpQuestion = ""
                                         }
                                     },

@@ -17,12 +17,14 @@ import com.retrocollector.app.core.presentation.theme.*
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.ui.text.style.TextOverflow
 
+import org.jetbrains.compose.ui.tooling.preview.Preview
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SwissMarketRadarView(
     radar: SwissMarketRadar,
-    askingPriceChf: Double? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    askingPriceChf: Double? = null
 ) {
     val effectiveAsking = askingPriceChf ?: radar.spottedPriceChf
     val median = radar.medianPriceChf
@@ -147,5 +149,23 @@ fun SwissMarketRadarView(
                     .background(StatusEditionFg, RoundedCornerShape(2.dp))
             )
         }
+    }
+}
+
+@Preview
+@Composable
+internal fun SwissMarketRadarViewPreview() {
+    RetroTactileTheme {
+        SwissMarketRadarView(
+            radar = SwissMarketRadar(
+                spottedPriceChf = 35.0,
+                medianPriceChf = 31.50,
+                historicalMinChf = 28.0,
+                historicalMaxChf = 36.0,
+                trend = "Stable"
+            ),
+            askingPriceChf = 35.0,
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }

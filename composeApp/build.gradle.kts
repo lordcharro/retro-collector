@@ -71,6 +71,7 @@ kotlin {
                 implementation(libs.junit.jupiter.api)
                 implementation(libs.junit.jupiter.engine)
                 implementation(libs.junit.jupiter.params)
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
         wasmJsMain.dependencies {

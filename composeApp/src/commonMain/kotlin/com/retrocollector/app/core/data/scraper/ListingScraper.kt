@@ -56,6 +56,8 @@ class ListingScraper(
                     sourcePlatform = source
                 )
             )
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             println("Scraping fallback triggered for $url: ${e.message}")
             // Em caso de bloqueio de rede ou CORS no browser, devolvemos um objeto com o URL para o utilizador poder introduzir manualmente ou deixar o Gemini avaliar pelo título/link

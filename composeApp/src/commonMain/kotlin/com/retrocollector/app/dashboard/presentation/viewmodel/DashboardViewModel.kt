@@ -10,11 +10,14 @@ import com.retrocollector.app.dossier.domain.usecase.SendFollowUpChatUseCase
 import com.retrocollector.app.scanner.domain.usecase.AnalyzeGameWithGeminiUseCase
 import com.retrocollector.app.settings.domain.model.AppSettings
 import com.retrocollector.app.settings.domain.usecase.UpdateSettingsUseCase
+import androidx.compose.runtime.Immutable
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
+@Immutable
 data class DashboardUiState(
     val games: List<GameItem> = emptyList(),
     val selectedGame: GameItem? = null,
@@ -40,7 +43,8 @@ class DashboardViewModel(
     private val analyzeGameUseCase: AnalyzeGameWithGeminiUseCase,
     private val sendFollowUpChatUseCase: SendFollowUpChatUseCase,
     private val updateSettingsUseCase: UpdateSettingsUseCase,
-    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val scope: CoroutineScope = CoroutineScope(dispatcher)
 ) {
     private val _uiState = MutableStateFlow(DashboardUiState())
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()

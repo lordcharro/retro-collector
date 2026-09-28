@@ -130,6 +130,8 @@ class GeminiRemoteDataSource(
             val verdict = extractJsonVerdict(responseText)?.copy(latencySeconds = durationSeconds)
 
             Result.success(Pair(responseText, verdict))
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }

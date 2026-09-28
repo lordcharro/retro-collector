@@ -21,13 +21,12 @@ import com.retrocollector.app.core.presentation.components.*
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
-import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardViewModel
 
 @Composable
 fun MobileFieldDashboardScreen(
     state: DashboardUiState,
-    viewModel: DashboardViewModel,
-    onNavigateToDetail: (GameItem) -> Unit,
+    actions: DashboardActions = DashboardActions(),
+    onNavigateToDetail: (GameItem) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var selectedBottomTab by remember { mutableStateOf(0) } // 0 = Catalog, 1 = Threads, 2 = Settings
@@ -84,7 +83,7 @@ fun MobileFieldDashboardScreen(
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = { viewModel.openScanDialog() },
+                onClick = { actions.onOpenScanDialog() },
                 containerColor = ConsoleGamecube,
                 contentColor = Color.White,
                 shape = RoundedCornerShape(24.dp),
@@ -129,7 +128,7 @@ fun MobileFieldDashboardScreen(
                     selected = selectedBottomTab == 2,
                     onClick = {
                         selectedBottomTab = 2
-                        viewModel.openSettings()
+                        actions.onOpenSettings()
                     },
                     icon = { Text("⚙️", fontSize = 18.sp) },
                     label = { Text(TextKeys.Navigation.TAB_SETTINGS, style = LabelFilterStyle) },
@@ -162,7 +161,7 @@ fun MobileFieldDashboardScreen(
                 Text(text = "🔍", fontSize = 14.sp)
                 androidx.compose.foundation.text.BasicTextField(
                     value = state.searchQuery,
-                    onValueChange = { viewModel.onSearchQueryChange(it) },
+                    onValueChange = { actions.onSearchQueryChange(it) },
                     textStyle = BodyMd.copy(color = TextPrimary),
                     modifier = Modifier
                         .weight(1f)
@@ -183,7 +182,7 @@ fun MobileFieldDashboardScreen(
                 Box(
                     modifier = Modifier
                         .background(SurfaceElevated, RoundedCornerShape(4.dp))
-                        .clickable { viewModel.openScanDialog() }
+                        .clickable { actions.onOpenScanDialog() }
                         .padding(horizontal = 6.dp, vertical = 4.dp)
                 ) {
                     Text(text = "📷", fontSize = 12.sp)
@@ -221,7 +220,7 @@ fun MobileFieldDashboardScreen(
                             modifier = Modifier
                                 .weight(1f)
                                 .background(bg, RoundedCornerShape(6.dp))
-                                .clickable { viewModel.onPlatformSelect(platform) }
+                                .clickable { actions.onPlatformSelect(platform) }
                                 .padding(vertical = 8.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
@@ -252,7 +251,7 @@ fun MobileFieldDashboardScreen(
                         modifier = Modifier
                             .background(if (state.filterEnglishOnly) StatusEnglishBg else SurfaceCard, RoundedCornerShape(4.dp))
                             .border(1.dp, if (state.filterEnglishOnly) StatusEnglishFg else BorderSubtle, RoundedCornerShape(4.dp))
-                            .clickable { viewModel.toggleEnglishOnlyFilter() }
+                            .clickable { actions.onToggleEnglishOnly() }
                             .padding(horizontal = 6.dp, vertical = 3.dp)
                     ) {
                         Text(text = "✔ EN", style = LabelBadgeStyle, color = StatusEnglishFg)
@@ -262,7 +261,7 @@ fun MobileFieldDashboardScreen(
                         modifier = Modifier
                             .background(if (state.filterUskAlertsOnly) StatusRiskBg else SurfaceCard, RoundedCornerShape(4.dp))
                             .border(1.dp, if (state.filterUskAlertsOnly) StatusRiskFg else BorderSubtle, RoundedCornerShape(4.dp))
-                            .clickable { viewModel.toggleUskAlertsFilter() }
+                            .clickable { actions.onToggleUskAlerts() }
                             .padding(horizontal = 6.dp, vertical = 3.dp)
                     ) {
                         Text(text = "🔴 USK", style = LabelBadgeStyle, color = StatusRiskFg)
@@ -286,7 +285,7 @@ fun MobileFieldDashboardScreen(
                             game = game,
                             isSelected = state.selectedGame?.id == game.id,
                             onClick = {
-                                viewModel.onGameSelected(game)
+                                actions.onGameSelected(game)
                                 onNavigateToDetail(game)
                             }
                         )

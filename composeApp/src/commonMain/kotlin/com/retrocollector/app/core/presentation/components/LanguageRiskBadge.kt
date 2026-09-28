@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.retrocollector.app.core.domain.model.LanguageStatus
 import com.retrocollector.app.core.presentation.theme.*
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun LanguageRiskBadge(
@@ -55,3 +56,15 @@ fun LanguageRiskBadge(
         }
     }
 }
+
+@Preview
+@Composable
+internal fun LanguageRiskBadgePreview() {
+    RetroTactileTheme {
+        LanguageRiskBadge(
+            status = LanguageStatus.FULL_ENGLISH,
+            showDescription = true
+        )
+    }
+}
+
