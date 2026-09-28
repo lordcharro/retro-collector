@@ -138,7 +138,8 @@ class GameRepositoryImpl(
         var price = currentPrice
         var image = currentImage
 
-        listingScraper.fetchListing(listingUrl).onSuccess { listing ->
+        val sessionCookie = _settings.value.ricardoSessionCookie.ifBlank { null }
+        listingScraper.fetchListing(listingUrl, sessionCookie).onSuccess { listing ->
             if (query == listingUrl || query.isBlank()) {
                 query = "Anúncio ${listing.sourcePlatform}: ${listing.title}. Descrição: ${listing.description.take(250)}"
             }
@@ -149,7 +150,7 @@ class GameRepositoryImpl(
                 price = listing.estimatedPriceChf
             }
             if (image == null && listing.imageUrls.isNotEmpty()) {
-                image = listingScraper.fetchImageAsBase64(listing.imageUrls.first())
+                image = listingScraper.fetchImageAsBase64(listing.imageUrls.first(), sessionCookie)
             }
         }
         return ResolvedScanInput(query, image, location, price)
@@ -178,7 +179,8 @@ class GameRepositoryImpl(
 
         val resolvedImg = result.imageBase64
         if (resolvedImg != null && (resolvedImg.startsWith("http://") || resolvedImg.startsWith("https://"))) {
-            val fetched = listingScraper.fetchImageAsBase64(resolvedImg)
+            val sessionCookie = _settings.value.ricardoSessionCookie.ifBlank { null }
+            val fetched = listingScraper.fetchImageAsBase64(resolvedImg, sessionCookie)
             if (fetched != null) {
                 result = result.copy(imageBase64 = fetched)
             }
@@ -263,7 +265,8 @@ class GameRepositoryImpl(
 
         var resolvedChatImage = imageBase64
         if (resolvedChatImage != null && (resolvedChatImage.startsWith("http://") || resolvedChatImage.startsWith("https://"))) {
-            val fetched = listingScraper.fetchImageAsBase64(resolvedChatImage)
+            val sessionCookie = _settings.value.ricardoSessionCookie.ifBlank { null }
+            val fetched = listingScraper.fetchImageAsBase64(resolvedChatImage, sessionCookie)
             if (fetched != null) {
                 resolvedChatImage = fetched
             }

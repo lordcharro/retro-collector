@@ -40,6 +40,7 @@ fun SettingsDialog(
     var firebaseProjectId by remember { mutableStateOf(settings.firebaseProjectId) }
     var selectedCurrency by remember { mutableStateOf(settings.defaultCurrency.ifBlank { "CHF" }) }
     var isScraperEnabled by remember { mutableStateOf(settings.isScraperEnabled) }
+    var ricardoCookie by remember { mutableStateOf(settings.ricardoSessionCookie) }
     var isKeyVisible by remember { mutableStateOf(false) }
     var testStatusMessage by remember { mutableStateOf<String?>(null) }
     var isTestingGemini by remember { mutableStateOf(false) }
@@ -56,6 +57,7 @@ fun SettingsDialog(
 
     var isGeminiFocused by remember { mutableStateOf(false) }
     var isFirebaseFocused by remember { mutableStateOf(false) }
+    var isCookieFocused by remember { mutableStateOf(false) }
 
     val currencies = remember {
         listOf(
@@ -496,6 +498,56 @@ fun SettingsDialog(
                                 )
                             )
                         }
+
+                        HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
+
+                        // Cookie de Sessão Ricardo.ch (Opcional anti-captcha)
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "COOKIE DE SESSÃO RICARDO.CH (OPCIONAL)",
+                                    style = LabelFilterStyle,
+                                    color = TextPrimary
+                                )
+                                Text(
+                                    text = "Anti-Captcha",
+                                    style = CodeSkuStyle.copy(fontSize = 10.sp),
+                                    color = StatusEnglishFg
+                                )
+                            }
+                            BasicTextField(
+                                value = ricardoCookie,
+                                onValueChange = { ricardoCookie = it },
+                                textStyle = CodeSkuStyle.copy(color = TextPrimary, fontSize = 11.sp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(SurfaceCard, RoundedCornerShape(4.dp))
+                                    .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 10.dp, vertical = 8.dp)
+                                    .onFocusChanged { isCookieFocused = it.isFocused },
+                                singleLine = true,
+                                decorationBox = { innerTextField ->
+                                    Box(contentAlignment = Alignment.CenterStart) {
+                                        if (ricardoCookie.isEmpty() && !isCookieFocused) {
+                                            Text(
+                                                text = "Ex: ricardo_session=... ou token da tua conta",
+                                                style = CodeSkuStyle.copy(color = StatusUnverifiedFg, fontSize = 11.sp)
+                                            )
+                                        }
+                                        innerTextField()
+                                    }
+                                }
+                            )
+                            Text(
+                                text = "Permite autenticar os pedidos ao Ricardo.ch com a tua conta para evitar desafios de Captcha.",
+                                style = BodySm.copy(fontSize = 10.sp),
+                                color = TextSecondary
+                            )
+                        }
                     }
                 }
 
@@ -569,7 +621,8 @@ fun SettingsDialog(
                                 geminiModel = selectedModel,
                                 firebaseProjectId = firebaseProjectId.trim(),
                                 defaultCurrency = selectedCurrency,
-                                isScraperEnabled = isScraperEnabled
+                                isScraperEnabled = isScraperEnabled,
+                                ricardoSessionCookie = ricardoCookie.trim()
                             )
                         )
                     },

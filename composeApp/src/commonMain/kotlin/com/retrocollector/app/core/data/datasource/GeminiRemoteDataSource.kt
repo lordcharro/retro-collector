@@ -40,9 +40,9 @@ data class StitchGeminiStructuredVerdict(
 class GeminiRemoteDataSource(
     private val client: HttpClient = HttpClient {
         install(HttpTimeout) {
-            requestTimeoutMillis = 15000
-            connectTimeoutMillis = 10000
-            socketTimeoutMillis = 15000
+            requestTimeoutMillis = 60000
+            connectTimeoutMillis = 15000
+            socketTimeoutMillis = 60000
         }
         install(ContentNegotiation) {
             json(Json {

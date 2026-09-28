@@ -44,11 +44,16 @@ class ListingScraper(
         return lower.contains("ricardo.ch") || lower.contains("tutti.ch") || lower.contains("anibis.ch") || lower.contains("ebay")
     }
 
-    suspend fun fetchListing(url: String): Result<ScrapedListing> {
+    suspend fun fetchListing(url: String, sessionCookie: String? = null): Result<ScrapedListing> {
         val source = resolveSourcePlatform(url)
 
         return try {
-            val response = client.get(url)
+            val response = client.get(url) {
+                if (!sessionCookie.isNullOrBlank() && url.contains("ricardo.ch", ignoreCase = true)) {
+                    val formattedCookie = if (sessionCookie.contains("=")) sessionCookie else "ricardo_session=$sessionCookie"
+                    header(HttpHeaders.Cookie, formattedCookie)
+                }
+            }
             val html = response.bodyAsText()
             val isBlocked = !response.status.isSuccess() || isCaptchaPage(html)
 
@@ -165,10 +170,15 @@ class ListingScraper(
         return regex.find(html)?.groupValues?.get(1)
     }
 
-    suspend fun fetchImageAsBase64(imageUrl: String): String? {
+    suspend fun fetchImageAsBase64(imageUrl: String, sessionCookie: String? = null): String? {
         if (imageUrl.isBlank()) return null
         return try {
-            val response = client.get(imageUrl)
+            val response = client.get(imageUrl) {
+                if (!sessionCookie.isNullOrBlank() && imageUrl.contains("ricardo", ignoreCase = true)) {
+                    val formattedCookie = if (sessionCookie.contains("=")) sessionCookie else "ricardo_session=$sessionCookie"
+                    header(HttpHeaders.Cookie, formattedCookie)
+                }
+            }
             if (response.status.isSuccess()) {
                 val bytes = response.readRawBytes()
                 val base64 = bytes.encodeBase64()
