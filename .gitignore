@@ -1,0 +1,44 @@
+# Gradle
+.gradle/
+build/
+composeApp/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Android Studio / IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Local Environment & Secrets
+local.properties
+google-services.json
+GoogleService-Info.plist
+*.keystore
+*.jks
+*.key
+*.pem
+
+# Kotlin Multiplatform & Web / Wasm
+.kotlin/
+kotlin-js-store/
+node_modules/
+package-lock.json
+yarn.lock
+
+# macOS / OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+
+# Logs & Dumps
+*.log
+*.hprof

@@ -1,0 +1,152 @@
+package com.retrocollector.app.core.presentation.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.retrocollector.app.core.domain.model.ConsolePlatform
+import com.retrocollector.app.core.domain.model.GameItem
+import com.retrocollector.app.core.presentation.theme.*
+
+@Composable
+fun GameListItemRow(
+    game: GameItem,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val platformColor = when (game.platform) {
+        ConsolePlatform.N64 -> ConsoleN64
+        ConsolePlatform.GAMECUBE -> ConsoleGamecube
+        ConsolePlatform.PS3 -> ConsolePS3
+        ConsolePlatform.SWITCH -> ConsoleSwitch
+    }
+
+    val rowBg = if (isSelected) SurfaceElevated else SurfaceCard
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(rowBg)
+            .clickable(onClick = onClick)
+    ) {
+        // Indicador lateral de seleção ativa
+        if (isSelected) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(4.dp)
+                    .align(Alignment.CenterStart)
+                    .background(platformColor)
+            )
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Coluna Esquerda: Título, SKU e Localização
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = game.title,
+                        style = HeadlineSm,
+                        color = TextPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+
+                    if (!game.productCode.isNullOrBlank()) {
+                        Box(
+                            modifier = Modifier
+                                .background(SurfaceContainer, RoundedCornerShape(3.dp))
+                                .padding(horizontal = 5.dp, vertical = 1.dp)
+                        ) {
+                            Text(
+                                text = game.productCode,
+                                style = CodeSkuStyle.copy(fontSize = 11.sp),
+                                color = AccentBlue,
+                                maxLines = 1,
+                                softWrap = false
+                            )
+                        }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.padding(top = 3.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    if (game.spottedLocation.isNotBlank()) {
+                        Text(
+                            text = "• ${game.spottedLocation}",
+                            style = BodySm,
+                            color = TextSecondary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    if (game.releaseYear.isNotBlank()) {
+                        Box(
+                            modifier = Modifier
+                                .background(SurfaceContainerHigh, RoundedCornerShape(2.dp))
+                                .padding(horizontal = 4.dp, vertical = 0.5.dp)
+                        ) {
+                            Text(
+                                text = game.releaseYear,
+                                style = CodeSkuStyle.copy(fontSize = 10.sp),
+                                color = TextSecondary
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Coluna Direita: Preço em CHF e Badge de Risco de Língua
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                val displayPrice = game.askingPriceChf ?: game.targetPriceChf ?: game.paidPriceChf
+                val priceFormatted = if (displayPrice != null) {
+                    val whole = displayPrice.toLong()
+                    val fraction = ((displayPrice - whole) * 100).toLong()
+                    val fracStr = if (fraction < 10) "0$fraction" else "$fraction"
+                    "CHF $whole.$fracStr"
+                } else "—"
+
+                Text(
+                    text = priceFormatted,
+                    style = CodePriceStyle,
+                    color = TextPrimary,
+                    maxLines = 1,
+                    softWrap = false
+                )
+
+                LanguageRiskBadge(status = game.languageStatus)
+            }
+        }
+    }
+}

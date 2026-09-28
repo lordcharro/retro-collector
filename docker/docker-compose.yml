@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  retro-tracker-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: retro_collector_web
+    restart: unless-stopped
+    ports:
+      # Aceder no NAS em http://<IP_DO_SYNOLOGY>:8085
+      - "8085:80"
+    environment:
+      - TZ=Europe/Zurich
