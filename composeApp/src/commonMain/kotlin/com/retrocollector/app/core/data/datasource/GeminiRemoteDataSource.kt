@@ -87,12 +87,12 @@ class GeminiRemoteDataSource(
         ```
     """.trimIndent()
 
-    suspend fun testConnection(apiKey: String, model: String = "gemini-2.5-flash"): Result<String> {
+    suspend fun testConnection(apiKey: String, model: String = "gemini-3.7-flash"): Result<String> {
         if (apiKey.isBlank()) {
             return Result.failure(IllegalArgumentException("Chave da API do Gemini não configurada."))
         }
 
-        val targetModel = model.ifBlank { "gemini-2.5-flash" }
+        val targetModel = model.ifBlank { "gemini-3.7-flash" }
 
         return try {
             val requestBody = GeminiRequest(
@@ -120,20 +120,21 @@ class GeminiRemoteDataSource(
         query: String,
         imageBase64: String? = null,
         apiKey: String,
-        model: String = "gemini-2.5-flash"
+        model: String = "gemini-3.7-flash"
     ): Result<Pair<String, StitchGeminiStructuredVerdict?>> {
         if (apiKey.isBlank()) {
             return Result.failure(IllegalArgumentException("Chave da API do Gemini não configurada. Acede às Definições para inserir a chave."))
         }
 
-        val primaryModel = model.ifBlank { "gemini-2.5-flash" }
+        val primaryModel = model.ifBlank { "gemini-3.7-flash" }
         val result = executeInspect(query, imageBase64, apiKey, primaryModel)
 
-        // Se falhar devido a pico de procura temporário no modelo solicitado, tenta fallback automático para gemini-2.5-flash
-        if (result.isFailure && primaryModel != "gemini-2.5-flash") {
+        // Se falhar devido a pico de procura temporário no modelo solicitado, tenta fallback automático
+        if (result.isFailure) {
             val errMsg = result.exceptionOrNull()?.message.orEmpty()
             if (errMsg.contains("demand", ignoreCase = true) || errMsg.contains("503") || errMsg.contains("unavailable", ignoreCase = true)) {
-                return executeInspect(query, imageBase64, apiKey, "gemini-2.5-flash")
+                val fallbackModel = if (primaryModel == "gemini-3.7-flash") "gemini-3.6-flash" else "gemini-3.7-flash"
+                return executeInspect(query, imageBase64, apiKey, fallbackModel)
             }
         }
         return result

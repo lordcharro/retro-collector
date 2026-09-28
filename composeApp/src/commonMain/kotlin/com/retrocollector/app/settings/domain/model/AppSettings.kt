@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AppSettings(
     val geminiApiKey: String = "",
-    val geminiModel: String = "gemini-2.5-flash",
+    val geminiModel: String = "gemini-3.7-flash",
     val firebaseProjectId: String = "",
     val firebaseApiKey: String = "",
     val defaultCurrency: String = "CHF",

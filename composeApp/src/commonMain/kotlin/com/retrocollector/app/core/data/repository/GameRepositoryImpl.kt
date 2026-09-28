@@ -94,7 +94,7 @@ class GameRepositoryImpl(
         askingPriceChf: Double?
     ): Result<Pair<ChatMessage, GameItem?>> {
         val apiKey = _settings.value.geminiApiKey
-        val model = _settings.value.geminiModel.ifBlank { "gemini-2.5-flash" }
+        val model = _settings.value.geminiModel.ifBlank { "gemini-3.7-flash" }
         val result = geminiDataSource.inspectGame(query, imageBase64, apiKey, model)
 
         return result.map { (replyText, verdict) ->
@@ -172,7 +172,7 @@ class GameRepositoryImpl(
             userMessage
         }
 
-        val model = _settings.value.geminiModel.ifBlank { "gemini-2.5-flash" }
+        val model = _settings.value.geminiModel.ifBlank { "gemini-3.7-flash" }
         val result = geminiDataSource.inspectGame(prompt, imageBase64, apiKey, model)
         return result.map { (replyText, verdict) ->
             val aiMsg = ChatMessage(

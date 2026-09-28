@@ -34,7 +34,7 @@ fun SettingsDialog(
     modifier: Modifier = Modifier
 ) {
     var geminiKey by remember { mutableStateOf(settings.geminiApiKey) }
-    var selectedModel by remember { mutableStateOf(settings.geminiModel.ifBlank { "gemini-2.5-flash" }) }
+    var selectedModel by remember { mutableStateOf(settings.geminiModel.ifBlank { "gemini-3.7-flash" }) }
     var firebaseProjectId by remember { mutableStateOf(settings.firebaseProjectId) }
     var selectedCurrency by remember { mutableStateOf(settings.defaultCurrency.ifBlank { "CHF" }) }
     var isScraperEnabled by remember { mutableStateOf(settings.isScraperEnabled) }
@@ -44,8 +44,9 @@ fun SettingsDialog(
 
     val geminiModels = remember {
         listOf(
-            "gemini-2.5-flash" to "2.5 Flash (Estável)",
-            "gemini-2.5-flash-lite" to "2.5 Lite (Rápido)",
+            "gemini-3.7-flash" to "3.7 Flash (Estável)",
+            "gemini-3.6-flash" to "3.6 Flash (Rápido)",
+            "gemini-3.5-flash" to "3.5 Flash (Base)",
             "gemini-3.8-flash" to "3.8 Flash (Preview)"
         )
     }
