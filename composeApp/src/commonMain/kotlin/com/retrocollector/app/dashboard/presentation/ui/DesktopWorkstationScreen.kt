@@ -532,6 +532,29 @@ fun DesktopWorkstationScreen(
                             items(state.activeChatMessages, key = { it.id }) { msg ->
                                 GeminiChatBubble(message = msg)
                             }
+
+                            if (state.isAnalyzing) {
+                                item(key = "loading_typing_bubble") {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(14.dp),
+                                            color = StatusEnglishFg,
+                                            strokeWidth = 2.dp
+                                        )
+                                        Text(
+                                            text = "Gemini a analisar verificação regional...",
+                                            style = BodySm.copy(fontSize = 12.sp),
+                                            color = StatusEnglishFg
+                                        )
+                                    }
+                                }
+                            }
                         }
 
                         // Caixa de Entrada de Pergunta com Contexto Fixo no Rodapé
@@ -596,7 +619,15 @@ fun DesktopWorkstationScreen(
                                     modifier = Modifier.height(32.dp).defaultMinSize(minHeight = 32.dp),
                                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
                                 ) {
-                                    Text(text = "${TextKeys.Dossier.CHAT_SEND} 🚀", style = LabelFilterStyle, color = Color.White)
+                                    if (state.isAnalyzing) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(12.dp),
+                                            color = Color.White,
+                                            strokeWidth = 2.dp
+                                        )
+                                    } else {
+                                        Text(text = "${TextKeys.Dossier.CHAT_SEND} 🚀", style = LabelFilterStyle, color = Color.White)
+                                    }
                                 }
                             }
                         }

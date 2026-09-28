@@ -24,6 +24,8 @@ import androidx.compose.ui.window.DialogProperties
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.settings.domain.model.AppSettings
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 @Composable
 fun SettingsDialog(
@@ -41,6 +43,7 @@ fun SettingsDialog(
     var isKeyVisible by remember { mutableStateOf(false) }
     var testStatusMessage by remember { mutableStateOf<String?>(null) }
     var isTestingGemini by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     val geminiModels = remember {
         listOf(
@@ -309,20 +312,33 @@ fun SettingsDialog(
                                     val trimmedKey = geminiKey.trim()
                                     if (trimmedKey.isNotBlank()) {
                                         if (onTestGeminiConnection != null) {
-                                            isTestingGemini = true
-                                            testStatusMessage = "A testar ligação..."
-                                            onTestGeminiConnection(trimmedKey, selectedModel) { result ->
-                                                isTestingGemini = false
-                                                result.fold(
-                                                    onSuccess = { msg -> testStatusMessage = msg },
-                                                    onFailure = { err -> testStatusMessage = err.message ?: TextKeys.Settings.STATUS_FAILED }
-                                                )
+                                            coroutineScope.launch {
+                                                isTestingGemini = true
+                                                testStatusMessage = "A testar ligação..."
+                                                try {
+                                                    withTimeoutOrNull(12_000) {
+                                                        onTestGeminiConnection(trimmedKey, selectedModel) { result ->
+                                                            result.fold(
+                                                                onSuccess = { msg -> testStatusMessage = msg },
+                                                                onFailure = { err ->
+                                                                    testStatusMessage = err.message ?: TextKeys.Settings.STATUS_FAILED
+                                                                }
+                                                            )
+                                                        }
+                                                    } ?: run {
+                                                        testStatusMessage = "Tempo limite esgotado (12s). Verifica a ligação."
+                                                    }
+                                                } catch (e: Exception) {
+                                                    testStatusMessage = e.message ?: TextKeys.Settings.STATUS_FAILED
+                                                } finally {
+                                                    isTestingGemini = false
+                                                }
                                             }
                                         } else {
                                             testStatusMessage = TextKeys.Settings.STATUS_CONNECTED
                                         }
                                     } else {
-                                        testStatusMessage = TextKeys.Settings.STATUS_FAILED
+                                        testStatusMessage = "Por favor, introduz uma chave de API válida."
                                     }
                                 },
                                 enabled = !isTestingGemini,
@@ -338,13 +354,19 @@ fun SettingsDialog(
                             }
 
                             testStatusMessage?.let { msg ->
+                                val isTesting = isTestingGemini || msg.startsWith("A testar")
                                 val isSuccess = msg == TextKeys.Settings.STATUS_CONNECTED ||
                                     msg.startsWith("Ligação") ||
                                     msg.startsWith("Connection")
+                                val textColor = when {
+                                    isTesting -> StatusEditionFg
+                                    isSuccess -> StatusEnglishFg
+                                    else -> StatusRiskFg
+                                }
                                 Text(
                                     text = msg,
                                     style = BodySm.copy(fontSize = 11.sp),
-                                    color = if (isSuccess) StatusEnglishFg else StatusRiskFg,
+                                    color = textColor,
                                     modifier = Modifier.weight(1f, fill = false).padding(start = 8.dp)
                                 )
                             }

@@ -50,6 +50,7 @@ fun AdaptiveMainScreen(
                 MobileGameDetailScreen(
                     game = activeGame,
                     chatMessages = state.activeChatMessages,
+                    isAnalyzing = state.isAnalyzing,
                     onBack = { mobileDetailGame = null },
                     onUpdateGameStatus = viewModel::updateGameStatus,
                     onSendFollowUpMessage = viewModel::sendFollowUpMessage

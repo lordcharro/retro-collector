@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 
 @Immutable
 data class DashboardUiState(
@@ -159,21 +160,56 @@ class DashboardViewModel(
         closeSettings()
     }
 
+    suspend fun testGeminiConnectionSuspend(apiKey: String, model: String = "gemini-3.7-flash"): Result<String> {
+        return testGeminiConnectionUseCase(apiKey, model)
+    }
+
     fun testGeminiConnection(apiKey: String, model: String = "gemini-3.7-flash", onResult: (Result<String>) -> Unit) {
         scope.launch {
-            val result = testGeminiConnectionUseCase(apiKey, model)
-            onResult(result)
+            try {
+                val result = testGeminiConnectionUseCase(apiKey, model)
+                onResult(result)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                onResult(Result.failure(e))
+            }
         }
     }
 
     fun sendFollowUpMessage(question: String, imageBase64: String? = null) {
         val currentGame = _uiState.value.selectedGame ?: return
-        if (question.isBlank() && imageBase64 == null) return
+        val trimmed = question.trim()
+        if (trimmed.isBlank() && imageBase64 == null) return
+
+        // Adicionar mensagem de utilizador imediatamente para atualização reativa do ecrã
+        val nowMs = Clock.System.now().toEpochMilliseconds()
+        val userMsg = ChatMessage(
+            id = "user_$nowMs",
+            contextId = currentGame.id,
+            sender = MessageSender.USER,
+            text = trimmed,
+            imageBase64 = imageBase64
+        )
+        repository.addChatMessage(userMsg)
+        _uiState.update {
+            it.copy(
+                activeChatMessages = repository.getChatMessagesForGame(currentGame.id),
+                isAnalyzing = true
+            )
+        }
 
         scope.launch {
-            sendFollowUpChatUseCase(currentGame.id, question, imageBase64)
+            sendFollowUpChatUseCase(currentGame.id, trimmed, imageBase64)
             val updatedChats = repository.getChatMessagesForGame(currentGame.id)
-            _uiState.update { it.copy(activeChatMessages = updatedChats) }
+            val updatedGame = repository.getGameById(currentGame.id) ?: currentGame
+            _uiState.update {
+                it.copy(
+                    isAnalyzing = false,
+                    selectedGame = updatedGame,
+                    activeChatMessages = updatedChats
+                )
+            }
         }
     }
 

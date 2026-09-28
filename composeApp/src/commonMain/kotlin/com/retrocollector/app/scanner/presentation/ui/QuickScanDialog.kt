@@ -21,18 +21,24 @@ import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 @Composable
 fun QuickScanDialog(
+    modifier: Modifier = Modifier,
     currency: String = "CHF",
     isAnalyzing: Boolean = false,
     statusMessage: String? = null,
     onAnalyze: (query: String, imageBase64: String?, spottedLocation: String, askingPriceChf: Double?) -> Unit = { _, _, _, _ -> },
-    onDismiss: () -> Unit = {},
-    modifier: Modifier = Modifier
+    onDismiss: () -> Unit = {}
 ) {
     var query by remember { mutableStateOf("") }
+    var imageUrlInput by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("Ricardo.ch") }
     var priceChfStr by remember { mutableStateOf("") }
     var isQueryFocused by remember { mutableStateOf(false) }
+    var isImageFocused by remember { mutableStateOf(false) }
     var isPriceFocused by remember { mutableStateOf(false) }
+
+    val isUrl = remember(query) {
+        query.startsWith("http://") || query.startsWith("https://") || query.contains("ricardo.ch") || query.contains("tutti.ch")
+    }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -83,7 +89,16 @@ fun QuickScanDialog(
                     Text(text = TextKeys.Scanner.MANUAL_LABEL, style = LabelFilterStyle, color = TextPrimary)
                     androidx.compose.foundation.text.BasicTextField(
                         value = query,
-                        onValueChange = { query = it },
+                        onValueChange = {
+                            query = it
+                            if (it.contains("ricardo.ch", ignoreCase = true)) {
+                                location = "Ricardo.ch"
+                            } else if (it.contains("tutti.ch", ignoreCase = true)) {
+                                location = "Tutti.ch"
+                            } else if (it.contains("anibis.ch", ignoreCase = true)) {
+                                location = "Anibis.ch"
+                            }
+                        },
                         textStyle = BodyMd.copy(color = TextPrimary),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -104,6 +119,24 @@ fun QuickScanDialog(
                             }
                         }
                     )
+
+                    if (isUrl) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(SurfaceElevated, RoundedCornerShape(4.dp))
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(text = "🌐", fontSize = 12.sp)
+                            Text(
+                                text = "Link detetado. O RetroCollector descarregará a foto e detalhes do anúncio.",
+                                style = BodySm.copy(fontSize = 11.sp),
+                                color = StatusEnglishFg
+                            )
+                        }
+                    }
                 }
 
                 // Campo: Localização / Loja (Sourcing)
@@ -122,6 +155,34 @@ fun QuickScanDialog(
                             }
                         }
                     }
+                }
+
+                // Campo Opcional: Imagem do Disco / Lombada
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(text = "FOTO DO DISCO OU LOMBADA (OPCIONAL)", style = LabelFilterStyle, color = TextPrimary)
+                    androidx.compose.foundation.text.BasicTextField(
+                        value = imageUrlInput,
+                        onValueChange = { imageUrlInput = it },
+                        textStyle = BodySm.copy(color = TextPrimary),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(SurfaceBase, RoundedCornerShape(4.dp))
+                            .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
+                            .padding(10.dp)
+                            .onFocusChanged { isImageFocused = it.isFocused },
+                        singleLine = true,
+                        decorationBox = { innerTextField ->
+                            Box(contentAlignment = Alignment.CenterStart) {
+                                if (imageUrlInput.isEmpty() && !isImageFocused) {
+                                    Text(
+                                        text = "URL da foto do disco ou imagem Base64",
+                                        style = BodySm.copy(color = StatusUnverifiedFg)
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        }
+                    )
                 }
 
                 // Campo: Preço Pedido
@@ -164,7 +225,8 @@ fun QuickScanDialog(
                         val q = query.trim()
                         if (q.isNotEmpty()) {
                             val price = priceChfStr.toDoubleOrNull()
-                            onAnalyze(q, null, location, price)
+                            val img = imageUrlInput.trim().ifBlank { null }
+                            onAnalyze(q, img, location, price)
                         }
                     },
                     enabled = !isAnalyzing && query.isNotBlank(),

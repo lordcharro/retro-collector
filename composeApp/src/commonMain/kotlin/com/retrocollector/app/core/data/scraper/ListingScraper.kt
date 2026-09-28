@@ -1,8 +1,11 @@
 package com.retrocollector.app.core.data.scraper
 
 import io.ktor.client.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.util.*
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -16,7 +19,12 @@ data class ScrapedListing(
 )
 
 class ListingScraper(
-    private val client: HttpClient = HttpClient()
+    private val client: HttpClient = HttpClient {
+        install(HttpTimeout) {
+            requestTimeoutMillis = 10000
+            connectTimeoutMillis = 8000
+        }
+    }
 ) {
     fun isSupportedListing(url: String): Boolean {
         val lower = url.lowercase()
@@ -39,6 +47,9 @@ class ListingScraper(
             val imageUrl = extractMetaTag(html, "og:image")
             val imageUrls = listOfNotNull(imageUrl)
 
+            val price = extractMetaTag(html, "product:price:amount")?.toDoubleOrNull()
+                ?: extractPriceFromHtml(html)
+
             val source = when {
                 url.contains("ricardo.ch") -> "Ricardo.ch"
                 url.contains("tutti.ch") -> "Tutti.ch"
@@ -53,6 +64,7 @@ class ListingScraper(
                     title = cleanText(title),
                     description = cleanText(description),
                     imageUrls = imageUrls,
+                    estimatedPriceChf = price,
                     sourcePlatform = source
                 )
             )
@@ -86,6 +98,30 @@ class ListingScraper(
     private fun extractTagContent(html: String, tag: String): String? {
         val regex = Regex("""<$tag[^>]*>([\s\S]*?)</$tag>""", RegexOption.IGNORE_CASE)
         return regex.find(html)?.groupValues?.get(1)
+    }
+
+    suspend fun fetchImageAsBase64(imageUrl: String): String? {
+        if (imageUrl.isBlank()) return null
+        return try {
+            val response = client.get(imageUrl)
+            if (response.status.isSuccess()) {
+                val bytes = response.readRawBytes()
+                val base64 = bytes.encodeBase64()
+                val mime = response.contentType()?.let { "${it.contentType}/${it.contentSubtype}" } ?: "image/jpeg"
+                "data:$mime;base64,$base64"
+            } else null
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            println("Failed to fetch image $imageUrl: ${e.message}")
+            null
+        }
+    }
+
+    private fun extractPriceFromHtml(html: String): Double? {
+        val priceRegex = Regex("""(?:CHF|CHF\s*|Fr\.\s*)([0-9]+(?:\.[0-9]{2})?)""", RegexOption.IGNORE_CASE)
+        val match = priceRegex.find(html)
+        return match?.groupValues?.get(1)?.toDoubleOrNull()
     }
 
     private fun cleanText(text: String): String {

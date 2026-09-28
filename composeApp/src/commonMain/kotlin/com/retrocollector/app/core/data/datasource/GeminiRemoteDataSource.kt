@@ -4,10 +4,13 @@ import com.retrocollector.app.core.data.gemini.*
 import com.retrocollector.app.core.domain.model.*
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -35,6 +38,11 @@ data class StitchGeminiStructuredVerdict(
 
 class GeminiRemoteDataSource(
     private val client: HttpClient = HttpClient {
+        install(HttpTimeout) {
+            requestTimeoutMillis = 15000
+            connectTimeoutMillis = 10000
+            socketTimeoutMillis = 15000
+        }
         install(ContentNegotiation) {
             json(Json {
                 ignoreUnknownKeys = true
@@ -53,9 +61,10 @@ class GeminiRemoteDataSource(
         Foco de consolas: Nintendo 64 (NUS), GameCube (DOL), PlayStation 3 (BLES/BCES) e Nintendo Switch (HAC).
         
         Missão Crítica:
-        1. Identificar o jogo, plataforma, ano e código serial na lombada (DOL-P-xxxx, BLES-xxxxx, NUS-xxxx, etc.).
+        1. Identificar o jogo, plataforma, ano e código serial na lombada ou disco (DOL-P-xxxx, BLES-xxxxx, NUS-xxxx, etc.).
+           ATENÇÃO ESPECIAL A CÓDIGOS PS3 E NINTENDO NA SUÍÇA: É muito comum na Suíça encontrar caixas com código francês/europeu (ex: BLES-01811) com discos com selo duplo USK/PEGI e código DACH (ex: BLES-01780). Discos BLES-01780 são 100% autênticos, incluem áudio e legendas em inglês e devem ser catalogados como Safe SKUs quando não censurados!
         2. Determinar o risco de idioma: Full English (Áudio+Legendas), Subs Only (Legendas em EN), German Only (Bloqueado a alemão sem inglês) ou NOE Edition (Avisos de manual/caixa).
-        3. Identificar os SKUs Seguros (ex: UKV, EUR) e SKUs Arriscados (ex: NOE alemão cortado).
+        3. Identificar os SKUs Seguros (ex: UKV, EUR, DACH multilingue) e SKUs Arriscados (ex: NOE alemão cortado).
         4. Avaliar o preço de mercado suíço (Mediana de 90 dias em CHF em vendas no Ricardo.ch).
         5. Fornecer um "Field Collector Verdict" pragmático (Comprar ou Ignorar e preço alvo).
         
@@ -67,13 +76,13 @@ class GeminiRemoteDataSource(
           "franchise": "Franquia",
           "platform": "GAMECUBE" | "PS3" | "N64" | "SWITCH",
           "releaseYear": "2005",
-          "productCode": "DOL-P-G4BE",
+          "productCode": "BLES-01780",
           "barcode": "045496392345",
           "languageStatus": "FULL_ENGLISH" | "SUBS_ONLY" | "GERMAN_ONLY" | "EDITION_NOTICE",
           "audioLanguages": ["English"],
           "subtitleLanguages": ["English", "French"],
           "safeSkus": [
-            {"code": "DOL-P-G4BE", "region": "UK", "editionNote": "Uncut English Audio and Menus", "isSafe": true}
+            {"code": "BLES-01780", "region": "DACH / CH", "editionNote": "Disco multilingue PEGI 18 + USK 18 com inglês integral", "isSafe": true}
           ],
           "riskySkus": [
             {"code": "DOL-P-G4BP", "region": "NOE", "editionNote": "German BPjM Cut Edition, Missing Mini-games", "isSafe": false}
@@ -87,6 +96,28 @@ class GeminiRemoteDataSource(
         ```
     """.trimIndent()
 
+    private val conversationalSystemPrompt = """
+        És o assistente tático de verificação de retrogaming europeu (PAL) do RetroCollector, focado no mercado da Suíça (Ricardo.ch, Tutti.ch, Brockenhaus, Flohmarkt).
+        Foco de consolas: Nintendo 64 (NUS), GameCube (DOL), PlayStation 3 (BLES/BCES) e Nintendo Switch (HAC).
+        
+        Diretrizes de Conversação:
+        1. Responde de forma direta, pragmática e especializada em português a qualquer pergunta do colecionador sobre o jogo, edições especiais, idiomas, censura ou códigos BLES/DOL/NUS.
+        2. Esclarece códigos no disco versus na caixa: por exemplo, na Suíça/Alemanha, é comum o disco ter BLES-01780 (bilíngue alemão/inglês com USK 18 e PEGI 18), enquanto a caixa tem BLES-01811 ou BLES-01800. Confirma ao utilizador que BLES-01780 é 100% autêntico e multilingue com inglês.
+        3. Se a conversa ou o utilizador confirmar novos dados relevantes sobre a cópia (como código serial no disco, confirmação de idiomas ou novas notas de colecionador), podes incluir no final da resposta um bloco JSON estrito com os dados atualizados:
+        ```json
+        {
+          "productCode": "BLES-01780",
+          "languageStatus": "FULL_ENGLISH" | "SUBS_ONLY" | "GERMAN_ONLY" | "EDITION_NOTICE",
+          "safeSkus": [
+            {"code": "BLES-01780", "region": "DACH / CH", "editionNote": "Disco autêntico com áudio e menus em inglês", "isSafe": true}
+          ],
+          "riskySkus": [],
+          "collectorVerdict": "Veredito atualizado"
+        }
+        ```
+        Caso contrário, responde apenas em texto natural, analítico e bem estruturado em markdown.
+    """.trimIndent()
+
     suspend fun testConnection(apiKey: String, model: String = "gemini-3.7-flash"): Result<String> {
         if (apiKey.isBlank()) {
             return Result.failure(IllegalArgumentException("Chave da API do Gemini não configurada."))
@@ -94,26 +125,37 @@ class GeminiRemoteDataSource(
 
         val targetModel = model.ifBlank { "gemini-3.7-flash" }
 
-        return try {
-            val requestBody = GeminiRequest(
-                contents = listOf(GeminiContent(role = "user", parts = listOf(GeminiPart(text = "ping"))))
-            )
-            val url = "https://generativelanguage.googleapis.com/v1beta/models/$targetModel:generateContent?key=$apiKey"
-            val response: GeminiResponse = client.post(url) {
-                contentType(ContentType.Application.Json)
-                setBody(requestBody)
-            }.body()
+        return withTimeoutOrNull(10_000) {
+            try {
+                val requestBody = GeminiRequest(
+                    contents = listOf(GeminiContent(role = "user", parts = listOf(GeminiPart(text = "ping"))))
+                )
+                val url = "https://generativelanguage.googleapis.com/v1beta/models/$targetModel:generateContent?key=$apiKey"
+                val response = client.post(url) {
+                    contentType(ContentType.Application.Json)
+                    setBody(requestBody)
+                }
 
-            if (response.error != null) {
-                Result.failure(Exception("Google API: ${response.error.message ?: "Erro (${response.error.code})" }"))
-            } else {
-                Result.success("Ligação com $targetModel estabelecida com sucesso!")
+                if (!response.status.isSuccess()) {
+                    val errorText = response.bodyAsText()
+                    val errorMsg = try {
+                        jsonParser.decodeFromString<GeminiResponse>(errorText).error?.message
+                    } catch (_: Exception) { null }
+                    Result.failure(Exception(errorMsg ?: "Erro HTTP ${response.status.value}: ${response.status.description}"))
+                } else {
+                    val geminiResponse: GeminiResponse = response.body()
+                    if (geminiResponse.error != null) {
+                        Result.failure(Exception("Google API: ${geminiResponse.error.message ?: "Erro (${geminiResponse.error.code})" }"))
+                    } else {
+                        Result.success("Ligação com $targetModel estabelecida com sucesso!")
+                    }
+                }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Result.failure(Exception(e.message ?: "Erro de ligação à API"))
             }
-        } catch (e: kotlinx.coroutines.CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Result.failure(Exception(e.message ?: "Erro de ligação à API"))
-        }
+        } ?: Result.failure(Exception("Tempo limite esgotado (10s). Verifica a tua ligação à Internet."))
     }
 
     suspend fun inspectGame(
@@ -135,6 +177,31 @@ class GeminiRemoteDataSource(
             if (errMsg.contains("demand", ignoreCase = true) || errMsg.contains("503") || errMsg.contains("unavailable", ignoreCase = true)) {
                 val fallbackModel = if (primaryModel == "gemini-3.7-flash") "gemini-3.6-flash" else "gemini-3.7-flash"
                 return executeInspect(query, imageBase64, apiKey, fallbackModel)
+            }
+        }
+        return result
+    }
+
+    suspend fun sendFollowUpChat(
+        history: List<ChatMessage>,
+        game: GameItem?,
+        userMessage: String,
+        imageBase64: String?,
+        apiKey: String,
+        model: String = "gemini-3.7-flash"
+    ): Result<Pair<String, StitchGeminiStructuredVerdict?>> {
+        if (apiKey.isBlank()) {
+            return Result.failure(IllegalArgumentException("Chave da API do Gemini não configurada. Acede às Definições para inserir a chave."))
+        }
+
+        val primaryModel = model.ifBlank { "gemini-3.7-flash" }
+        val result = executeFollowUpChat(history, game, userMessage, imageBase64, apiKey, primaryModel)
+
+        if (result.isFailure) {
+            val errMsg = result.exceptionOrNull()?.message.orEmpty()
+            if (errMsg.contains("demand", ignoreCase = true) || errMsg.contains("503") || errMsg.contains("unavailable", ignoreCase = true)) {
+                val fallbackModel = if (primaryModel == "gemini-3.7-flash") "gemini-3.6-flash" else "gemini-3.7-flash"
+                return executeFollowUpChat(history, game, userMessage, imageBase64, apiKey, fallbackModel)
             }
         }
         return result
@@ -163,30 +230,145 @@ class GeminiRemoteDataSource(
             )
 
             val url = "https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey"
-            val response: GeminiResponse = client.post(url) {
+            val response = client.post(url) {
                 contentType(ContentType.Application.Json)
                 setBody(requestBody)
-            }.body()
-
-            if (response.error != null) {
-                return Result.failure(Exception("Erro Gemini (${response.error.code}): ${response.error.message}"))
             }
 
-            val candidate = response.candidates?.firstOrNull()
-            val responseText = candidate?.content?.parts
+            if (!response.status.isSuccess()) {
+                val errorBody = response.bodyAsText()
+                val parsedError = parseErrorMessage(errorBody)
+                return Result.failure(Exception(parsedError ?: "Erro HTTP ${response.status.value}: ${response.status.description}"))
+            }
+
+            val geminiResponse: GeminiResponse = response.body()
+            if (geminiResponse.error != null) {
+                return Result.failure(Exception("Erro Gemini (${geminiResponse.error.code}): ${geminiResponse.error.message}"))
+            }
+
+            val candidate = geminiResponse.candidates?.firstOrNull()
+            val rawResponseText = candidate?.content?.parts
                 ?.filter { it.thought != true }
                 ?.joinToString("\n") { it.text ?: "" }
                 ?: return Result.failure(Exception("Resposta vazia da API do Gemini."))
 
             val durationSeconds = ((Clock.System.now().toEpochMilliseconds() - startTime) / 1000.0)
-            val verdict = extractJsonVerdict(responseText)?.copy(latencySeconds = durationSeconds)
+            val verdict = extractJsonVerdict(rawResponseText)?.copy(latencySeconds = durationSeconds)
+            val cleanText = cleanResponseText(rawResponseText).ifBlank { rawResponseText }
 
-            Result.success(Pair(responseText, verdict))
+            Result.success(Pair(cleanText, verdict))
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    private suspend fun executeFollowUpChat(
+        history: List<ChatMessage>,
+        game: GameItem?,
+        userMessage: String,
+        imageBase64: String?,
+        apiKey: String,
+        model: String
+    ): Result<Pair<String, StitchGeminiStructuredVerdict?>> {
+        val startTime = Clock.System.now().toEpochMilliseconds()
+
+        return try {
+            val promptText = buildFollowUpPrompt(game, history, userMessage)
+            val parts = mutableListOf(GeminiPart(text = promptText))
+
+            if (!imageBase64.isNullOrBlank()) {
+                val cleanBase64 = imageBase64.substringAfter("base64,")
+                parts.add(GeminiPart(inlineData = GeminiInlineData(mimeType = "image/jpeg", data = cleanBase64)))
+            }
+
+            val requestBody = GeminiRequest(
+                contents = listOf(GeminiContent(role = "user", parts = parts)),
+                systemInstruction = GeminiContent(parts = listOf(GeminiPart(text = conversationalSystemPrompt)))
+            )
+
+            val url = "https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey"
+            val response = client.post(url) {
+                contentType(ContentType.Application.Json)
+                setBody(requestBody)
+            }
+
+            if (!response.status.isSuccess()) {
+                val errorBody = response.bodyAsText()
+                val parsedError = parseErrorMessage(errorBody)
+                return Result.failure(Exception(parsedError ?: "Erro HTTP ${response.status.value}: ${response.status.description}"))
+            }
+
+            val geminiResponse: GeminiResponse = response.body()
+            if (geminiResponse.error != null) {
+                return Result.failure(Exception("Erro Gemini (${geminiResponse.error.code}): ${geminiResponse.error.message}"))
+            }
+
+            val candidate = geminiResponse.candidates?.firstOrNull()
+            val rawResponseText = candidate?.content?.parts
+                ?.filter { it.thought != true }
+                ?.joinToString("\n") { it.text ?: "" }
+                ?: return Result.failure(Exception("Resposta vazia da API do Gemini."))
+
+            val durationSeconds = ((Clock.System.now().toEpochMilliseconds() - startTime) / 1000.0)
+            val verdict = extractJsonVerdict(rawResponseText)?.copy(latencySeconds = durationSeconds)
+            val cleanText = cleanResponseText(rawResponseText).ifBlank { rawResponseText }
+
+            Result.success(Pair(cleanText, verdict))
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    private fun buildFollowUpPrompt(
+        game: GameItem?,
+        history: List<ChatMessage>,
+        userMessage: String
+    ): String {
+        val promptBuilder = StringBuilder()
+        if (game != null) {
+            promptBuilder.appendLine("Contexto do Jogo Analisado:")
+            promptBuilder.appendLine("- Título: ${game.title} (${game.platform.displayName})")
+            promptBuilder.appendLine("- Código Serial Registado: ${game.productCode ?: "N/D"}")
+            promptBuilder.appendLine("- Preço Pedido: CHF ${game.askingPriceChf ?: "N/D"}")
+            promptBuilder.appendLine("- Local de Aquisição: ${game.spottedLocation}")
+            promptBuilder.appendLine("- Status de Idioma: ${game.languageStatus.label}")
+            if (game.safeSkus.isNotEmpty()) {
+                promptBuilder.appendLine("- SKUs Seguros: ${game.safeSkus.joinToString { "${it.code} (${it.region})" }}")
+            }
+            if (game.riskySkus.isNotEmpty()) {
+                promptBuilder.appendLine("- SKUs de Risco: ${game.riskySkus.joinToString { "${it.code} (${it.region})" }}")
+            }
+            promptBuilder.appendLine()
+        }
+
+        val recentHistory = history.takeLast(4)
+        if (recentHistory.isNotEmpty()) {
+            promptBuilder.appendLine("Histórico da Conversa:")
+            recentHistory.forEach { msg ->
+                val senderLabel = if (msg.sender == MessageSender.USER) "Utilizador" else "Gemini"
+                promptBuilder.appendLine("$senderLabel: ${msg.text.take(180)}")
+            }
+            promptBuilder.appendLine()
+        }
+
+        promptBuilder.append("Pergunta ou Observação do Colecionador: $userMessage")
+        return promptBuilder.toString()
+    }
+
+    private fun parseErrorMessage(errorBody: String): String? {
+        return try {
+            jsonParser.decodeFromString<GeminiResponse>(errorBody).error?.message
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun cleanResponseText(fullText: String): String {
+        return fullText.replace(Regex("```json\\s*[\\s\\S]*?\\s*```"), "").trim()
     }
 
     private fun extractJsonVerdict(fullText: String): StitchGeminiStructuredVerdict? {

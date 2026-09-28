@@ -2,6 +2,7 @@ package com.retrocollector.app.core.data.repository
 
 import com.retrocollector.app.core.data.datasource.GeminiRemoteDataSource
 import com.retrocollector.app.core.data.firestore.FirestoreService
+import com.retrocollector.app.core.data.scraper.ListingScraper
 import com.retrocollector.app.settings.domain.model.AppSettings
 import com.retrocollector.app.core.domain.model.*
 import com.retrocollector.app.core.domain.repository.IGameRepository
@@ -17,6 +18,7 @@ import kotlinx.datetime.Clock
 class GameRepositoryImpl(
     private val firestoreService: FirestoreService = FirestoreService(),
     private val geminiDataSource: GeminiRemoteDataSource = GeminiRemoteDataSource(),
+    private val listingScraper: ListingScraper = ListingScraper(),
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : IGameRepository {
 
@@ -95,7 +97,31 @@ class GameRepositoryImpl(
     ): Result<Pair<ChatMessage, GameItem?>> {
         val apiKey = _settings.value.geminiApiKey
         val model = _settings.value.geminiModel.ifBlank { "gemini-3.7-flash" }
-        val result = geminiDataSource.inspectGame(query, imageBase64, apiKey, model)
+
+        var resolvedQuery = query
+        var resolvedImage = imageBase64
+        var resolvedLocation = spottedLocation
+        var resolvedPrice = askingPriceChf
+
+        // Se query for um link de anúncio (Ricardo.ch, Tutti.ch, etc.), extrai informação e descarrega a foto
+        val isUrl = query.startsWith("http://") || query.startsWith("https://")
+        if (_settings.value.isScraperEnabled && (isUrl || listingScraper.isSupportedListing(query))) {
+            val scrapedResult = listingScraper.fetchListing(query)
+            scrapedResult.onSuccess { listing ->
+                resolvedQuery = "Anúncio ${listing.sourcePlatform}: ${listing.title}. Descrição: ${listing.description.take(250)}"
+                if (resolvedLocation.isBlank() || resolvedLocation == "Ricardo.ch") {
+                    resolvedLocation = listing.sourcePlatform
+                }
+                if (resolvedPrice == null && listing.estimatedPriceChf != null) {
+                    resolvedPrice = listing.estimatedPriceChf
+                }
+                if (resolvedImage == null && listing.imageUrls.isNotEmpty()) {
+                    resolvedImage = listingScraper.fetchImageAsBase64(listing.imageUrls.first())
+                }
+            }
+        }
+
+        val result = geminiDataSource.inspectGame(resolvedQuery, resolvedImage, apiKey, model)
 
         return result.map { (replyText, verdict) ->
             val nowMs = Clock.System.now().toEpochMilliseconds()
@@ -105,7 +131,7 @@ class GameRepositoryImpl(
 
                 val status = LanguageStatus.fromString(v.languageStatus)
                 val radar = SwissMarketRadar(
-                    spottedPriceChf = askingPriceChf,
+                    spottedPriceChf = resolvedPrice,
                     medianPriceChf = v.swissMarketMedianChf,
                     historicalMinChf = v.historicalMinChf,
                     historicalMaxChf = v.historicalMaxChf,
@@ -120,8 +146,8 @@ class GameRepositoryImpl(
                     releaseYear = v.releaseYear,
                     productCode = v.productCode,
                     barcode = v.barcode,
-                    spottedLocation = spottedLocation.ifBlank { "Campo / Online" },
-                    askingPriceChf = askingPriceChf,
+                    spottedLocation = resolvedLocation.ifBlank { "Campo / Online" },
+                    askingPriceChf = resolvedPrice,
                     targetPriceChf = v.swissMarketMedianChf,
                     languageStatus = status,
                     languageAudio = v.audioLanguages,
@@ -143,6 +169,7 @@ class GameRepositoryImpl(
                 text = replyText,
                 suggestedGameUpdate = gameItem
             )
+            addChatMessage(chatMsg)
 
             Pair(chatMsg, gameItem)
         }
@@ -157,42 +184,63 @@ class GameRepositoryImpl(
         val nowMs = Clock.System.now().toEpochMilliseconds()
         val game = getGameById(contextId)
 
-        val userMsg = ChatMessage(
-            id = "user_$nowMs",
-            contextId = contextId,
-            sender = MessageSender.USER,
-            text = userMessage,
-            imageBase64 = imageBase64
-        )
-        addChatMessage(userMsg)
+        val existingChats = getChatMessagesForGame(contextId)
+        val lastIsSame = existingChats.lastOrNull()?.let {
+            it.sender == MessageSender.USER && it.text == userMessage
+        } ?: false
 
-        val prompt = if (game != null) {
-            "Contexto: Jogo '${game.title}' para ${game.platform.displayName} (Código: ${game.productCode}, Local: ${game.spottedLocation}). Pergunta do utilizador: $userMessage"
-        } else {
-            userMessage
-        }
-
-        val model = _settings.value.geminiModel.ifBlank { "gemini-3.7-flash" }
-        val result = geminiDataSource.inspectGame(prompt, imageBase64, apiKey, model)
-        return result.map { (replyText, verdict) ->
-            val aiMsg = ChatMessage(
-                id = "ai_${Clock.System.now().toEpochMilliseconds()}",
+        if (!lastIsSame) {
+            val userMsg = ChatMessage(
+                id = "user_$nowMs",
                 contextId = contextId,
-                sender = MessageSender.GEMINI,
-                text = replyText
+                sender = MessageSender.USER,
+                text = userMessage,
+                imageBase64 = imageBase64
             )
-            addChatMessage(aiMsg)
-
-            if (verdict != null && game != null) {
-                upsertGame(game.copy(
-                    safeSkus = if (verdict.safeSkus.isNotEmpty()) verdict.safeSkus else game.safeSkus,
-                    riskySkus = if (verdict.riskySkus.isNotEmpty()) verdict.riskySkus else game.riskySkus,
-                    collectorVerdict = verdict.collectorVerdict.ifBlank { game.collectorVerdict }
-                ))
-            }
-
-            aiMsg
+            addChatMessage(userMsg)
         }
+
+        val history = getChatMessagesForGame(contextId)
+        val model = _settings.value.geminiModel.ifBlank { "gemini-3.7-flash" }
+        val result = geminiDataSource.sendFollowUpChat(history, game, userMessage, imageBase64, apiKey, model)
+
+        return result.fold(
+            onSuccess = { (replyText, verdict) ->
+                val aiMsg = ChatMessage(
+                    id = "ai_${Clock.System.now().toEpochMilliseconds()}",
+                    contextId = contextId,
+                    sender = MessageSender.GEMINI,
+                    text = replyText
+                )
+                addChatMessage(aiMsg)
+
+                if (verdict != null && game != null) {
+                    val updatedSafe = (game.safeSkus + verdict.safeSkus).distinctBy { it.code }
+                    val updatedRisky = (game.riskySkus + verdict.riskySkus).distinctBy { it.code }
+                    upsertGame(game.copy(
+                        productCode = verdict.productCode ?: game.productCode,
+                        languageStatus = if (verdict.languageStatus != "UNVERIFIED") {
+                            LanguageStatus.fromString(verdict.languageStatus)
+                        } else game.languageStatus,
+                        safeSkus = updatedSafe.ifEmpty { game.safeSkus },
+                        riskySkus = updatedRisky.ifEmpty { game.riskySkus },
+                        collectorVerdict = verdict.collectorVerdict.ifBlank { game.collectorVerdict }
+                    ))
+                }
+
+                Result.success(aiMsg)
+            },
+            onFailure = { err ->
+                val errorMsg = ChatMessage(
+                    id = "ai_err_${Clock.System.now().toEpochMilliseconds()}",
+                    contextId = contextId,
+                    sender = MessageSender.GEMINI,
+                    text = "⚠️ Não foi possível obter resposta do Gemini: ${err.message ?: "Erro de ligação"}. Verifica a tua chave da API nas Definições."
+                )
+                addChatMessage(errorMsg)
+                Result.failure(err)
+            }
+        )
     }
 
     private fun getInitialMockGames(): List<GameItem> {
