@@ -1,6 +1,7 @@
 package com.retrocollector.app.core.data.repository
 
 import com.retrocollector.app.core.data.datasource.GeminiRemoteDataSource
+import com.retrocollector.app.core.data.datasource.StitchGeminiStructuredVerdict
 import com.retrocollector.app.core.data.firestore.FirestoreService
 import com.retrocollector.app.core.data.scraper.ListingScraper
 import com.retrocollector.app.settings.domain.model.AppSettings
@@ -98,69 +99,12 @@ class GameRepositoryImpl(
         val apiKey = _settings.value.geminiApiKey
         val model = _settings.value.geminiModel.ifBlank { "gemini-3.7-flash" }
 
-        var resolvedQuery = query
-        var resolvedImage = imageBase64
-        var resolvedLocation = spottedLocation
-        var resolvedPrice = askingPriceChf
-
-        // Se query for um link de anúncio (Ricardo.ch, Tutti.ch, etc.), extrai informação e descarrega a foto
-        val isUrl = query.startsWith("http://") || query.startsWith("https://")
-        if (_settings.value.isScraperEnabled && (isUrl || listingScraper.isSupportedListing(query))) {
-            val scrapedResult = listingScraper.fetchListing(query)
-            scrapedResult.onSuccess { listing ->
-                resolvedQuery = "Anúncio ${listing.sourcePlatform}: ${listing.title}. Descrição: ${listing.description.take(250)}"
-                if (resolvedLocation.isBlank() || resolvedLocation == "Ricardo.ch") {
-                    resolvedLocation = listing.sourcePlatform
-                }
-                if (resolvedPrice == null && listing.estimatedPriceChf != null) {
-                    resolvedPrice = listing.estimatedPriceChf
-                }
-                if (resolvedImage == null && listing.imageUrls.isNotEmpty()) {
-                    resolvedImage = listingScraper.fetchImageAsBase64(listing.imageUrls.first())
-                }
-            }
-        }
-
-        val result = geminiDataSource.inspectGame(resolvedQuery, resolvedImage, apiKey, model)
+        val resolved = resolveListingInput(query, imageBase64, spottedLocation, askingPriceChf)
+        val result = geminiDataSource.inspectGame(resolved.query, resolved.imageBase64, apiKey, model)
 
         return result.map { (replyText, verdict) ->
             val nowMs = Clock.System.now().toEpochMilliseconds()
-            val gameItem = verdict?.let { v ->
-                val platform = ConsolePlatform.entries.find { it.name.equals(v.platform, ignoreCase = true) }
-                    ?: ConsolePlatform.GAMECUBE
-
-                val status = LanguageStatus.fromString(v.languageStatus)
-                val radar = SwissMarketRadar(
-                    spottedPriceChf = resolvedPrice,
-                    medianPriceChf = v.swissMarketMedianChf,
-                    historicalMinChf = v.historicalMinChf,
-                    historicalMaxChf = v.historicalMaxChf,
-                    trend = "Stable"
-                )
-
-                GameItem(
-                    id = "game_${v.title.filter { it.isLetterOrDigit() }.lowercase()}_${platform.id}",
-                    title = v.title.ifBlank { "Jogo Analisado" },
-                    franchiseName = v.franchise,
-                    platform = platform,
-                    releaseYear = v.releaseYear,
-                    productCode = v.productCode,
-                    barcode = v.barcode,
-                    spottedLocation = resolvedLocation.ifBlank { "Campo / Online" },
-                    askingPriceChf = resolvedPrice,
-                    targetPriceChf = v.swissMarketMedianChf,
-                    languageStatus = status,
-                    languageAudio = v.audioLanguages,
-                    languageSubtitles = v.subtitleLanguages,
-                    safeSkus = v.safeSkus,
-                    riskySkus = v.riskySkus,
-                    marketRadar = radar,
-                    censorshipWarning = v.censorshipWarning,
-                    collectorVerdict = v.collectorVerdict,
-                    collectionStatus = if (status == LanguageStatus.GERMAN_ONLY) CollectionStatus.PASS else CollectionStatus.HUNTING,
-                    updatedAt = nowMs
-                )
-            }
+            val gameItem = verdict?.let { buildGameItemFromVerdict(it, resolved, nowMs) }
 
             val chatMsg = ChatMessage(
                 id = "msg_$nowMs",
@@ -174,6 +118,120 @@ class GameRepositoryImpl(
             Pair(chatMsg, gameItem)
         }
     }
+
+    private fun findListingUrl(query: String, imageBase64: String?): String? {
+        val isUrl = query.startsWith("http://") || query.startsWith("https://")
+        if (isUrl || listingScraper.isSupportedListing(query)) return query
+        if (imageBase64 != null && listingScraper.isSupportedListing(imageBase64)) return imageBase64
+        return null
+    }
+
+    private suspend fun fetchListingMetadata(
+        listingUrl: String,
+        currentQuery: String,
+        currentLocation: String,
+        currentPrice: Double?,
+        currentImage: String?
+    ): ResolvedScanInput {
+        var query = currentQuery
+        var location = currentLocation
+        var price = currentPrice
+        var image = currentImage
+
+        listingScraper.fetchListing(listingUrl).onSuccess { listing ->
+            if (query == listingUrl || query.isBlank()) {
+                query = "Anúncio ${listing.sourcePlatform}: ${listing.title}. Descrição: ${listing.description.take(250)}"
+            }
+            if (location.isBlank() || location == "Ricardo.ch") {
+                location = listing.sourcePlatform
+            }
+            if (price == null) {
+                price = listing.estimatedPriceChf
+            }
+            if (image == null && listing.imageUrls.isNotEmpty()) {
+                image = listingScraper.fetchImageAsBase64(listing.imageUrls.first())
+            }
+        }
+        return ResolvedScanInput(query, image, location, price)
+    }
+
+    private suspend fun resolveListingInput(
+        query: String,
+        imageBase64: String?,
+        spottedLocation: String,
+        askingPriceChf: Double?
+    ): ResolvedScanInput {
+        var result = ResolvedScanInput(query, imageBase64, spottedLocation, askingPriceChf)
+
+        if (_settings.value.isScraperEnabled) {
+            val listingUrl = findListingUrl(query, imageBase64)
+            if (listingUrl != null) {
+                result = fetchListingMetadata(
+                    listingUrl = listingUrl,
+                    currentQuery = query,
+                    currentLocation = spottedLocation,
+                    currentPrice = askingPriceChf,
+                    currentImage = if (listingUrl == imageBase64) null else imageBase64
+                )
+            }
+        }
+
+        val resolvedImg = result.imageBase64
+        if (resolvedImg != null && (resolvedImg.startsWith("http://") || resolvedImg.startsWith("https://"))) {
+            val fetched = listingScraper.fetchImageAsBase64(resolvedImg)
+            if (fetched != null) {
+                result = result.copy(imageBase64 = fetched)
+            }
+        }
+
+        return result
+    }
+
+    private fun buildGameItemFromVerdict(
+        v: StitchGeminiStructuredVerdict,
+        resolved: ResolvedScanInput,
+        nowMs: Long
+    ): GameItem {
+        val platform = ConsolePlatform.entries.find { it.name.equals(v.platform, ignoreCase = true) }
+            ?: ConsolePlatform.GAMECUBE
+        val status = LanguageStatus.fromString(v.languageStatus)
+        val radar = SwissMarketRadar(
+            spottedPriceChf = resolved.price,
+            medianPriceChf = v.swissMarketMedianChf,
+            historicalMinChf = v.historicalMinChf,
+            historicalMaxChf = v.historicalMaxChf,
+            trend = "Stable"
+        )
+        return GameItem(
+            id = "game_${v.title.filter { it.isLetterOrDigit() }.lowercase()}_${platform.id}",
+            title = v.title.ifBlank { "Jogo Analisado" },
+            franchiseName = v.franchise,
+            platform = platform,
+            releaseYear = v.releaseYear,
+            productCode = v.productCode,
+            barcode = v.barcode,
+            spottedLocation = resolved.location.ifBlank { "Campo / Online" },
+            askingPriceChf = resolved.price,
+            targetPriceChf = v.swissMarketMedianChf,
+            languageStatus = status,
+            languageAudio = v.audioLanguages,
+            languageSubtitles = v.subtitleLanguages,
+            safeSkus = v.safeSkus,
+            riskySkus = v.riskySkus,
+            marketRadar = radar,
+            censorshipWarning = v.censorshipWarning,
+            collectorVerdict = v.collectorVerdict,
+            collectionStatus = if (status == LanguageStatus.GERMAN_ONLY) CollectionStatus.PASS else CollectionStatus.HUNTING,
+            updatedAt = nowMs
+        )
+    }
+
+    private data class ResolvedScanInput(
+        val query: String,
+        val imageBase64: String?,
+        val location: String,
+        val price: Double?
+    )
 
     override suspend fun sendFollowUpChat(
         contextId: String,
@@ -202,7 +260,16 @@ class GameRepositoryImpl(
 
         val history = getChatMessagesForGame(contextId)
         val model = _settings.value.geminiModel.ifBlank { "gemini-3.7-flash" }
-        val result = geminiDataSource.sendFollowUpChat(history, game, userMessage, imageBase64, apiKey, model)
+
+        var resolvedChatImage = imageBase64
+        if (resolvedChatImage != null && (resolvedChatImage.startsWith("http://") || resolvedChatImage.startsWith("https://"))) {
+            val fetched = listingScraper.fetchImageAsBase64(resolvedChatImage)
+            if (fetched != null) {
+                resolvedChatImage = fetched
+            }
+        }
+
+        val result = geminiDataSource.sendFollowUpChat(history, game, userMessage, resolvedChatImage, apiKey, model)
 
         return result.fold(
             onSuccess = { (replyText, verdict) ->

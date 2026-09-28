@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,9 +17,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
+
+private enum class QuickScanTab(val label: String, val icon: String) {
+    AUCTION_URL("Link de Leilão", "🔗"),
+    MANUAL_SEARCH("Pesquisa Manual / SKU", "🔍")
+}
+
 @Composable
 fun QuickScanDialog(
     modifier: Modifier = Modifier,
@@ -28,17 +34,39 @@ fun QuickScanDialog(
     onAnalyze: (query: String, imageBase64: String?, spottedLocation: String, askingPriceChf: Double?) -> Unit = { _, _, _, _ -> },
     onDismiss: () -> Unit = {}
 ) {
-    var query by remember { mutableStateOf("") }
-    var imageUrlInput by remember { mutableStateOf("") }
-    var location by remember { mutableStateOf("Ricardo.ch") }
-    var priceChfStr by remember { mutableStateOf("") }
-    var isQueryFocused by remember { mutableStateOf(false) }
-    var isImageFocused by remember { mutableStateOf(false) }
-    var isPriceFocused by remember { mutableStateOf(false) }
+    var selectedTab by remember { mutableStateOf(QuickScanTab.AUCTION_URL) }
 
-    val isUrl = remember(query) {
-        query.startsWith("http://") || query.startsWith("https://") || query.contains("ricardo.ch") || query.contains("tutti.ch")
+    // Estado da Aba URL
+    var urlInput by remember { mutableStateOf("") }
+    var urlLocation by remember { mutableStateOf("Ricardo.ch") }
+    var urlPriceStr by remember { mutableStateOf("") }
+    var isUrlFocused by remember { mutableStateOf(false) }
+
+    // Estado da Aba Manual
+    var manualQuery by remember { mutableStateOf("") }
+    var manualLocation by remember { mutableStateOf("Ricardo.ch") }
+    var manualPriceStr by remember { mutableStateOf("") }
+    var imageInput by remember { mutableStateOf("") }
+    var isManualQueryFocused by remember { mutableStateOf(false) }
+    var isImageFocused by remember { mutableStateOf(false) }
+    var isManualPriceFocused by remember { mutableStateOf(false) }
+
+    val isApiKeyInImage = remember(imageInput) {
+        val trimmed = imageInput.trim()
+        trimmed.startsWith("AQ.") || trimmed.startsWith("AIzaSy")
     }
+
+    val isListingUrlInImage = remember(imageInput) {
+        val trimmed = imageInput.trim().lowercase()
+        trimmed.contains("ricardo.ch/de/a/") || trimmed.contains("tutti.ch/vi/")
+    }
+
+    val isManualQueryUrl = remember(manualQuery) {
+        val trimmed = manualQuery.trim().lowercase()
+        trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.contains("ricardo.ch") || trimmed.contains("tutti.ch")
+    }
+
+    val curr = currency.ifBlank { "CHF" }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -49,7 +77,7 @@ fun QuickScanDialog(
             color = SurfaceCard,
             border = BorderStroke(1.dp, BorderStrong),
             modifier = modifier
-                .widthIn(max = 520.dp)
+                .widthIn(max = 540.dp)
                 .fillMaxWidth(0.92f)
                 .padding(16.dp)
         ) {
@@ -78,172 +106,394 @@ fun QuickScanDialog(
                     )
                 }
 
-                Text(
-                    text = TextKeys.App.TAGLINE,
-                    style = BodySm,
-                    color = TextSecondary
-                )
-
-                // Campo: Título, Código ou Link
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(text = TextKeys.Scanner.MANUAL_LABEL, style = LabelFilterStyle, color = TextPrimary)
-                    androidx.compose.foundation.text.BasicTextField(
-                        value = query,
-                        onValueChange = {
-                            query = it
-                            if (it.contains("ricardo.ch", ignoreCase = true)) {
-                                location = "Ricardo.ch"
-                            } else if (it.contains("tutti.ch", ignoreCase = true)) {
-                                location = "Tutti.ch"
-                            } else if (it.contains("anibis.ch", ignoreCase = true)) {
-                                location = "Anibis.ch"
-                            }
-                        },
-                        textStyle = BodyMd.copy(color = TextPrimary),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(SurfaceBase, RoundedCornerShape(4.dp))
-                            .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
-                            .padding(10.dp)
-                            .onFocusChanged { isQueryFocused = it.isFocused },
-                        singleLine = true,
-                        decorationBox = { innerTextField ->
-                            Box(contentAlignment = Alignment.CenterStart) {
-                                if (query.isEmpty() && !isQueryFocused) {
-                                    Text(
-                                        text = TextKeys.Scanner.MANUAL_PLACEHOLDER,
-                                        style = BodySm.copy(color = StatusUnverifiedFg)
-                                    )
-                                }
-                                innerTextField()
+                // Tab Selector (Segmented Control)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(SurfaceBase, RoundedCornerShape(6.dp))
+                        .border(1.dp, BorderSubtle, RoundedCornerShape(6.dp))
+                        .padding(3.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    QuickScanTab.entries.forEach { tab ->
+                        val isSelected = selectedTab == tab
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .background(
+                                    if (isSelected) SurfaceElevated else Color.Transparent,
+                                    RoundedCornerShape(4.dp)
+                                )
+                                .border(
+                                    1.dp,
+                                    if (isSelected) AccentBlue else Color.Transparent,
+                                    RoundedCornerShape(4.dp)
+                                )
+                                .clickable { selectedTab = tab }
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(text = tab.icon, fontSize = 13.sp)
+                                Text(
+                                    text = tab.label,
+                                    style = LabelFilterStyle,
+                                    color = if (isSelected) TextPrimary else TextSecondary
+                                )
                             }
                         }
-                    )
+                    }
+                }
 
-                    if (isUrl) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(SurfaceElevated, RoundedCornerShape(4.dp))
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Text(text = "🌐", fontSize = 12.sp)
+                when (selectedTab) {
+                    QuickScanTab.AUCTION_URL -> {
+                        // --- ABA LINK DE LEILÃO ---
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text(
-                                text = "Link detetado. O RetroCollector descarregará a foto e detalhes do anúncio.",
-                                style = BodySm.copy(fontSize = 11.sp),
-                                color = StatusEnglishFg
+                                text = "LINK DO ANÚNCIO (RICARDO.CH OU TUTTI.CH)",
+                                style = LabelFilterStyle,
+                                color = TextPrimary
+                            )
+                            BasicTextField(
+                                value = urlInput,
+                                onValueChange = {
+                                    urlInput = it
+                                    if (it.contains("ricardo.ch", ignoreCase = true)) {
+                                        urlLocation = "Ricardo.ch"
+                                    } else if (it.contains("tutti.ch", ignoreCase = true)) {
+                                        urlLocation = "Tutti.ch"
+                                    }
+                                },
+                                textStyle = BodyMd.copy(color = TextPrimary),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(SurfaceBase, RoundedCornerShape(4.dp))
+                                    .border(1.dp, if (isUrlFocused) AccentBlue else BorderSubtle, RoundedCornerShape(4.dp))
+                                    .padding(10.dp)
+                                    .onFocusChanged { isUrlFocused = it.isFocused },
+                                singleLine = true,
+                                decorationBox = { innerTextField ->
+                                    Box(contentAlignment = Alignment.CenterStart) {
+                                        if (urlInput.isEmpty() && !isUrlFocused) {
+                                            Text(
+                                                text = "https://www.ricardo.ch/de/a/... ou Tutti.ch",
+                                                style = BodySm.copy(color = StatusUnverifiedFg)
+                                            )
+                                        }
+                                        innerTextField()
+                                    }
+                                }
+                            )
+
+                            // Feedback informativo sobre o link
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(SurfaceElevated, RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(text = "🌐", fontSize = 12.sp)
+                                Text(
+                                    text = "O RetroCollector extrai automaticamente o título, descrição, fotos do anúncio e preço em CHF.",
+                                    style = BodySm.copy(fontSize = 11.sp),
+                                    color = StatusEnglishFg
+                                )
+                            }
+                        }
+
+                        // Plataforma detetada
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(text = "PLATAFORMA / ORIGEM", style = LabelFilterStyle, color = TextPrimary)
+                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                listOf("Ricardo.ch", "Tutti.ch", "Anibis.ch").forEach { loc ->
+                                    val isLocSelected = urlLocation == loc
+                                    Box(
+                                        modifier = Modifier
+                                            .background(if (isLocSelected) SurfaceElevated else SurfaceBase, RoundedCornerShape(4.dp))
+                                            .border(1.dp, if (isLocSelected) AccentBlue else BorderSubtle, RoundedCornerShape(4.dp))
+                                            .clickable { urlLocation = loc }
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = loc,
+                                            style = LabelFilterStyle,
+                                            color = if (isLocSelected) TextPrimary else TextSecondary
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // Preço Opcional para sobrescrever
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(text = "PREÇO ESTIMADO ($curr) (OPCIONAL)", style = LabelFilterStyle, color = TextPrimary)
+                            BasicTextField(
+                                value = urlPriceStr,
+                                onValueChange = { urlPriceStr = it },
+                                textStyle = CodePriceStyle.copy(color = TextPrimary),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(SurfaceBase, RoundedCornerShape(4.dp))
+                                    .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
+                                    .padding(10.dp),
+                                singleLine = true,
+                                decorationBox = { innerTextField ->
+                                    Box(contentAlignment = Alignment.CenterStart) {
+                                        if (urlPriceStr.isEmpty()) {
+                                            Text(
+                                                text = "Deixar vazio para extrair automaticamente do anúncio",
+                                                style = BodySm.copy(color = StatusUnverifiedFg)
+                                            )
+                                        }
+                                        innerTextField()
+                                    }
+                                }
                             )
                         }
-                    }
-                }
 
-                // Campo: Localização / Loja (Sourcing)
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(text = TextKeys.Dossier.SPOTTED_LOCATION, style = LabelFilterStyle, color = TextPrimary)
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        listOf("Ricardo.ch", "Tutti.ch", "Brocki Bern", "Flohmarkt").forEach { loc ->
-                            Box(
-                                modifier = Modifier
-                                    .background(if (location == loc) SurfaceElevated else SurfaceBase, RoundedCornerShape(4.dp))
-                                    .border(1.dp, if (location == loc) AccentBlue else BorderSubtle, RoundedCornerShape(4.dp))
-                                    .clickable { location = loc }
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                            ) {
-                                Text(text = loc, style = LabelFilterStyle, color = if (location == loc) TextPrimary else TextSecondary)
+                        if (statusMessage != null) {
+                            Text(text = statusMessage, style = BodySm, color = StatusEditionFg)
+                        }
+
+                        // Botão de Extração & Análise
+                        Button(
+                            onClick = {
+                                val q = urlInput.trim()
+                                if (q.isNotEmpty()) {
+                                    val price = urlPriceStr.toDoubleOrNull()
+                                    onAnalyze(q, null, urlLocation, price)
+                                }
+                            },
+                            enabled = !isAnalyzing && urlInput.isNotBlank(),
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = ConsoleGamecube),
+                            shape = RoundedCornerShape(4.dp),
+                            contentPadding = PaddingValues(vertical = 12.dp)
+                        ) {
+                            if (isAnalyzing) {
+                                CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(text = "A extrair e analisar anúncio...", style = LabelFilterStyle)
+                            } else {
+                                Text(text = "Extrair & Analisar Anúncio", style = LabelFilterStyle, color = Color.White)
                             }
                         }
                     }
-                }
 
-                // Campo Opcional: Imagem do Disco / Lombada
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(text = "FOTO DO DISCO OU LOMBADA (OPCIONAL)", style = LabelFilterStyle, color = TextPrimary)
-                    androidx.compose.foundation.text.BasicTextField(
-                        value = imageUrlInput,
-                        onValueChange = { imageUrlInput = it },
-                        textStyle = BodySm.copy(color = TextPrimary),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(SurfaceBase, RoundedCornerShape(4.dp))
-                            .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
-                            .padding(10.dp)
-                            .onFocusChanged { isImageFocused = it.isFocused },
-                        singleLine = true,
-                        decorationBox = { innerTextField ->
-                            Box(contentAlignment = Alignment.CenterStart) {
-                                if (imageUrlInput.isEmpty() && !isImageFocused) {
+                    QuickScanTab.MANUAL_SEARCH -> {
+                        // --- ABA PESQUISA MANUAL / SKU ---
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(text = "TÍTULO DO JOGO, CÓDIGO SERIAL OU CÓDIGO DE BARRAS", style = LabelFilterStyle, color = TextPrimary)
+                            BasicTextField(
+                                value = manualQuery,
+                                onValueChange = {
+                                    manualQuery = it
+                                    if (it.contains("ricardo.ch", ignoreCase = true)) {
+                                        manualLocation = "Ricardo.ch"
+                                    } else if (it.contains("tutti.ch", ignoreCase = true)) {
+                                        manualLocation = "Tutti.ch"
+                                    }
+                                },
+                                textStyle = BodyMd.copy(color = TextPrimary),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(SurfaceBase, RoundedCornerShape(4.dp))
+                                    .border(1.dp, if (isManualQueryFocused) AccentBlue else BorderSubtle, RoundedCornerShape(4.dp))
+                                    .padding(10.dp)
+                                    .onFocusChanged { isManualQueryFocused = it.isFocused },
+                                singleLine = true,
+                                decorationBox = { innerTextField ->
+                                    Box(contentAlignment = Alignment.CenterStart) {
+                                        if (manualQuery.isEmpty() && !isManualQueryFocused) {
+                                            Text(
+                                                text = "ex: Tomb Raider PS3, BLES-01780 ou 0045496351052",
+                                                style = BodySm.copy(color = StatusUnverifiedFg)
+                                            )
+                                        }
+                                        innerTextField()
+                                    }
+                                }
+                            )
+
+                            if (isManualQueryUrl) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(SurfaceElevated, RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(text = "🌐", fontSize = 12.sp)
                                     Text(
-                                        text = "URL da foto do disco ou imagem Base64",
-                                        style = BodySm.copy(color = StatusUnverifiedFg)
+                                        text = "Link detetado. O RetroCollector descarregará a foto e detalhes do anúncio.",
+                                        style = BodySm.copy(fontSize = 11.sp),
+                                        color = StatusEnglishFg
                                     )
                                 }
-                                innerTextField()
                             }
                         }
-                    )
-                }
 
-                // Campo: Preço Pedido
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    val curr = currency.ifBlank { "CHF" }
-                    Text(text = "${TextKeys.Radar.ASKING_PRICE} ($curr)", style = LabelFilterStyle, color = TextPrimary)
-                    androidx.compose.foundation.text.BasicTextField(
-                        value = priceChfStr,
-                        onValueChange = { priceChfStr = it },
-                        textStyle = CodePriceStyle.copy(color = TextPrimary),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(SurfaceBase, RoundedCornerShape(4.dp))
-                            .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
-                            .padding(10.dp)
-                            .onFocusChanged { isPriceFocused = it.isFocused },
-                        singleLine = true,
-                        decorationBox = { innerTextField ->
-                            Box(contentAlignment = Alignment.CenterStart) {
-                                if (priceChfStr.isEmpty() && !isPriceFocused) {
-                                    Text(text = "35.00", style = CodePriceStyle.copy(color = StatusUnverifiedFg))
+                        // Localização
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(text = TextKeys.Dossier.SPOTTED_LOCATION, style = LabelFilterStyle, color = TextPrimary)
+                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                listOf("Ricardo.ch", "Tutti.ch", "Brocki Bern", "Flohmarkt").forEach { loc ->
+                                    val isLocSelected = manualLocation == loc
+                                    Box(
+                                        modifier = Modifier
+                                            .background(if (isLocSelected) SurfaceElevated else SurfaceBase, RoundedCornerShape(4.dp))
+                                            .border(1.dp, if (isLocSelected) AccentBlue else BorderSubtle, RoundedCornerShape(4.dp))
+                                            .clickable { manualLocation = loc }
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = loc,
+                                            style = LabelFilterStyle,
+                                            color = if (isLocSelected) TextPrimary else TextSecondary
+                                        )
+                                    }
                                 }
-                                innerTextField()
                             }
                         }
-                    )
-                }
 
-                if (statusMessage != null) {
-                    Text(
-                        text = statusMessage,
-                        style = BodySm,
-                        color = StatusEditionFg
-                    )
-                }
+                        // Foto Opcional
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(text = "FOTO DO DISCO OU LOMBADA (OPCIONAL)", style = LabelFilterStyle, color = TextPrimary)
+                            BasicTextField(
+                                value = imageInput,
+                                onValueChange = { imageInput = it },
+                                textStyle = BodySm.copy(color = TextPrimary),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(SurfaceBase, RoundedCornerShape(4.dp))
+                                    .border(
+                                        1.dp,
+                                        if (isApiKeyInImage) StatusEditionFg else if (isImageFocused) AccentBlue else BorderSubtle,
+                                        RoundedCornerShape(4.dp)
+                                    )
+                                    .padding(10.dp)
+                                    .onFocusChanged { isImageFocused = it.isFocused },
+                                singleLine = true,
+                                decorationBox = { innerTextField ->
+                                    Box(contentAlignment = Alignment.CenterStart) {
+                                        if (imageInput.isEmpty() && !isImageFocused) {
+                                            Text(
+                                                text = "URL da foto do disco (https://...) ou imagem Base64",
+                                                style = BodySm.copy(color = StatusUnverifiedFg)
+                                            )
+                                        }
+                                        innerTextField()
+                                    }
+                                }
+                            )
 
-                // Botão de Execução
-                Button(
-                    onClick = {
-                        val q = query.trim()
-                        if (q.isNotEmpty()) {
-                            val price = priceChfStr.toDoubleOrNull()
-                            val img = imageUrlInput.trim().ifBlank { null }
-                            onAnalyze(q, img, location, price)
+                            // Alertas de validação inteligente
+                            if (isApiKeyInImage) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(SurfaceElevated, RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(text = "⚠️", fontSize = 12.sp)
+                                    Text(
+                                        text = "Parece ter colado a sua chave de API aqui. Este campo é exclusivo para fotos do disco.",
+                                        style = BodySm.copy(fontSize = 11.sp),
+                                        color = StatusEditionFg
+                                    )
+                                }
+                            } else if (isListingUrlInImage) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(SurfaceElevated, RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(text = "💡", fontSize = 12.sp)
+                                    Text(
+                                        text = "Isto é o link do anúncio. Mude para a aba 'Link de Leilão' para extrair fotos e dados completos.",
+                                        style = BodySm.copy(fontSize = 11.sp),
+                                        color = AccentBlue
+                                    )
+                                }
+                            }
                         }
-                    },
-                    enabled = !isAnalyzing && query.isNotBlank(),
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = ConsoleGamecube),
-                    shape = RoundedCornerShape(4.dp),
-                    contentPadding = PaddingValues(vertical = 12.dp)
-                ) {
-                    if (isAnalyzing) {
-                        CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = TextKeys.Scanner.ANALYZING, style = LabelFilterStyle)
-                    } else {
-                        Text(text = TextKeys.Scanner.MANUAL_BUTTON, style = LabelFilterStyle, color = Color.White)
+
+                        // Preço Pedido
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(text = "${TextKeys.Radar.ASKING_PRICE} ($curr)", style = LabelFilterStyle, color = TextPrimary)
+                            BasicTextField(
+                                value = manualPriceStr,
+                                onValueChange = { manualPriceStr = it },
+                                textStyle = CodePriceStyle.copy(color = TextPrimary),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(SurfaceBase, RoundedCornerShape(4.dp))
+                                    .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
+                                    .padding(10.dp)
+                                    .onFocusChanged { isManualPriceFocused = it.isFocused },
+                                singleLine = true,
+                                decorationBox = { innerTextField ->
+                                    Box(contentAlignment = Alignment.CenterStart) {
+                                        if (manualPriceStr.isEmpty() && !isManualPriceFocused) {
+                                            Text(text = "35.00", style = CodePriceStyle.copy(color = StatusUnverifiedFg))
+                                        }
+                                        innerTextField()
+                                    }
+                                }
+                            )
+                        }
+
+                        if (statusMessage != null) {
+                            Text(text = statusMessage, style = BodySm, color = StatusEditionFg)
+                        }
+
+                        // Botão de Execução Manual
+                        Button(
+                            onClick = {
+                                val q = manualQuery.trim()
+                                if (q.isNotEmpty()) {
+                                    val price = manualPriceStr.toDoubleOrNull()
+                                    // Se for uma chave de API colada por engano, não a envia como imagem
+                                    val img = if (isApiKeyInImage) null else imageInput.trim().ifBlank { null }
+                                    onAnalyze(q, img, manualLocation, price)
+                                }
+                            },
+                            enabled = !isAnalyzing && manualQuery.isNotBlank(),
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = ConsoleGamecube),
+                            shape = RoundedCornerShape(4.dp),
+                            contentPadding = PaddingValues(vertical = 12.dp)
+                        ) {
+                            if (isAnalyzing) {
+                                CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(text = TextKeys.Scanner.ANALYZING, style = LabelFilterStyle)
+                            } else {
+                                Text(text = TextKeys.Scanner.MANUAL_BUTTON, style = LabelFilterStyle, color = Color.White)
+                            }
+                        }
                     }
                 }
             }
         }
+    }
+}
+
+@org.jetbrains.compose.ui.tooling.preview.Preview
+@Composable
+internal fun QuickScanDialogPreview() {
+    RetroTactileTheme {
+        QuickScanDialog()
     }
 }

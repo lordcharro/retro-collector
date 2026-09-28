@@ -10,6 +10,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.util.decodeBase64Bytes
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
@@ -219,9 +220,9 @@ class GeminiRemoteDataSource(
             val parts = mutableListOf<GeminiPart>()
             parts.add(GeminiPart(text = query))
 
-            if (!imageBase64.isNullOrBlank()) {
-                val cleanBase64 = imageBase64.substringAfter("base64,")
-                parts.add(GeminiPart(inlineData = GeminiInlineData(mimeType = "image/jpeg", data = cleanBase64)))
+            val sanitizedBase64 = sanitizeBase64(imageBase64)
+            if (sanitizedBase64 != null) {
+                parts.add(GeminiPart(inlineData = GeminiInlineData(mimeType = "image/jpeg", data = sanitizedBase64)))
             }
 
             val requestBody = GeminiRequest(
@@ -278,9 +279,9 @@ class GeminiRemoteDataSource(
             val promptText = buildFollowUpPrompt(game, history, userMessage)
             val parts = mutableListOf(GeminiPart(text = promptText))
 
-            if (!imageBase64.isNullOrBlank()) {
-                val cleanBase64 = imageBase64.substringAfter("base64,")
-                parts.add(GeminiPart(inlineData = GeminiInlineData(mimeType = "image/jpeg", data = cleanBase64)))
+            val sanitizedBase64 = sanitizeBase64(imageBase64)
+            if (sanitizedBase64 != null) {
+                parts.add(GeminiPart(inlineData = GeminiInlineData(mimeType = "image/jpeg", data = sanitizedBase64)))
             }
 
             val requestBody = GeminiRequest(
@@ -379,6 +380,25 @@ class GeminiRemoteDataSource(
             jsonParser.decodeFromString<StitchGeminiStructuredVerdict>(jsonString)
         } catch (e: Exception) {
             println("Verdict extraction skipped: ${e.message}")
+            null
+        }
+    }
+
+    private fun sanitizeBase64(raw: String?): String? {
+        if (raw.isNullOrBlank()) return null
+        val clean = raw.substringAfter("base64,").trim()
+        if (clean.length < 100) return null
+        if (clean.startsWith("AQ.") || clean.startsWith("AIzaSy") || clean.startsWith("http://") || clean.startsWith("https://")) {
+            return null
+        }
+        val base64Regex = Regex("^[A-Za-z0-9+/=\r\n]+$")
+        if (!base64Regex.matches(clean)) {
+            return null
+        }
+        return try {
+            val bytes = clean.decodeBase64Bytes()
+            if (bytes.isNotEmpty()) clean else null
+        } catch (_: Exception) {
             null
         }
     }
