@@ -24,6 +24,19 @@ class ListingScraper(
             requestTimeoutMillis = 10000
             connectTimeoutMillis = 8000
         }
+        defaultRequest {
+            header(HttpHeaders.UserAgent, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
+            header(HttpHeaders.Accept, "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+            header(HttpHeaders.AcceptLanguage, "de-CH,de;q=0.9,en-US;q=0.8,en;q=0.7")
+            header("sec-ch-ua", "\"Chromium\";v=\"124\", \"Google Chrome\";v=\"124\", \"Not-A.Brand\";v=\"99\"")
+            header("sec-ch-ua-mobile", "?0")
+            header("sec-ch-ua-platform", "\"macOS\"")
+            header("Sec-Fetch-Dest", "document")
+            header("Sec-Fetch-Mode", "navigate")
+            header("Sec-Fetch-Site", "none")
+            header("Sec-Fetch-User", "?1")
+            header("Upgrade-Insecure-Requests", "1")
+        }
     }
 ) {
     fun isSupportedListing(url: String): Boolean {
@@ -32,37 +45,42 @@ class ListingScraper(
     }
 
     suspend fun fetchListing(url: String): Result<ScrapedListing> {
+        val source = resolveSourcePlatform(url)
+
         return try {
             val response = client.get(url)
             val html = response.bodyAsText()
+            val isBlocked = !response.status.isSuccess() || isCaptchaPage(html)
 
-            val title = extractMetaTag(html, "og:title")
-                ?: extractTagContent(html, "title")
-                ?: "Anúncio sem título"
+            val parsedTitle = if (!isBlocked) {
+                extractMetaTag(html, "og:title") ?: extractTagContent(html, "title")
+            } else null
 
-            val description = extractMetaTag(html, "og:description")
-                ?: extractMetaTag(html, "description")
-                ?: ""
+            val urlFallbackTitle = extractTitleFromUrl(url)
+            val title = if (!parsedTitle.isNullOrBlank() && !isCaptchaPage(parsedTitle)) {
+                cleanText(parsedTitle)
+            } else {
+                urlFallbackTitle ?: "Anúncio $source"
+            }
 
-            val imageUrl = extractMetaTag(html, "og:image")
+            val parsedDesc = if (!isBlocked) {
+                extractMetaTag(html, "og:description") ?: extractMetaTag(html, "description") ?: ""
+            } else {
+                "Artigo identificado pelo link ($url). A página apresentou desafio temporário de verificação anti-bot."
+            }
+
+            val imageUrl = if (!isBlocked) extractMetaTag(html, "og:image") else null
             val imageUrls = listOfNotNull(imageUrl)
 
-            val price = extractMetaTag(html, "product:price:amount")?.toDoubleOrNull()
-                ?: extractPriceFromHtml(html)
-
-            val source = when {
-                url.contains("ricardo.ch") -> "Ricardo.ch"
-                url.contains("tutti.ch") -> "Tutti.ch"
-                url.contains("anibis.ch") -> "Anibis.ch"
-                url.contains("ebay") -> "eBay"
-                else -> "Web"
-            }
+            val price = if (!isBlocked) {
+                extractMetaTag(html, "product:price:amount")?.toDoubleOrNull() ?: extractPriceFromHtml(html)
+            } else null
 
             Result.success(
                 ScrapedListing(
                     url = url,
-                    title = cleanText(title),
-                    description = cleanText(description),
+                    title = title,
+                    description = cleanText(parsedDesc),
                     imageUrls = imageUrls,
                     estimatedPriceChf = price,
                     sourcePlatform = source
@@ -72,17 +90,64 @@ class ListingScraper(
             throw e
         } catch (e: Exception) {
             println("Scraping fallback triggered for $url: ${e.message}")
-            // Em caso de bloqueio de rede ou CORS no browser, devolvemos um objeto com o URL para o utilizador poder introduzir manualmente ou deixar o Gemini avaliar pelo título/link
-            val domain = if (url.contains("ricardo.ch")) "Ricardo.ch" else "Anúncio"
+            val fallbackTitle = extractTitleFromUrl(url) ?: "Link $source"
             Result.success(
                 ScrapedListing(
                     url = url,
-                    title = "Link $domain",
+                    title = fallbackTitle,
                     description = "Anúncio partilhado: $url",
-                    sourcePlatform = domain
+                    sourcePlatform = source
                 )
             )
         }
+    }
+
+    private fun resolveSourcePlatform(url: String): String {
+        return when {
+            url.contains("ricardo.ch", ignoreCase = true) -> "Ricardo.ch"
+            url.contains("tutti.ch", ignoreCase = true) -> "Tutti.ch"
+            url.contains("anibis.ch", ignoreCase = true) -> "Anibis.ch"
+            url.contains("ebay", ignoreCase = true) -> "eBay"
+            else -> "Web"
+        }
+    }
+
+    private fun isCaptchaPage(text: String): Boolean {
+        val lower = text.lowercase()
+        return lower.contains("challenge-running") ||
+            lower.contains("cf-turnstile") ||
+            lower.contains("datadome") ||
+            lower.contains("bloqueio ricardo captcha") ||
+            lower.contains("attention required") ||
+            lower.contains("just a moment...") ||
+            lower.contains("security check") ||
+            lower.contains("captcha")
+    }
+
+    fun extractTitleFromUrl(url: String): String? {
+        val lower = url.lowercase()
+        if (lower.contains("ricardo.ch")) {
+            val segment = url.substringAfter("/a/", "").substringBefore("/").substringBefore("?")
+            if (segment.isNotBlank()) {
+                val cleanSlug = segment.replace(Regex("""-\d+$"""), "")
+                val words = cleanSlug.split("-").filter { it.isNotBlank() }
+                if (words.isNotEmpty()) {
+                    return words.joinToString(" ") { word ->
+                        if (word.length <= 4) word.uppercase() else word.replaceFirstChar { it.uppercase() }
+                    }
+                }
+            }
+        } else if (lower.contains("tutti.ch")) {
+            val segment = url.trimEnd('/').substringAfterLast('/')
+            val cleanSlug = segment.replace(Regex("""^\d+-"""), "").replace(Regex("""-\d+$"""), "")
+            val words = cleanSlug.split("-").filter { it.isNotBlank() }
+            if (words.isNotEmpty()) {
+                return words.joinToString(" ") { word ->
+                    if (word.length <= 4) word.uppercase() else word.replaceFirstChar { it.uppercase() }
+                }
+            }
+        }
+        return null
     }
 
     private fun extractMetaTag(html: String, property: String): String? {
