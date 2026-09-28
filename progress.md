@@ -64,9 +64,10 @@ Este ficheiro resume o estado atual do desenvolvimento, os artefactos gerados, e
 2. **Configurar e Validar na Aplicação**:
    * Abrir a app (Mac ou Android), aceder ao menu **⚙️ Definições**.
    * Escolher o modelo Gemini preferido nos chips interativos:
-     * **`2.5 Flash (Estável)`**: Altamente recomendado para uso contínuo, sem erros de capacidade.
-     * **`2.5 Lite (Rápido)`**: Para máxima velocidade e menor consumo de quota.
-     * **`3.8 Flash (Preview)`**: Novo modelo com raciocínio profundo (possui fallback automático transparente para 2.5 Flash caso haja picos de procura na tier gratuita).
+     * **`3.7 Flash (Estável)`**: Altamente recomendado para uso contínuo, sem erros de capacidade nem restrições de novos utilizadores.
+     * **`3.6 Flash (Rápido)`**: Excelente velocidade de resposta e capacidades multimodais.
+     * **`3.5 Flash (Base)`**: Modelo consolidado de alta capacidade.
+     * **`3.8 Flash (Preview)`**: Novo modelo com raciocínio profundo (possui fallback automático transparente para 3.7 ou 3.6 caso haja picos de procura na tier gratuita).
    * Inserir a chave e premir **"Testar Conexão Gemini"** para validar o modelo em tempo real.
    * Premir **"Save Settings"**.
 3. **Testar o "⚡ Quick Scan"**:
