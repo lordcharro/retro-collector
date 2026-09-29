@@ -59,6 +59,17 @@ class GetDashboardGamesUseCaseTest {
             userMessage: String,
             imageBase64: String?
         ): Result<ChatMessage> = Result.success(ChatMessage(id = "1", contextId = contextId, sender = MessageSender.GEMINI, text = ""))
+        override fun getGamesByStatus(status: CollectionStatus): List<GameItem> = _games.value.filter { it.collectionStatus == status }
+        override suspend fun discoverGames(
+            query: String?,
+            genre: com.retrocollector.app.core.domain.model.GameGenre?,
+            platform: ConsolePlatform?,
+            forceRefresh: Boolean
+        ): Result<List<com.retrocollector.app.core.domain.model.DiscoveredGameItem>> = Result.success(emptyList())
+        override suspend fun getSimilarGames(
+            game: GameItem,
+            forceRefresh: Boolean
+        ): Result<List<com.retrocollector.app.core.domain.model.DiscoveredGameItem>> = Result.success(emptyList())
     }
 
     private val testGames = listOf(

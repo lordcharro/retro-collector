@@ -17,10 +17,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.retrocollector.app.core.domain.model.*
+import com.retrocollector.app.core.domain.model.AppSection
 import com.retrocollector.app.core.presentation.components.*
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
+import com.retrocollector.app.wishlist.presentation.ui.WishlistScreen
+import com.retrocollector.app.collection.presentation.ui.CollectionScreen
+import com.retrocollector.app.discovery.presentation.ui.DiscoveryScreen
 
 @Composable
 fun MobileFieldDashboardScreen(
@@ -29,7 +33,6 @@ fun MobileFieldDashboardScreen(
     onNavigateToDetail: (GameItem) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    var selectedBottomTab by remember { mutableStateOf(0) } // 0 = Catalog, 1 = Threads, 2 = Settings
     var isSearchFocused by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -97,11 +100,47 @@ fun MobileFieldDashboardScreen(
                 containerColor = SurfaceCard,
                 tonalElevation = 8.dp
             ) {
+                    NavigationBarItem(
+                        selected = state.activeSection == AppSection.CATALOG,
+                        onClick = { actions.onSectionSelect(AppSection.CATALOG) },
+                        icon = { Text("\uD83D\uDCCB", fontSize = 18.sp) },
+                        label = { Text(TextKeys.Navigation.TAB_CATALOG, style = LabelFilterStyle) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = AccentBlue,
+                            selectedTextColor = AccentBlue,
+                            indicatorColor = SurfaceElevated
+                        )
+                    )
+
+                    NavigationBarItem(
+                        selected = state.activeSection == AppSection.DISCOVER,
+                        onClick = { actions.onSectionSelect(AppSection.DISCOVER) },
+                        icon = { Text("🧭", fontSize = 18.sp) },
+                        label = { Text("Discover", style = LabelFilterStyle) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = AccentBlue,
+                            selectedTextColor = AccentBlue,
+                            indicatorColor = SurfaceElevated
+                        )
+                    )
+
+                    NavigationBarItem(
+                        selected = state.activeSection == AppSection.WISHLIST,
+                        onClick = { actions.onSectionSelect(AppSection.WISHLIST) },
+                        icon = { Text("\uD83D\uDC9D", fontSize = 18.sp) },
+                        label = { Text(TextKeys.Navigation.TAB_WISHLIST, style = LabelFilterStyle) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = AccentBlue,
+                            selectedTextColor = AccentBlue,
+                            indicatorColor = SurfaceElevated
+                        )
+                    )
+
                 NavigationBarItem(
-                    selected = selectedBottomTab == 0,
-                    onClick = { selectedBottomTab = 0 },
-                    icon = { Text("📋", fontSize = 18.sp) },
-                    label = { Text(TextKeys.Navigation.TAB_CATALOG, style = LabelFilterStyle) },
+                    selected = state.activeSection == AppSection.COLLECTION,
+                    onClick = { actions.onSectionSelect(AppSection.COLLECTION) },
+                    icon = { Text("\uD83D\uDCE6", fontSize = 18.sp) },
+                    label = { Text(TextKeys.Navigation.TAB_COLLECTION, style = LabelFilterStyle) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = AccentBlue,
                         selectedTextColor = AccentBlue,
@@ -110,27 +149,9 @@ fun MobileFieldDashboardScreen(
                 )
 
                 NavigationBarItem(
-                    selected = selectedBottomTab == 1,
-                    onClick = {
-                        selectedBottomTab = 1
-                        state.selectedGame?.let { onNavigateToDetail(it) }
-                    },
-                    icon = { Text("💬", fontSize = 18.sp) },
-                    label = { Text(TextKeys.Navigation.TAB_THREADS, style = LabelFilterStyle) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = AccentBlue,
-                        selectedTextColor = AccentBlue,
-                        indicatorColor = SurfaceElevated
-                    )
-                )
-
-                NavigationBarItem(
-                    selected = selectedBottomTab == 2,
-                    onClick = {
-                        selectedBottomTab = 2
-                        actions.onOpenSettings()
-                    },
-                    icon = { Text("⚙️", fontSize = 18.sp) },
+                    selected = false,
+                    onClick = { actions.onOpenSettings() },
+                    icon = { Text("\u2699\uFE0F", fontSize = 18.sp) },
                     label = { Text(TextKeys.Navigation.TAB_SETTINGS, style = LabelFilterStyle) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = AccentBlue,
@@ -141,157 +162,208 @@ fun MobileFieldDashboardScreen(
             }
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Barra de Pesquisa de SKU Tática
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(SurfaceCard, RoundedCornerShape(8.dp))
-                    .border(1.dp, BorderSubtle, RoundedCornerShape(8.dp))
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(text = "🔍", fontSize = 14.sp)
-                androidx.compose.foundation.text.BasicTextField(
-                    value = state.searchQuery,
-                    onValueChange = { actions.onSearchQueryChange(it) },
-                    textStyle = BodyMd.copy(color = TextPrimary),
+        when (state.activeSection) {
+            AppSection.CATALOG -> {
+                Column(
                     modifier = Modifier
-                        .weight(1f)
-                        .onFocusChanged { isSearchFocused = it.isFocused },
-                    singleLine = true,
-                    decorationBox = { innerTextField ->
-                        Box(contentAlignment = Alignment.CenterStart) {
-                            if (state.searchQuery.isEmpty() && !isSearchFocused) {
-                                Text(
-                                    text = TextKeys.Dashboard.SEARCH_PLACEHOLDER,
-                                    style = BodySm.copy(color = TextSecondary)
-                                )
-                            }
-                            innerTextField()
-                        }
-                    }
-                )
-                Box(
-                    modifier = Modifier
-                        .background(SurfaceElevated, RoundedCornerShape(4.dp))
-                        .clickable { actions.onOpenScanDialog() }
-                        .padding(horizontal = 6.dp, vertical = 4.dp)
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(text = "📷", fontSize = 12.sp)
-                }
-            }
-
-            // Grelha de 4 colunas de Consola com contadores
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(
-                    text = "PLATFORM FILTER",
-                    style = LabelFilterStyle.copy(fontSize = 11.sp),
-                    color = TextSecondary
-                )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(SurfaceCard, RoundedCornerShape(8.dp))
-                        .border(1.dp, BorderSubtle, RoundedCornerShape(8.dp))
-                        .padding(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    ConsolePlatform.entries.forEach { platform ->
-                        val isSelected = state.selectedPlatform == platform
-                        val color = when (platform) {
-                            ConsolePlatform.N64 -> ConsoleN64
-                            ConsolePlatform.GAMECUBE -> ConsoleGamecube
-                            ConsolePlatform.PS3 -> ConsolePS3
-                            ConsolePlatform.SWITCH -> ConsoleSwitch
-                        }
-
-                        val bg = if (isSelected) color else Color.Transparent
-
-                        Column(
+                    // Barra de Pesquisa de SKU Tática
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(SurfaceCard, RoundedCornerShape(8.dp))
+                            .border(1.dp, BorderSubtle, RoundedCornerShape(8.dp))
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(text = "🔍", fontSize = 14.sp)
+                        androidx.compose.foundation.text.BasicTextField(
+                            value = state.searchQuery,
+                            onValueChange = { actions.onSearchQueryChange(it) },
+                            textStyle = BodyMd.copy(color = TextPrimary),
                             modifier = Modifier
                                 .weight(1f)
-                                .background(bg, RoundedCornerShape(6.dp))
-                                .clickable { actions.onPlatformSelect(platform) }
-                                .padding(vertical = 8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                                .onFocusChanged { isSearchFocused = it.isFocused },
+                            singleLine = true,
+                            decorationBox = { innerTextField ->
+                                Box(contentAlignment = Alignment.CenterStart) {
+                                    if (state.searchQuery.isEmpty() && !isSearchFocused) {
+                                        Text(
+                                            text = TextKeys.Dashboard.SEARCH_PLACEHOLDER,
+                                            style = BodySm.copy(color = TextSecondary)
+                                        )
+                                    }
+                                    innerTextField()
+                                }
+                            }
+                        )
+                        Box(
+                            modifier = Modifier
+                                .background(SurfaceElevated, RoundedCornerShape(4.dp))
+                                .clickable { actions.onOpenScanDialog() }
+                                .padding(horizontal = 6.dp, vertical = 4.dp)
                         ) {
-                            Text(
-                                text = platform.shortName,
-                                style = LabelFilterStyle,
-                                color = if (isSelected) Color.White else TextPrimary
-                            )
+                            Text(text = "📷", fontSize = 12.sp)
+                        }
+                    }
+
+                    // Grelha de 4 colunas de Consola com contadores
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            text = "PLATFORM FILTER",
+                            style = LabelFilterStyle.copy(fontSize = 11.sp),
+                            color = TextSecondary
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(SurfaceCard, RoundedCornerShape(8.dp))
+                                .border(1.dp, BorderSubtle, RoundedCornerShape(8.dp))
+                                .padding(4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            ConsolePlatform.entries.forEach { platform ->
+                                val isSelected = state.selectedPlatform == platform
+                                val color = when (platform) {
+                                    ConsolePlatform.N64 -> ConsoleN64
+                                    ConsolePlatform.GAMECUBE -> ConsoleGamecube
+                                    ConsolePlatform.PS3 -> ConsolePS3
+                                    ConsolePlatform.SWITCH -> ConsoleSwitch
+                                }
+
+                                val bg = if (isSelected) color else Color.Transparent
+
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .background(bg, RoundedCornerShape(6.dp))
+                                        .clickable { actions.onPlatformSelect(platform) }
+                                        .padding(vertical = 8.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = platform.shortName,
+                                        style = LabelFilterStyle,
+                                        color = if (isSelected) Color.White else TextPrimary
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Cabeçalho da Lista e Contador
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "${TextKeys.Dashboard.STATS_TRACKED} (${state.games.size})",
+                            style = HeadlineSm,
+                            color = TextPrimary
+                        )
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Box(
+                                modifier = Modifier
+                                    .background(if (state.filterEnglishOnly) StatusEnglishBg else SurfaceCard, RoundedCornerShape(4.dp))
+                                    .border(1.dp, if (state.filterEnglishOnly) StatusEnglishFg else BorderSubtle, RoundedCornerShape(4.dp))
+                                    .clickable { actions.onToggleEnglishOnly() }
+                                    .padding(horizontal = 6.dp, vertical = 3.dp)
+                            ) {
+                                Text(text = "✔ EN", style = LabelBadgeStyle, color = StatusEnglishFg)
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .background(if (state.filterUskAlertsOnly) StatusRiskBg else SurfaceCard, RoundedCornerShape(4.dp))
+                                    .border(1.dp, if (state.filterUskAlertsOnly) StatusRiskFg else BorderSubtle, RoundedCornerShape(4.dp))
+                                    .clickable { actions.onToggleUskAlerts() }
+                                    .padding(horizontal = 6.dp, vertical = 3.dp)
+                            ) {
+                                Text(text = "🔴 USK", style = LabelBadgeStyle, color = StatusRiskFg)
+                            }
+                        }
+                    }
+
+                    // Lista de Cartões de Jogos em Contentor Agrupado
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = SurfaceCard,
+                        border = BorderStroke(1.dp, BorderSubtle),
+                        modifier = Modifier.fillMaxWidth().weight(1f)
+                    ) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = 80.dp)
+                        ) {
+                            items(state.games, key = { it.id }) { game ->
+                                GameListItemRow(
+                                    game = game,
+                                    isSelected = state.selectedGame?.id == game.id,
+                                    onClick = {
+                                        actions.onGameSelected(game)
+                                        onNavigateToDetail(game)
+                                    }
+                                )
+                                HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
+                            }
                         }
                     }
                 }
             }
 
-            // Cabeçalho da Lista e Contador
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "${TextKeys.Dashboard.STATS_TRACKED} (${state.games.size})",
-                    style = HeadlineSm,
-                    color = TextPrimary
+            AppSection.DISCOVER -> {
+                DiscoveryScreen(
+                    discoveredGames = state.discoveredGames,
+                    selectedGenre = state.selectedDiscoveryGenre,
+                    selectedPlatform = state.selectedDiscoveryPlatform,
+                    isDiscovering = state.isDiscovering,
+                    searchQuery = state.discoverySearchQuery,
+                    onQueryChange = actions.onDiscoveryQueryChange,
+                    onSearchSubmit = actions.onDiscoverySearchSubmit,
+                    onGenreSelect = actions.onDiscoveryGenreSelect,
+                    onPlatformSelect = actions.onDiscoveryPlatformSelect,
+                    onOpenDossier = { discovered ->
+                        actions.onOpenDiscoveredDossier(discovered)
+                        val matchingGame = state.games.find {
+                            it.title.equals(discovered.title, ignoreCase = true) && it.platform == discovered.platform
+                        } ?: discovered.toGameItem()
+                        onNavigateToDetail(matchingGame)
+                    },
+                    onAddToWishlist = actions.onAddDiscoveredToWishlist,
+                    modifier = Modifier.fillMaxSize().padding(paddingValues)
                 )
-
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Box(
-                        modifier = Modifier
-                            .background(if (state.filterEnglishOnly) StatusEnglishBg else SurfaceCard, RoundedCornerShape(4.dp))
-                            .border(1.dp, if (state.filterEnglishOnly) StatusEnglishFg else BorderSubtle, RoundedCornerShape(4.dp))
-                            .clickable { actions.onToggleEnglishOnly() }
-                            .padding(horizontal = 6.dp, vertical = 3.dp)
-                    ) {
-                        Text(text = "✔ EN", style = LabelBadgeStyle, color = StatusEnglishFg)
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .background(if (state.filterUskAlertsOnly) StatusRiskBg else SurfaceCard, RoundedCornerShape(4.dp))
-                            .border(1.dp, if (state.filterUskAlertsOnly) StatusRiskFg else BorderSubtle, RoundedCornerShape(4.dp))
-                            .clickable { actions.onToggleUskAlerts() }
-                            .padding(horizontal = 6.dp, vertical = 3.dp)
-                    ) {
-                        Text(text = "🔴 USK", style = LabelBadgeStyle, color = StatusRiskFg)
-                    }
-                }
             }
 
-            // Lista de Cartões de Jogos em Contentor Agrupado
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = SurfaceCard,
-                border = BorderStroke(1.dp, BorderSubtle),
-                modifier = Modifier.fillMaxWidth().weight(1f)
-            ) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 80.dp)
-                ) {
-                    items(state.games, key = { it.id }) { game ->
-                        GameListItemRow(
-                            game = game,
-                            isSelected = state.selectedGame?.id == game.id,
-                            onClick = {
-                                actions.onGameSelected(game)
-                                onNavigateToDetail(game)
-                            }
-                        )
-                        HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
-                    }
-                }
+            AppSection.WISHLIST -> {
+                WishlistScreen(
+                    state = state,
+                    actions = actions,
+                    onNavigateToDetail = { game ->
+                        actions.onGameSelected(game)
+                        onNavigateToDetail(game)
+                    },
+                    modifier = Modifier.fillMaxSize().padding(paddingValues)
+                )
+            }
+
+            AppSection.COLLECTION -> {
+                CollectionScreen(
+                    state = state,
+                    actions = actions,
+                    onNavigateToDetail = { game ->
+                        actions.onGameSelected(game)
+                        onNavigateToDetail(game)
+                    },
+                    modifier = Modifier.fillMaxSize().padding(paddingValues)
+                )
             }
         }
     }

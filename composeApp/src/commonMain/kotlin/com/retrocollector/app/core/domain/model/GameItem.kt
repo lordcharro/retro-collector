@@ -26,6 +26,8 @@ data class GameItem(
     val censorshipWarning: String? = null,
     val collectorVerdict: String = "",
     val collectionStatus: CollectionStatus = CollectionStatus.HUNTING,
+    val enrichmentStatus: EnrichmentStatus = EnrichmentStatus.COMPLETE,
+    val personalNotes: String = "",
     val listingUrl: String? = null,
     val updatedAt: Long = 0L
 )

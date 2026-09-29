@@ -7,6 +7,7 @@ enum class CollectionStatus(
     val label: String,
     val icon: String
 ) {
+    WISHLIST("Wishlist", "💝"),
     HUNTING("Hunting", "🎯"),
     OWNED("Owned", "📦"),
     PASS("Pass", "❌");

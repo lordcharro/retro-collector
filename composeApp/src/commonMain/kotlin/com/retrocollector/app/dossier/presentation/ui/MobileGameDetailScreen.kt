@@ -22,6 +22,8 @@ import com.retrocollector.app.core.presentation.components.*
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.core.domain.model.ChatMessage
+import com.retrocollector.app.core.domain.model.DiscoveredGameItem
+import com.retrocollector.app.discovery.presentation.components.SimilarGamesShelf
 
 @Composable
 fun MobileGameDetailScreen(
@@ -30,8 +32,12 @@ fun MobileGameDetailScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     isAnalyzing: Boolean = false,
+    similarGames: List<DiscoveredGameItem> = emptyList(),
+    isSimilarGamesLoading: Boolean = false,
     onUpdateGameStatus: (GameItem, CollectionStatus) -> Unit = { _, _ -> },
-    onSendFollowUpMessage: (String) -> Unit = {}
+    onSendFollowUpMessage: (String) -> Unit = {},
+    onSelectSimilarGame: (DiscoveredGameItem) -> Unit = {},
+    onAddSimilarGameToWishlist: (DiscoveredGameItem) -> Unit = {}
 ) {
     var followUpQuestion by remember { mutableStateOf("") }
     var isChatFocused by remember { mutableStateOf(false) }
@@ -92,6 +98,7 @@ fun MobileGameDetailScreen(
                             val isCurrent = game.collectionStatus == status
                             val bg = if (isCurrent) {
                                 when (status) {
+                                    CollectionStatus.WISHLIST -> StatusEditionBg
                                     CollectionStatus.HUNTING -> StatusEditionBg
                                     CollectionStatus.OWNED -> StatusEnglishBg
                                     CollectionStatus.PASS -> StatusRiskBg
@@ -107,6 +114,7 @@ fun MobileGameDetailScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 val label = when (status) {
+                                    CollectionStatus.WISHLIST -> "Wishlist"
                                     CollectionStatus.OWNED -> TextKeys.Status.OWNED
                                     CollectionStatus.HUNTING -> TextKeys.Status.HUNTING
                                     CollectionStatus.PASS -> TextKeys.Status.AVOID
@@ -218,6 +226,16 @@ fun MobileGameDetailScreen(
                             }
                         }
                     }
+                }
+
+                // Prateleira de Jogos Semelhantes
+                item {
+                    SimilarGamesShelf(
+                        similarGames = similarGames,
+                        isLoading = isSimilarGamesLoading,
+                        onSelectGame = onSelectSimilarGame,
+                        onAddToWishlist = onAddSimilarGameToWishlist
+                    )
                 }
 
                 // Chat com Gemini Flash

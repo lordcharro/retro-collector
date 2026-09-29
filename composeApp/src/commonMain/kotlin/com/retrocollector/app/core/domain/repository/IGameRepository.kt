@@ -31,4 +31,18 @@ interface IGameRepository {
         userMessage: String,
         imageBase64: String?
     ): Result<ChatMessage>
+
+    fun getGamesByStatus(status: com.retrocollector.app.core.domain.model.CollectionStatus): List<GameItem>
+
+    suspend fun discoverGames(
+        query: String? = null,
+        genre: com.retrocollector.app.core.domain.model.GameGenre? = null,
+        platform: com.retrocollector.app.core.domain.model.ConsolePlatform? = null,
+        forceRefresh: Boolean = false
+    ): Result<List<com.retrocollector.app.core.domain.model.DiscoveredGameItem>>
+
+    suspend fun getSimilarGames(
+        game: GameItem,
+        forceRefresh: Boolean = false
+    ): Result<List<com.retrocollector.app.core.domain.model.DiscoveredGameItem>>
 }

@@ -5,11 +5,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.retrocollector.app.core.domain.model.AppSection
 import com.retrocollector.app.core.domain.model.GameItem
 import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardViewModel
 import com.retrocollector.app.dossier.presentation.ui.MobileGameDetailScreen
 import com.retrocollector.app.scanner.presentation.ui.QuickScanDialog
 import com.retrocollector.app.settings.presentation.ui.SettingsDialog
+import com.retrocollector.app.wishlist.presentation.ui.ImportWishlistDialog
 
 @Composable
 fun AdaptiveMainScreen(
@@ -30,7 +32,19 @@ fun AdaptiveMainScreen(
             onUpdateGameStatus = viewModel::updateGameStatus,
             onOpenScanDialog = viewModel::openScanDialog,
             onOpenSettings = viewModel::openSettings,
-            onSendFollowUpMessage = viewModel::sendFollowUpMessage
+            onSendFollowUpMessage = viewModel::sendFollowUpMessage,
+            onSectionSelect = viewModel::onSectionSelect,
+            onOpenImportDialog = viewModel::openImportDialog,
+            onImportWishlistCsv = viewModel::importWishlistCsv,
+            onMoveToHunting = viewModel::moveToHunting,
+            onRetryEnrichment = viewModel::retryEnrichment,
+            onDiscoveryGenreSelect = viewModel::onDiscoveryGenreSelect,
+            onDiscoveryQueryChange = viewModel::onDiscoveryQueryChange,
+            onDiscoverySearchSubmit = viewModel::onDiscoverySearchSubmit,
+            onDiscoveryPlatformSelect = viewModel::onDiscoveryPlatformSelect,
+            onOpenDiscoveredDossier = viewModel::onOpenDiscoveredDossier,
+            onAddDiscoveredToWishlist = viewModel::onAddDiscoveredToWishlist,
+            onLoadSimilarGames = viewModel::loadSimilarGamesForSelectedGame
         )
     }
 
@@ -51,9 +65,18 @@ fun AdaptiveMainScreen(
                     game = activeGame,
                     chatMessages = state.activeChatMessages,
                     isAnalyzing = state.isAnalyzing,
+                    similarGames = state.similarGamesForActiveGame,
+                    isSimilarGamesLoading = state.isSimilarGamesLoading,
                     onBack = { mobileDetailGame = null },
                     onUpdateGameStatus = viewModel::updateGameStatus,
-                    onSendFollowUpMessage = viewModel::sendFollowUpMessage
+                    onSendFollowUpMessage = viewModel::sendFollowUpMessage,
+                    onSelectSimilarGame = { sim ->
+                        actions.onOpenDiscoveredDossier(sim)
+                        mobileDetailGame = state.games.find {
+                            it.title.equals(sim.title, ignoreCase = true) && it.platform == sim.platform
+                        } ?: sim.toGameItem()
+                    },
+                    onAddSimilarGameToWishlist = actions.onAddDiscoveredToWishlist
                 )
             } else {
                 MobileFieldDashboardScreen(
@@ -83,6 +106,15 @@ fun AdaptiveMainScreen(
                 onSaveSettings = viewModel::saveSettings,
                 onDismiss = viewModel::closeSettings,
                 onTestGeminiConnection = viewModel::testGeminiConnection
+            )
+        }
+
+        if (state.isImportDialogOpen) {
+            ImportWishlistDialog(
+                importResult = state.importResult,
+                enrichmentProgress = state.enrichmentProgress,
+                onImport = viewModel::importWishlistCsv,
+                onDismiss = viewModel::closeImportDialog
             )
         }
     }

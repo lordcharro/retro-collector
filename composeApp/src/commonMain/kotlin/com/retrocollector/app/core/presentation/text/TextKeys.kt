@@ -33,6 +33,8 @@ object TextKeys {
         const val TAB_CATALOG = "Catalog"
         const val TAB_THREADS = "Dossier"
         const val TAB_SETTINGS = "Settings"
+        const val TAB_WISHLIST = "Wishlist"
+        const val TAB_COLLECTION = "Collection"
         const val BACK = "Back"
     }
 
@@ -141,5 +143,36 @@ object TextKeys {
         const val GAMECUBE_TITLE = "GameCube"
         const val PS3_TITLE = "PlayStation 3"
         const val SWITCH_TITLE = "Nintendo Switch"
+    }
+
+    object Wishlist {
+        const val TITLE = "WISHLIST"
+        const val IMPORT_BUTTON = "📥 Import"
+        const val IMPORT_DIALOG_TITLE = "📥 Import Wishlist"
+        const val IMPORT_FILE_HINT = "Drop a CSV file here or click to browse"
+        const val IMPORT_FORMAT_HINT = "Format: game title, platform (one per line)"
+        const val IMPORT_PREVIEW_READY = "✅ Ready to import"
+        const val IMPORT_PREVIEW_DUPLICATE = "⚠️ Already in Wishlist"
+        const val IMPORT_PREVIEW_INVALID = "❌ Invalid platform"
+        const val IMPORT_BUTTON_LABEL = "Import Games"
+        const val IMPORT_PROGRESS = "Enriching games with AI..."
+        const val MOVE_TO_HUNTING = "🎯 Move to Hunting"
+        const val EMPTY_STATE = "Your wishlist is empty. Import a CSV or add games from Quick Scan."
+        const val ENRICHMENT_BANNER = "🤖 AI Enrichment"
+    }
+
+    object Collection {
+        const val TITLE = "MY COLLECTION"
+        const val STATS_GAMES = "Games"
+        const val STATS_TOTAL_VALUE = "Total Value"
+        const val STATS_NO_PRICES = "—"
+        const val EMPTY_STATE = "No games in your collection yet. Mark games as Owned to see them here."
+    }
+
+    object Duplicate {
+        const val BANNER_TITLE = "💝 This game is already in your Wishlist!"
+        const val BANNER_SUBTITLE = "Move it to active hunting to start evaluating deals."
+        const val ACTION_MOVE = "🎯 Move to Hunting"
+        const val ACTION_CREATE_NEW = "Create New Entry"
     }
 }

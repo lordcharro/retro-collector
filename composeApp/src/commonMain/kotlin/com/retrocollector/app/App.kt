@@ -17,6 +17,10 @@ import com.retrocollector.app.dossier.domain.usecase.SendFollowUpChatUseCase
 import com.retrocollector.app.scanner.domain.usecase.AnalyzeGameWithGeminiUseCase
 import com.retrocollector.app.settings.domain.usecase.TestGeminiConnectionUseCase
 import com.retrocollector.app.settings.domain.usecase.UpdateSettingsUseCase
+import com.retrocollector.app.wishlist.domain.usecase.EnrichWishlistGameUseCase
+import com.retrocollector.app.wishlist.domain.usecase.ImportWishlistUseCase
+import com.retrocollector.app.discovery.domain.usecase.DiscoverGamesUseCase
+import com.retrocollector.app.discovery.domain.usecase.GetSimilarGamesUseCase
 
 @Composable
 fun App() {
@@ -30,7 +34,11 @@ fun App() {
             analyzeGameUseCase = AnalyzeGameWithGeminiUseCase(repository),
             sendFollowUpChatUseCase = SendFollowUpChatUseCase(repository),
             updateSettingsUseCase = UpdateSettingsUseCase(repository),
-            testGeminiConnectionUseCase = TestGeminiConnectionUseCase(repository)
+            testGeminiConnectionUseCase = TestGeminiConnectionUseCase(repository),
+            importWishlistUseCase = ImportWishlistUseCase(repository),
+            enrichWishlistGameUseCase = EnrichWishlistGameUseCase(repository),
+            discoverGamesUseCase = DiscoverGamesUseCase(repository),
+            getSimilarGamesUseCase = GetSimilarGamesUseCase(repository)
         )
     }
 
@@ -43,3 +51,4 @@ fun App() {
         }
     }
 }
+

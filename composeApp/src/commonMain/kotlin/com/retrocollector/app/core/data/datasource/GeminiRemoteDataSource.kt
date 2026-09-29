@@ -37,6 +37,27 @@ data class StitchGeminiStructuredVerdict(
     val latencySeconds: Double = 0.45
 )
 
+@Serializable
+data class StitchGeminiDiscoveryGame(
+    val title: String = "",
+    val franchise: String = "",
+    val platform: String = "GAMECUBE",
+    val releaseYear: String = "",
+    val genreTags: List<String> = emptyList(),
+    val recommendationReason: String = "",
+    val languageStatus: String = "FULL_ENGLISH",
+    val safeSkus: List<SkuInfo> = emptyList(),
+    val hasModernPortOrRemaster: Boolean = false,
+    val modernPortDetails: String? = null,
+    val estimatedPriceChf: Double? = null,
+    val similarTitles: List<String> = emptyList()
+)
+
+@Serializable
+data class StitchGeminiDiscoveryContainer(
+    val games: List<StitchGeminiDiscoveryGame> = emptyList()
+)
+
 class GeminiRemoteDataSource(
     private val client: HttpClient = HttpClient {
         install(HttpTimeout) {
@@ -117,6 +138,69 @@ class GeminiRemoteDataSource(
         }
         ```
         Caso contrário, responde apenas em texto natural, analítico e bem estruturado em markdown.
+    """.trimIndent()
+
+    private val discoverySystemPrompt = """
+        És o motor tático de descoberta e recomendação de videojogos europeus (PAL) do RetroCollector, otimizado para colecionadores na Suíça e no mercado europeu.
+        Foco de consolas centrais: Nintendo 64 (N64), Nintendo GameCube (GAMECUBE), PlayStation 3 (PS3) e Nintendo Switch (SWITCH).
+        
+        Missão de Descoberta:
+        1. Sugerir entre 4 a 8 jogos com base no género selecionado, pesquisa de texto ou termos retro (ex: Point & Click, Survival Horror, RTS, Hidden Gems, jogos tipo Monkey Island).
+        2. Focar em lançamentos europeus (PAL) que possuam áudio e/ou legendas em inglês garantidos (evitar cópias USK apenas em alemão).
+        3. Identificar se o jogo clássico possui algum PORT MODERNO ou REMASTER na Nintendo Switch ou PlayStation 3 (ex: "Disponível na Switch via eShop e físico Limited Run", "Remaster HD no PS3").
+        4. Fornecer os Safe SKUs conhecidos (ex: DOL-P-G4BE, BLES-01124, NUS-NPWE, etc.).
+        5. Estimar o preço médio de mercado suíço (Ricardo.ch / Tutti.ch em CHF).
+        6. Sugerir 2 a 3 jogos semelhantes de estilo idêntico.
+        
+        Responde SEMPRE com um bloco JSON estrito no final:
+        ```json
+        [
+          {
+            "title": "Nome do Jogo",
+            "franchise": "Nome da Franquia",
+            "platform": "GAMECUBE" | "PS3" | "N64" | "SWITCH",
+            "releaseYear": "2002",
+            "genreTags": ["Point & Click", "Aventura", "Humor"],
+            "recommendationReason": "Clássico imperdível com escrita inteligente, quebra-cabeças icónicos e lançamento PAL multilingue com inglês integral.",
+            "languageStatus": "FULL_ENGLISH" | "SUBS_ONLY" | "EDITION_NOTICE",
+            "safeSkus": [
+              {"code": "DOL-P-G4BE", "region": "UKV / EUR", "editionNote": "Edição europeia com áudio em inglês", "isSafe": true}
+            ],
+            "hasModernPortOrRemaster": true,
+            "modernPortDetails": "Disponível na Nintendo Switch (eShop e edição física)",
+            "estimatedPriceChf": 35.0,
+            "similarTitles": ["Grim Fandango", "Broken Sword", "Sam & Max"]
+          }
+        ]
+        ```
+    """.trimIndent()
+
+    private val similarGamesSystemPrompt = """
+        És o motor de correlação e recomendação de jogos semelhantes do RetroCollector.
+        Gera 3 a 5 jogos do mesmo estilo, atmosfera, jogabilidade e género, focando em lançamentos nas consolas Nintendo 64, GameCube, PS3 e Nintendo Switch.
+        Verifica a compatibilidade de idioma inglês em edições europeias (PAL) e indica se existe remaster ou port na Switch/PS3.
+        
+        Responde OBRIGATORIAMENTE no final com um bloco JSON estrito:
+        ```json
+        [
+          {
+            "title": "Nome do Jogo",
+            "franchise": "Nome da Franquia",
+            "platform": "GAMECUBE" | "PS3" | "N64" | "SWITCH",
+            "releaseYear": "2004",
+            "genreTags": ["Survival Horror", "Psicológico"],
+            "recommendationReason": "Mesma atmosfera opressiva, quebra-cabeças e foco em exploração.",
+            "languageStatus": "FULL_ENGLISH",
+            "safeSkus": [
+              {"code": "BLES-00561", "region": "EUR", "editionNote": "Edição com inglês integral", "isSafe": true}
+            ],
+            "hasModernPortOrRemaster": false,
+            "modernPortDetails": null,
+            "estimatedPriceChf": 45.0,
+            "similarTitles": ["Silent Hill 2", "Forbidden Siren"]
+          }
+        ]
+        ```
     """.trimIndent()
 
     suspend fun testConnection(apiKey: String, model: String = "gemini-3.7-flash"): Result<String> {
@@ -203,6 +287,54 @@ class GeminiRemoteDataSource(
             if (errMsg.contains("demand", ignoreCase = true) || errMsg.contains("503") || errMsg.contains("unavailable", ignoreCase = true)) {
                 val fallbackModel = if (primaryModel == "gemini-3.7-flash") "gemini-3.6-flash" else "gemini-3.7-flash"
                 return executeFollowUpChat(history, game, userMessage, imageBase64, apiKey, fallbackModel)
+            }
+        }
+        return result
+    }
+
+    suspend fun discoverGames(
+        query: String? = null,
+        genre: GameGenre? = null,
+        platform: ConsolePlatform? = null,
+        apiKey: String,
+        model: String = "gemini-3.7-flash"
+    ): Result<List<DiscoveredGameItem>> {
+        if (apiKey.isBlank()) {
+            return Result.failure(IllegalArgumentException("Chave da API do Gemini não configurada. Acede às Definições para inserir a chave."))
+        }
+
+        val primaryModel = model.ifBlank { "gemini-3.7-flash" }
+        val result = executeDiscoverGames(query, genre, platform, apiKey, primaryModel)
+
+        if (result.isFailure) {
+            val errMsg = result.exceptionOrNull()?.message.orEmpty()
+            if (errMsg.contains("demand", ignoreCase = true) || errMsg.contains("503") || errMsg.contains("unavailable", ignoreCase = true)) {
+                val fallbackModel = if (primaryModel == "gemini-3.7-flash") "gemini-3.6-flash" else "gemini-3.7-flash"
+                return executeDiscoverGames(query, genre, platform, apiKey, fallbackModel)
+            }
+        }
+        return result
+    }
+
+    suspend fun fetchSimilarGames(
+        gameTitle: String,
+        platform: ConsolePlatform,
+        genre: String? = null,
+        apiKey: String,
+        model: String = "gemini-3.7-flash"
+    ): Result<List<DiscoveredGameItem>> {
+        if (apiKey.isBlank()) {
+            return Result.failure(IllegalArgumentException("Chave da API do Gemini não configurada. Acede às Definições para inserir a chave."))
+        }
+
+        val primaryModel = model.ifBlank { "gemini-3.7-flash" }
+        val result = executeFetchSimilarGames(gameTitle, platform, genre, apiKey, primaryModel)
+
+        if (result.isFailure) {
+            val errMsg = result.exceptionOrNull()?.message.orEmpty()
+            if (errMsg.contains("demand", ignoreCase = true) || errMsg.contains("503") || errMsg.contains("unavailable", ignoreCase = true)) {
+                val fallbackModel = if (primaryModel == "gemini-3.7-flash") "gemini-3.6-flash" else "gemini-3.7-flash"
+                return executeFetchSimilarGames(gameTitle, platform, genre, apiKey, fallbackModel)
             }
         }
         return result
@@ -358,6 +490,193 @@ class GeminiRemoteDataSource(
 
         promptBuilder.append("Pergunta ou Observação do Colecionador: $userMessage")
         return promptBuilder.toString()
+    }
+
+    private suspend fun executeDiscoverGames(
+        query: String?,
+        genre: GameGenre?,
+        platform: ConsolePlatform?,
+        apiKey: String,
+        model: String
+    ): Result<List<DiscoveredGameItem>> {
+        return try {
+            val userPrompt = buildDiscoveryUserPrompt(query, genre, platform)
+            val requestBody = GeminiRequest(
+                contents = listOf(GeminiContent(role = "user", parts = listOf(GeminiPart(text = userPrompt)))),
+                systemInstruction = GeminiContent(parts = listOf(GeminiPart(text = discoverySystemPrompt)))
+            )
+
+            val url = "https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey"
+            val response = client.post(url) {
+                contentType(ContentType.Application.Json)
+                setBody(requestBody)
+            }
+
+            if (!response.status.isSuccess()) {
+                val errorBody = response.bodyAsText()
+                val parsedError = parseErrorMessage(errorBody)
+                return Result.failure(Exception(parsedError ?: "Erro HTTP ${response.status.value}: ${response.status.description}"))
+            }
+
+            val geminiResponse: GeminiResponse = response.body()
+            if (geminiResponse.error != null) {
+                return Result.failure(Exception("Erro Gemini (${geminiResponse.error.code}): ${geminiResponse.error.message}"))
+            }
+
+            val candidate = geminiResponse.candidates?.firstOrNull()
+            val rawResponseText = candidate?.content?.parts
+                ?.filter { it.thought != true }
+                ?.joinToString("\n") { it.text ?: "" }
+                ?: return Result.failure(Exception("Resposta vazia da API do Gemini."))
+
+            val rawList = extractJsonDiscoveryList(rawResponseText)
+            val items = rawList.map { it.toDiscoveredGameItem() }
+            Result.success(items)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    private suspend fun executeFetchSimilarGames(
+        gameTitle: String,
+        platform: ConsolePlatform,
+        genre: String?,
+        apiKey: String,
+        model: String
+    ): Result<List<DiscoveredGameItem>> {
+        return try {
+            val userPrompt = buildString {
+                appendLine("Jogo de Origem:")
+                appendLine("- Título: $gameTitle")
+                appendLine("- Plataforma: ${platform.displayName}")
+                if (!genre.isNullOrBlank()) appendLine("- Género / Estilo: $genre")
+                appendLine()
+                append("Gera 3 a 5 recomendações de jogos semelhantes lançados para Nintendo 64, GameCube, PS3 ou Switch com edições PAL com inglês garantido.")
+            }
+
+            val requestBody = GeminiRequest(
+                contents = listOf(GeminiContent(role = "user", parts = listOf(GeminiPart(text = userPrompt)))),
+                systemInstruction = GeminiContent(parts = listOf(GeminiPart(text = similarGamesSystemPrompt)))
+            )
+
+            val url = "https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey"
+            val response = client.post(url) {
+                contentType(ContentType.Application.Json)
+                setBody(requestBody)
+            }
+
+            if (!response.status.isSuccess()) {
+                val errorBody = response.bodyAsText()
+                val parsedError = parseErrorMessage(errorBody)
+                return Result.failure(Exception(parsedError ?: "Erro HTTP ${response.status.value}: ${response.status.description}"))
+            }
+
+            val geminiResponse: GeminiResponse = response.body()
+            if (geminiResponse.error != null) {
+                return Result.failure(Exception("Erro Gemini (${geminiResponse.error.code}): ${geminiResponse.error.message}"))
+            }
+
+            val candidate = geminiResponse.candidates?.firstOrNull()
+            val rawResponseText = candidate?.content?.parts
+                ?.filter { it.thought != true }
+                ?.joinToString("\n") { it.text ?: "" }
+                ?: return Result.failure(Exception("Resposta vazia da API do Gemini."))
+
+            val rawList = extractJsonDiscoveryList(rawResponseText)
+            val items = rawList.map { it.toDiscoveredGameItem() }
+            Result.success(items)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    private fun buildDiscoveryUserPrompt(
+        query: String?,
+        genre: GameGenre?,
+        platform: ConsolePlatform?
+    ): String {
+        val builder = StringBuilder()
+        builder.appendLine("Parâmetros de Descoberta de Jogos:")
+        if (platform != null) {
+            builder.appendLine("- Consola Alvo: ${platform.displayName}")
+        } else {
+            builder.appendLine("- Consolas Alvo: Nintendo 64, GameCube, PlayStation 3 e Nintendo Switch")
+        }
+
+        if (genre != null && genre != GameGenre.ALL) {
+            builder.appendLine("- Género Selecionado: ${genre.displayName} (${genre.promptDescription})")
+        }
+
+        if (!query.isNullOrBlank()) {
+            builder.appendLine("- Pedido / Termos de Pesquisa do Utilizador: $query")
+        } else if (genre != null && genre != GameGenre.ALL) {
+            builder.appendLine("- Foco: Melhores clássicos essenciais, jogos de culto e pérolas PAL do género ${genre.displayName}")
+        } else {
+            builder.appendLine("- Foco: Recomendações gerais de grandes jogos e pérolas retro PAL equilibradas entre as consolas")
+        }
+
+        builder.appendLine()
+        builder.append("Gera a lista de sugestões no formato JSON estrito especificado.")
+        return builder.toString()
+    }
+
+    private fun extractJsonDiscoveryList(fullText: String): List<StitchGeminiDiscoveryGame> {
+        return try {
+            val jsonPattern = Regex("```json\\s*([\\s\\S]*?)\\s*```")
+            val match = jsonPattern.find(fullText)
+            val jsonString = match?.groupValues?.get(1)?.trim() ?: fullText.trim()
+            if (jsonString.startsWith("[")) {
+                jsonParser.decodeFromString<List<StitchGeminiDiscoveryGame>>(jsonString)
+            } else if (jsonString.startsWith("{")) {
+                jsonParser.decodeFromString<StitchGeminiDiscoveryContainer>(jsonString).games
+            } else {
+                emptyList()
+            }
+        } catch (e: Exception) {
+            println("Discovery extraction error: ${e.message}")
+            emptyList()
+        }
+    }
+
+    private fun StitchGeminiDiscoveryGame.toDiscoveredGameItem(): DiscoveredGameItem {
+        val platformEnum = when (platform.uppercase().trim()) {
+            "N64", "NINTENDO 64", "NUS" -> ConsolePlatform.N64
+            "GAMECUBE", "GC", "DOL", "NINTENDO GAMECUBE" -> ConsolePlatform.GAMECUBE
+            "PS3", "PLAYSTATION 3", "BLES", "BCES" -> ConsolePlatform.PS3
+            "SWITCH", "NINTENDO SWITCH", "HAC" -> ConsolePlatform.SWITCH
+            else -> ConsolePlatform.GAMECUBE
+        }
+        val langStatus = when (languageStatus.uppercase().trim()) {
+            "FULL_ENGLISH" -> LanguageStatus.FULL_ENGLISH
+            "SUBS_ONLY" -> LanguageStatus.SUBS_ONLY
+            "GERMAN_ONLY" -> LanguageStatus.GERMAN_ONLY
+            "EDITION_NOTICE" -> LanguageStatus.EDITION_NOTICE
+            else -> LanguageStatus.FULL_ENGLISH
+        }
+        val safeId = title.lowercase()
+            .replace(" ", "_")
+            .filter { it.isLetterOrDigit() || it == '_' }
+            .take(30)
+        return DiscoveredGameItem(
+            id = "disc_${safeId}_${platformEnum.name}",
+            title = title,
+            franchiseName = franchise,
+            platform = platformEnum,
+            releaseYear = releaseYear,
+            genreDisplayName = genreTags.firstOrNull() ?: "",
+            genreTags = genreTags,
+            recommendationReason = recommendationReason,
+            languageStatus = langStatus,
+            safeSkus = safeSkus,
+            hasModernPortOrRemaster = hasModernPortOrRemaster,
+            modernPortDetails = modernPortDetails,
+            estimatedPriceChf = estimatedPriceChf,
+            similarTitles = similarTitles
+        )
     }
 
     private fun parseErrorMessage(errorBody: String): String? {

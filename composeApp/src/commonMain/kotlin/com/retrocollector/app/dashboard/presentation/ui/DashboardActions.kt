@@ -1,6 +1,7 @@
 package com.retrocollector.app.dashboard.presentation.ui
 
 import androidx.compose.runtime.Immutable
+import com.retrocollector.app.core.domain.model.AppSection
 import com.retrocollector.app.core.domain.model.CollectionStatus
 import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.GameItem
@@ -20,5 +21,20 @@ data class DashboardActions(
     val onUpdateGameStatus: (GameItem, CollectionStatus) -> Unit = { _, _ -> },
     val onOpenScanDialog: () -> Unit = {},
     val onOpenSettings: () -> Unit = {},
-    val onSendFollowUpMessage: (String) -> Unit = {}
+    val onSendFollowUpMessage: (String) -> Unit = {},
+    // Navegação entre secções
+    val onSectionSelect: (AppSection) -> Unit = {},
+    // Wishlist
+    val onOpenImportDialog: () -> Unit = {},
+    val onImportWishlistCsv: (String) -> Unit = {},
+    val onMoveToHunting: (GameItem) -> Unit = {},
+    val onRetryEnrichment: (GameItem) -> Unit = {},
+    // Discovery
+    val onDiscoveryGenreSelect: (com.retrocollector.app.core.domain.model.GameGenre) -> Unit = {},
+    val onDiscoveryQueryChange: (String) -> Unit = {},
+    val onDiscoverySearchSubmit: (String) -> Unit = {},
+    val onDiscoveryPlatformSelect: (ConsolePlatform?) -> Unit = {},
+    val onOpenDiscoveredDossier: (com.retrocollector.app.core.domain.model.DiscoveredGameItem) -> Unit = {},
+    val onAddDiscoveredToWishlist: (com.retrocollector.app.core.domain.model.DiscoveredGameItem) -> Unit = {},
+    val onLoadSimilarGames: (GameItem) -> Unit = {}
 )

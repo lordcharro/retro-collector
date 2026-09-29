@@ -1,5 +1,6 @@
 package com.retrocollector.app.core.data.repository
 
+import com.retrocollector.app.core.data.datasource.CuratedDiscoveryDataSource
 import com.retrocollector.app.core.data.datasource.GeminiRemoteDataSource
 import com.retrocollector.app.core.data.datasource.StitchGeminiStructuredVerdict
 import com.retrocollector.app.core.data.firestore.FirestoreService
@@ -33,6 +34,9 @@ class GameRepositoryImpl(
 
     private val _chatMessages = MutableStateFlow<List<ChatMessage>>(getInitialMockChats())
     override val chatMessages: StateFlow<List<ChatMessage>> = _chatMessages.asStateFlow()
+
+    private val discoveryCache = mutableMapOf<String, List<DiscoveredGameItem>>()
+    private val similarGamesCache = mutableMapOf<String, List<DiscoveredGameItem>>()
 
     override fun getGameById(id: String): GameItem? {
         return _games.value.find { it.id == id }
@@ -311,6 +315,93 @@ class GameRepositoryImpl(
                 Result.failure(err)
             }
         )
+    }
+
+    override fun getGamesByStatus(status: CollectionStatus): List<GameItem> {
+        return _games.value.filter { it.collectionStatus == status }
+    }
+
+    override suspend fun discoverGames(
+        query: String?,
+        genre: GameGenre?,
+        platform: ConsolePlatform?,
+        forceRefresh: Boolean
+    ): Result<List<DiscoveredGameItem>> {
+        val cacheKey = "${query.orEmpty()}_${genre?.name.orEmpty()}_${platform?.name.orEmpty()}"
+        if (!forceRefresh && discoveryCache.containsKey(cacheKey)) {
+            val cached = discoveryCache[cacheKey].orEmpty()
+            return Result.success(enrichWithUserCollection(cached))
+        }
+
+        val apiKey = _settings.value.geminiApiKey
+        val model = _settings.value.geminiModel.ifBlank { "gemini-3.7-flash" }
+
+        if (apiKey.isBlank()) {
+            val fallback = CuratedDiscoveryDataSource.getFilteredCatalog(genre, platform, query)
+            discoveryCache[cacheKey] = fallback
+            return Result.success(enrichWithUserCollection(fallback))
+        }
+
+        val result = geminiDataSource.discoverGames(query, genre, platform, apiKey, model)
+        return result.fold(
+            onSuccess = { items ->
+                val finalItems = if (items.isNotEmpty()) items else CuratedDiscoveryDataSource.getFilteredCatalog(genre, platform, query)
+                discoveryCache[cacheKey] = finalItems
+                Result.success(enrichWithUserCollection(finalItems))
+            },
+            onFailure = { _ ->
+                val fallback = CuratedDiscoveryDataSource.getFilteredCatalog(genre, platform, query)
+                discoveryCache[cacheKey] = fallback
+                Result.success(enrichWithUserCollection(fallback))
+            }
+        )
+    }
+
+    override suspend fun getSimilarGames(
+        game: GameItem,
+        forceRefresh: Boolean
+    ): Result<List<DiscoveredGameItem>> {
+        val cacheKey = "similar_${game.id}"
+        if (!forceRefresh && similarGamesCache.containsKey(cacheKey)) {
+            val cached = similarGamesCache[cacheKey].orEmpty()
+            return Result.success(enrichWithUserCollection(cached))
+        }
+
+        val apiKey = _settings.value.geminiApiKey
+        val model = _settings.value.geminiModel.ifBlank { "gemini-3.7-flash" }
+
+        if (apiKey.isBlank()) {
+            val fallback = CuratedDiscoveryDataSource.getSimilarGames(game)
+            similarGamesCache[cacheKey] = fallback
+            return Result.success(enrichWithUserCollection(fallback))
+        }
+
+        val result = geminiDataSource.fetchSimilarGames(game.title, game.platform, game.franchiseName, apiKey, model)
+        return result.fold(
+            onSuccess = { items ->
+                val finalItems = if (items.isNotEmpty()) items else CuratedDiscoveryDataSource.getSimilarGames(game)
+                similarGamesCache[cacheKey] = finalItems
+                Result.success(enrichWithUserCollection(finalItems))
+            },
+            onFailure = { _ ->
+                val fallback = CuratedDiscoveryDataSource.getSimilarGames(game)
+                similarGamesCache[cacheKey] = fallback
+                Result.success(enrichWithUserCollection(fallback))
+            }
+        )
+    }
+
+    private fun enrichWithUserCollection(items: List<DiscoveredGameItem>): List<DiscoveredGameItem> {
+        val currentGames = _games.value
+        return items.map { item ->
+            val matching = currentGames.find {
+                it.title.equals(item.title, ignoreCase = true) && it.platform == item.platform
+            }
+            item.copy(
+                isAlreadyInCollection = matching?.collectionStatus == CollectionStatus.OWNED,
+                isAlreadyInWishlist = matching?.collectionStatus == CollectionStatus.HUNTING
+            )
+        }
     }
 
     private fun getInitialMockGames(): List<GameItem> {
