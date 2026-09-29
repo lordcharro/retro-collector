@@ -70,9 +70,12 @@ Este ficheiro resume o estado atual do desenvolvimento, os artefactos gerados, e
      * **`3.8 Flash (Preview)`**: Novo modelo com raciocínio profundo (possui fallback automático transparente para 3.7 ou 3.6 caso haja picos de procura na tier gratuita).
    * Inserir a chave e premir **"Testar Conexão Gemini"** para validar o modelo em tempo real.
    * Premir **"Save Settings"**.
-3. **Testar o "⚡ Quick Scan"**:
-   * Colar um link de um leilão de retrogaming do Ricardo.ch ou Tutti.ch.
-   * Carregar uma fotografia de uma lombada/capa física para o Gemini ler o código e confirmar os idiomas de áudio e legendas.
+3. [x] **Testar o "⚡ Quick Scan" e Integração de Leilões**:
+   * [x] **Abas Dedicadas**: Modo "Link de Leilão" (Ricardo.ch / Tutti.ch) com extração automática vs modo "Pesquisa Manual / SKU".
+   * [x] **Proteção Anti-Captcha e Headers de Browser**: Emulação de cabeçalhos Chrome no Ktor e fallback inteligente que extrai o nome do jogo diretamente do slug do URL quando o leilão ativa proteção anti-bot.
+   * [x] **Autenticação por Cookie de Sessão Ricardo**: Campo dedicado em Definições para envio de cookie de sessão (`ricardo_session=...`), permitindo raspagem autenticada.
+   * [x] **Timeout Resiliente do Gemini**: Timeout multimodal alargado para 60 segundos com suporte a imagens de alta resolução em Base64.
+   * [x] **Chat Interativo & Reconhecimento de SKUs**: Gemini responde no dossier do jogo e reconhece códigos especiais europeus (ex: `BLES-01780`).
 
 ### 🔹 Fase 4: Sincronização Cloud (Firebase Firestore)
 1. **Criar o Projeto no Firebase**:
