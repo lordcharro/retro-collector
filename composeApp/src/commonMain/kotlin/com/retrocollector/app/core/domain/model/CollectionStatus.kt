@@ -7,14 +7,18 @@ enum class CollectionStatus(
     val label: String,
     val icon: String
 ) {
-    WISHLIST("Wishlist", "💝"),
-    HUNTING("Hunting", "🎯"),
+    WISHLIST("Wishlist", "🎯"),
     OWNED("Owned", "📦"),
-    PASS("Pass", "❌");
+    PASS("Pass", "❌"),
+    @Deprecated("Merged into WISHLIST", ReplaceWith("WISHLIST"))
+    HUNTING("Wishlist", "🎯");
 
     companion object {
+        val displayStatuses: List<CollectionStatus> = listOf(WISHLIST, OWNED, PASS)
+
         fun fromString(value: String?): CollectionStatus =
             entries.find { it.name.equals(value, ignoreCase = true) || it.label.equals(value, ignoreCase = true) }
-                ?: HUNTING
+                ?.let { if (it == HUNTING) WISHLIST else it }
+                ?: WISHLIST
     }
 }

@@ -227,7 +227,7 @@ class GameRepositoryImpl(
             marketRadar = radar,
             censorshipWarning = v.censorshipWarning,
             collectorVerdict = v.collectorVerdict,
-            collectionStatus = if (status == LanguageStatus.GERMAN_ONLY) CollectionStatus.PASS else CollectionStatus.HUNTING,
+            collectionStatus = if (status == LanguageStatus.GERMAN_ONLY) CollectionStatus.PASS else CollectionStatus.WISHLIST,
             updatedAt = nowMs
         )
     }
@@ -399,7 +399,8 @@ class GameRepositoryImpl(
             }
             item.copy(
                 isAlreadyInCollection = matching?.collectionStatus == CollectionStatus.OWNED,
-                isAlreadyInWishlist = matching?.collectionStatus == CollectionStatus.HUNTING
+                isAlreadyInWishlist = matching?.collectionStatus == CollectionStatus.WISHLIST ||
+                    @Suppress("DEPRECATION") (matching?.collectionStatus == CollectionStatus.HUNTING)
             )
         }
     }
@@ -441,7 +442,7 @@ class GameRepositoryImpl(
                     "os modos 'Assignment Ada' e 'The Mercenaries' foram removidos do disco!",
                 collectorVerdict = "Skip this copy at CHF 35.00. Wait and hunt specifically for DOL-P-G4BE (UK PAL) " +
                     "which features 100% uncut English content and all unlockable modes.",
-                collectionStatus = CollectionStatus.HUNTING
+                collectionStatus = CollectionStatus.WISHLIST
             ),
             GameItem(
                 id = "gc_zelda_ww",
@@ -495,7 +496,7 @@ class GameRepositoryImpl(
                     historicalMaxChf = 55.0,
                     trend = "Stable"
                 ),
-                collectionStatus = CollectionStatus.HUNTING
+                collectionStatus = CollectionStatus.WISHLIST
             ),
             GameItem(
                 id = "gc_metroid",
@@ -521,7 +522,7 @@ class GameRepositoryImpl(
                     historicalMaxChf = 42.0,
                     trend = "Stable"
                 ),
-                collectionStatus = CollectionStatus.HUNTING
+                collectionStatus = CollectionStatus.WISHLIST
             ),
             GameItem(
                 id = "gc_eternal_darkness",
@@ -630,7 +631,7 @@ class GameRepositoryImpl(
                     historicalMaxChf = 40.0,
                     trend = "Stable"
                 ),
-                collectionStatus = CollectionStatus.HUNTING
+                collectionStatus = CollectionStatus.WISHLIST
             )
         )
     }

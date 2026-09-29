@@ -41,7 +41,7 @@ data class DashboardUiState(
     val statusMessage: String? = null,
     val settings: AppSettings = AppSettings(),
     // Navegação por secções
-    val activeSection: AppSection = AppSection.CATALOG,
+    val activeSection: AppSection = AppSection.ACTIVITY,
     // Wishlist
     val isImportDialogOpen: Boolean = false,
     val importResult: ImportResult? = null,
@@ -116,22 +116,20 @@ class DashboardViewModel(
                     } else emptyList()
 
                     // Separar jogos por secção
-                    val catalog = filtered.filter {
-                        it.collectionStatus == CollectionStatus.HUNTING ||
-                            it.collectionStatus == CollectionStatus.PASS
-                    }
                     val wishlist = filtered.filter {
-                        it.collectionStatus == CollectionStatus.WISHLIST
+                        it.collectionStatus == CollectionStatus.WISHLIST ||
+                            @Suppress("DEPRECATION") (it.collectionStatus == CollectionStatus.HUNTING)
                     }
                     val collection = filtered.filter {
                         it.collectionStatus == CollectionStatus.OWNED
                     }
+                    val activity = filtered
 
                     state.copy(
                         games = filtered,
                         selectedGame = newSelected,
                         activeChatMessages = chats,
-                        catalogGames = catalog,
+                        catalogGames = activity,
                         wishlistGames = wishlist,
                         collectionGames = collection
                     )
@@ -336,7 +334,7 @@ class DashboardViewModel(
 
     fun moveToHunting(game: GameItem) {
         val updated = game.copy(
-            collectionStatus = CollectionStatus.HUNTING,
+            collectionStatus = CollectionStatus.WISHLIST,
             updatedAt = Clock.System.now().toEpochMilliseconds()
         )
         saveGameUseCase(updated)
@@ -396,11 +394,10 @@ class DashboardViewModel(
         val existing = _uiState.value.games.find {
             it.title.equals(discovered.title, ignoreCase = true) && it.platform == discovered.platform
         }
-        val targetGame = existing ?: discovered.toGameItem(status = CollectionStatus.HUNTING).also {
+        val targetGame = existing ?: discovered.toGameItem(status = CollectionStatus.WISHLIST).also {
             saveGameUseCase(it)
         }
         onGameSelected(targetGame)
-        _uiState.update { it.copy(activeSection = AppSection.CATALOG) }
     }
 
     fun loadSimilarGamesForSelectedGame(game: GameItem) {

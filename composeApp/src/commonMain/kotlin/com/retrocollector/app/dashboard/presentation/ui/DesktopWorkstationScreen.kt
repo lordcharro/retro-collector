@@ -15,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.retrocollector.app.core.domain.model.*
@@ -92,17 +94,25 @@ fun DesktopWorkstationScreen(
                     modifier = Modifier.padding(vertical = 6.dp, horizontal = 6.dp)
                 )
 
-                // Item: Catalog (Prospeção ativa)
+                // Item: Activity (Prospeção ativa)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(if (state.activeSection == AppSection.CATALOG) SurfaceElevated else Color.Transparent, RoundedCornerShape(4.dp))
-                        .clickable { actions.onSectionSelect(AppSection.CATALOG) }
+                        .background(if (state.activeSection == AppSection.ACTIVITY) SurfaceElevated else Color.Transparent, RoundedCornerShape(4.dp))
+                        .clickable { actions.onSectionSelect(AppSection.ACTIVITY) }
                         .padding(horizontal = 8.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "${AppSection.CATALOG.icon} ${AppSection.CATALOG.label}", style = BodyMd, color = TextPrimary)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(modifier = Modifier.width(20.dp), contentAlignment = Alignment.Center) {
+                            Text(text = AppSection.ACTIVITY.icon, fontSize = 14.sp, textAlign = TextAlign.Center)
+                        }
+                        Text(text = AppSection.ACTIVITY.label, style = BodyMd, color = if (state.activeSection == AppSection.ACTIVITY) TextPrimary else TextSecondary)
+                    }
                     Box(
                         modifier = Modifier
                             .background(SurfaceBase, RoundedCornerShape(2.dp))
@@ -122,11 +132,15 @@ fun DesktopWorkstationScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "${AppSection.DISCOVER.icon} ${AppSection.DISCOVER.label}",
-                        style = BodyMd,
-                        color = if (state.activeSection == AppSection.DISCOVER) TextPrimary else TextSecondary
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(modifier = Modifier.width(20.dp), contentAlignment = Alignment.Center) {
+                            Text(text = AppSection.DISCOVER.icon, fontSize = 14.sp, textAlign = TextAlign.Center)
+                        }
+                        Text(text = AppSection.DISCOVER.label, style = BodyMd, color = if (state.activeSection == AppSection.DISCOVER) TextPrimary else TextSecondary)
+                    }
                     Box(
                         modifier = Modifier
                             .background(SurfaceBase, RoundedCornerShape(2.dp))
@@ -151,11 +165,15 @@ fun DesktopWorkstationScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "${AppSection.WISHLIST.icon} ${AppSection.WISHLIST.label}",
-                        style = BodyMd,
-                        color = if (state.activeSection == AppSection.WISHLIST) TextPrimary else TextSecondary
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(modifier = Modifier.width(20.dp), contentAlignment = Alignment.Center) {
+                            Text(text = AppSection.WISHLIST.icon, fontSize = 14.sp, textAlign = TextAlign.Center)
+                        }
+                        Text(text = AppSection.WISHLIST.label, style = BodyMd, color = if (state.activeSection == AppSection.WISHLIST) TextPrimary else TextSecondary)
+                    }
                     Box(
                         modifier = Modifier
                             .background(SurfaceBase, RoundedCornerShape(2.dp))
@@ -180,11 +198,15 @@ fun DesktopWorkstationScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "${AppSection.COLLECTION.icon} ${AppSection.COLLECTION.label}",
-                        style = BodyMd,
-                        color = if (state.activeSection == AppSection.COLLECTION) TextPrimary else TextSecondary
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(modifier = Modifier.width(20.dp), contentAlignment = Alignment.Center) {
+                            Text(text = AppSection.COLLECTION.icon, fontSize = 14.sp, textAlign = TextAlign.Center)
+                        }
+                        Text(text = AppSection.COLLECTION.label, style = BodyMd, color = if (state.activeSection == AppSection.COLLECTION) TextPrimary else TextSecondary)
+                    }
                     Box(
                         modifier = Modifier
                             .background(SurfaceBase, RoundedCornerShape(2.dp))
@@ -203,12 +225,26 @@ fun DesktopWorkstationScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = TextKeys.Navigation.TAB_SETTINGS, style = BodyMd, color = TextSecondary)
-                    Text(
-                        text = state.settings.defaultCurrency.ifBlank { "CHF" },
-                        style = CodeSkuStyle.copy(fontSize = 10.sp),
-                        color = StatusUnverifiedFg
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(modifier = Modifier.width(20.dp), contentAlignment = Alignment.Center) {
+                            Text(text = "⚙️", fontSize = 15.sp, textAlign = TextAlign.Center)
+                        }
+                        Text(text = TextKeys.Navigation.TAB_SETTINGS, style = BodyMd, color = TextSecondary)
+                    }
+                    Box(
+                        modifier = Modifier
+                            .background(SurfaceBase, RoundedCornerShape(2.dp))
+                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                    ) {
+                        Text(
+                            text = state.settings.defaultCurrency.ifBlank { "CHF" },
+                            style = CodeSkuStyle.copy(fontSize = 10.sp),
+                            color = StatusUnverifiedFg
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(18.dp))
@@ -371,19 +407,19 @@ fun DesktopWorkstationScreen(
                 }
             }
 
-            // Conteúdo por Secção
-            when (state.activeSection) {
-                AppSection.CATALOG -> {
-                    // Split 2 Colunas: Master Feed (42%) e Dossier/Chat (58%)
-                    Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                        // COLUNA ESQUERDA: MASTER CATALOG PANE (~42%)
-                        Column(
-                            modifier = Modifier
-                                .weight(0.42f)
-                                .fillMaxHeight()
-                                .background(SurfaceBase)
-                                .border(BorderStroke(1.dp, BorderSubtle))
-                        ) {
+            // Split 2 Colunas: Painel da Secção Ativa (42%) e Dossier/Chat de IA (58%)
+            Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                // COLUNA ESQUERDA: PAINEL DA SECÇÃO ATIVA (~42%)
+                Box(
+                    modifier = Modifier
+                        .weight(0.42f)
+                        .fillMaxHeight()
+                        .background(SurfaceBase)
+                        .border(BorderStroke(1.dp, BorderSubtle))
+                ) {
+                    when (state.activeSection) {
+                        AppSection.ACTIVITY -> {
+                            Column(modifier = Modifier.fillMaxSize()) {
                             // Seletor de Consolas e Toggles Rápidos
                             Column(
                                 modifier = Modifier
@@ -463,68 +499,130 @@ fun DesktopWorkstationScreen(
                                 }
                             }
                         }
-        
-                        // COLUNA DIREITA: GAME INTELLIGENCE & GEMINI CHAT PANE (~58%)
-                        val game = state.selectedGame
-                        if (game != null) {
-                            Column(
-                                modifier = Modifier
-                                    .weight(0.58f)
-                                    .fillMaxHeight()
-                                    .background(SurfaceBase)
-                            ) {
+                    }
+
+                    AppSection.DISCOVER -> {
+                            DiscoveryScreen(
+                                discoveredGames = state.discoveredGames,
+                                selectedGenre = state.selectedDiscoveryGenre,
+                                selectedPlatform = state.selectedDiscoveryPlatform,
+                                isDiscovering = state.isDiscovering,
+                                searchQuery = state.discoverySearchQuery,
+                                onQueryChange = actions.onDiscoveryQueryChange,
+                                onSearchSubmit = actions.onDiscoverySearchSubmit,
+                                onGenreSelect = actions.onDiscoveryGenreSelect,
+                                onPlatformSelect = actions.onDiscoveryPlatformSelect,
+                                onOpenDossier = actions.onOpenDiscoveredDossier,
+                                onAddToWishlist = actions.onAddDiscoveredToWishlist,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+
+                        AppSection.WISHLIST -> {
+                            WishlistScreen(
+                                state = state,
+                                actions = actions,
+                                onNavigateToDetail = { actions.onGameSelected(it) },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+
+                        AppSection.COLLECTION -> {
+                            CollectionScreen(
+                                state = state,
+                                actions = actions,
+                                onNavigateToDetail = { actions.onGameSelected(it) },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+                }
+
+                // COLUNA DIREITA: GAME INTELLIGENCE & GEMINI CHAT PANE (~58%)
+                val game = state.selectedGame
+                if (game != null) {
+                    Column(
+                        modifier = Modifier
+                            .weight(0.58f)
+                            .fillMaxHeight()
+                            .background(SurfaceBase)
+                    ) {
                                 // Header do Dossiê do Jogo Selecionado
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(64.dp)
+                                        .defaultMinSize(minHeight = 64.dp)
                                         .background(SurfaceCard)
                                         .border(BorderStroke(1.dp, BorderSubtle))
-                                        .padding(horizontal = 16.dp),
+                                        .padding(horizontal = 16.dp, vertical = 8.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Column {
+                                    Column(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(end = 12.dp)
+                                    ) {
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
-                                            Text(text = game.title, style = HeadlineMd, color = TextPrimary)
+                                            Text(
+                                                text = game.title,
+                                                style = HeadlineMd,
+                                                color = TextPrimary,
+                                                maxLines = 2,
+                                                overflow = TextOverflow.Ellipsis,
+                                                modifier = Modifier.weight(1f, fill = false)
+                                            )
                                             PlatformBadge(platform = game.platform)
                                         }
-                                        Text(
-                                            text = "${TextKeys.Dossier.SPOTTED_LOCATION}: ${game.spottedLocation}",
-                                            style = CodeSkuStyle.copy(fontSize = 11.sp),
-                                            color = StatusUnverifiedFg
-                                        )
+                                        if (game.spottedLocation.isNotBlank()) {
+                                            Text(
+                                                text = "${TextKeys.Dossier.SPOTTED_LOCATION}: ${game.spottedLocation}",
+                                                style = CodeSkuStyle.copy(fontSize = 11.sp),
+                                                color = StatusUnverifiedFg,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
                                     }
         
                                     // Botões de Estado de Coleção: Hunting, Owned, Avoid
                                     Row(
                                         modifier = Modifier
+                                            .wrapContentWidth()
                                             .background(SurfaceBase, RoundedCornerShape(4.dp))
                                             .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
                                             .padding(2.dp),
                                         horizontalArrangement = Arrangement.spacedBy(2.dp)
                                     ) {
-                                        CollectionStatus.entries.forEach { status ->
-                                            val isCurrent = game.collectionStatus == status
+                                        CollectionStatus.displayStatuses.forEach { status ->
+                                            @Suppress("DEPRECATION")
+                                            val isCurrent = game.collectionStatus == status ||
+                                                (status == CollectionStatus.WISHLIST && game.collectionStatus == CollectionStatus.HUNTING)
                                             val bg = if (isCurrent) {
                                                 when (status) {
                                                     CollectionStatus.WISHLIST -> StatusEditionBg
-                                                    CollectionStatus.HUNTING -> StatusEditionBg
                                                     CollectionStatus.OWNED -> StatusEnglishBg
                                                     CollectionStatus.PASS -> StatusRiskBg
+                                                    else -> StatusEditionBg
                                                 }
                                             } else Color.Transparent
-        
+
                                             Box(
                                                 modifier = Modifier
                                                     .background(bg, RoundedCornerShape(3.dp))
                                                     .clickable { actions.onUpdateGameStatus(game, status) }
                                                     .padding(horizontal = 8.dp, vertical = 4.dp)
                                             ) {
-                                                Text(text = "${status.icon} ${status.label}", style = LabelFilterStyle, color = TextPrimary)
+                                                Text(
+                                                    text = "${status.icon} ${status.label}",
+                                                    style = LabelFilterStyle,
+                                                    color = TextPrimary,
+                                                    maxLines = 1,
+                                                    softWrap = false
+                                                )
                                             }
                                         }
                                     }
@@ -710,41 +808,6 @@ fun DesktopWorkstationScreen(
                                 Text(text = TextKeys.Dashboard.NO_GAME_SELECTED, style = BodyMd, color = TextSecondary)
                             }
                         }
-                    }
-                }
-
-                AppSection.DISCOVER -> {
-                    DiscoveryScreen(
-                        discoveredGames = state.discoveredGames,
-                        selectedGenre = state.selectedDiscoveryGenre,
-                        selectedPlatform = state.selectedDiscoveryPlatform,
-                        isDiscovering = state.isDiscovering,
-                        searchQuery = state.discoverySearchQuery,
-                        onQueryChange = actions.onDiscoveryQueryChange,
-                        onSearchSubmit = actions.onDiscoverySearchSubmit,
-                        onGenreSelect = actions.onDiscoveryGenreSelect,
-                        onPlatformSelect = actions.onDiscoveryPlatformSelect,
-                        onOpenDossier = actions.onOpenDiscoveredDossier,
-                        onAddToWishlist = actions.onAddDiscoveredToWishlist,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                AppSection.WISHLIST -> {
-                    WishlistScreen(
-                        state = state,
-                        actions = actions,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                AppSection.COLLECTION -> {
-                    CollectionScreen(
-                        state = state,
-                        actions = actions,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
             }
         }
     }

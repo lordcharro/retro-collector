@@ -94,14 +94,16 @@ fun MobileGameDetailScreen(
                             .padding(4.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        CollectionStatus.entries.forEach { status ->
-                            val isCurrent = game.collectionStatus == status
+                        CollectionStatus.displayStatuses.forEach { status ->
+                            @Suppress("DEPRECATION")
+                            val isCurrent = game.collectionStatus == status ||
+                                (status == CollectionStatus.WISHLIST && game.collectionStatus == CollectionStatus.HUNTING)
                             val bg = if (isCurrent) {
                                 when (status) {
                                     CollectionStatus.WISHLIST -> StatusEditionBg
-                                    CollectionStatus.HUNTING -> StatusEditionBg
                                     CollectionStatus.OWNED -> StatusEnglishBg
                                     CollectionStatus.PASS -> StatusRiskBg
+                                    else -> StatusEditionBg
                                 }
                             } else Color.Transparent
 
@@ -113,14 +115,8 @@ fun MobileGameDetailScreen(
                                     .padding(vertical = 6.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                val label = when (status) {
-                                    CollectionStatus.WISHLIST -> "Wishlist"
-                                    CollectionStatus.OWNED -> TextKeys.Status.OWNED
-                                    CollectionStatus.HUNTING -> TextKeys.Status.HUNTING
-                                    CollectionStatus.PASS -> TextKeys.Status.AVOID
-                                }
                                 Text(
-                                    text = label,
+                                    text = "${status.icon} ${status.label}",
                                     style = LabelFilterStyle.copy(fontSize = 11.sp),
                                     color = if (isCurrent) TextPrimary else TextSecondary
                                 )

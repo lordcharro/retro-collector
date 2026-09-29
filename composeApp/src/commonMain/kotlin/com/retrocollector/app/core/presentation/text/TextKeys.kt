@@ -30,7 +30,9 @@ object TextKeys {
     }
 
     object Navigation {
-        const val TAB_CATALOG = "Catalog"
+        const val TAB_ACTIVITY = "Activity"
+        const val TAB_CATALOG = "Activity"
+        const val TAB_DISCOVER = "Discover"
         const val TAB_THREADS = "Dossier"
         const val TAB_SETTINGS = "Settings"
         const val TAB_WISHLIST = "Wishlist"
@@ -77,7 +79,7 @@ object TextKeys {
     }
 
     object Scanner {
-        const val TITLE = "⚡ Quick Scan & Verification"
+        const val TITLE = "Quick Scan & Verification"
         const val TAB_URL = "Auction Link"
         const val TAB_MANUAL = "Manual Search"
         const val TAB_PHOTO = "Spine / Box Photo"

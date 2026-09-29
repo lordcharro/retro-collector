@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class AppSection(val label: String, val icon: String) {
-    CATALOG("Catalog", "📋"),
+    ACTIVITY("Activity", "⚡"),
     DISCOVER("Discover", "🧭"),
-    WISHLIST("Wishlist", "💝"),
+    WISHLIST("Wishlist", "🎯"),
     COLLECTION("Collection", "📦")
 }

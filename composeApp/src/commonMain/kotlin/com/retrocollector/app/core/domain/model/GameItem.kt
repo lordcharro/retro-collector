@@ -25,7 +25,7 @@ data class GameItem(
     val marketRadar: SwissMarketRadar? = null,
     val censorshipWarning: String? = null,
     val collectorVerdict: String = "",
-    val collectionStatus: CollectionStatus = CollectionStatus.HUNTING,
+    val collectionStatus: CollectionStatus = CollectionStatus.WISHLIST,
     val enrichmentStatus: EnrichmentStatus = EnrichmentStatus.COMPLETE,
     val personalNotes: String = "",
     val listingUrl: String? = null,

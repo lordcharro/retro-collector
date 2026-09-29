@@ -37,116 +37,27 @@ fun WishlistScreen(
     onNavigateToDetail: (GameItem) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    var isSearchFocused by remember { mutableStateOf(false) }
-
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(SurfaceBase)
     ) {
-        // Barra de topo com pesquisa e botão Import
+        // Barra de Ações da Wishlist: Contagem, Progresso de Enriquecimento e Botão Import
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(SurfaceCard)
                 .border(BorderStroke(1.dp, BorderSubtle))
-                .padding(10.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Pesquisa
             Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(32.dp)
-                    .background(SurfaceBase, RoundedCornerShape(4.dp))
-                    .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
-                    .padding(horizontal = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Text(text = "🔍", fontSize = 12.sp)
-                androidx.compose.foundation.text.BasicTextField(
-                    value = state.searchQuery,
-                    onValueChange = { actions.onSearchQueryChange(it) },
-                    textStyle = CodeSkuStyle.copy(color = TextPrimary),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onFocusChanged { isSearchFocused = it.isFocused },
-                    singleLine = true,
-                    decorationBox = { innerTextField ->
-                        Box(contentAlignment = Alignment.CenterStart) {
-                            if (state.searchQuery.isEmpty() && !isSearchFocused) {
-                                Text(
-                                    text = TextKeys.Dashboard.SEARCH_PLACEHOLDER,
-                                    style = CodeSkuStyle.copy(fontSize = 11.sp, color = StatusUnverifiedFg)
-                                )
-                            }
-                            innerTextField()
-                        }
-                    }
-                )
-            }
-
-            // Botão Import
-            Button(
-                onClick = { actions.onOpenImportDialog() },
-                colors = ButtonDefaults.buttonColors(containerColor = ConsoleGamecube),
-                shape = RoundedCornerShape(4.dp),
-                modifier = Modifier.height(32.dp).defaultMinSize(minHeight = 32.dp),
-                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = TextKeys.Wishlist.IMPORT_BUTTON,
-                    style = LabelFilterStyle.copy(fontSize = 12.sp),
-                    color = Color.White
-                )
-            }
-        }
-
-        // Filtro de plataformas + contadores
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(SurfaceCard)
-                .border(BorderStroke(1.dp, BorderSubtle))
-                .padding(10.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                items(ConsolePlatform.entries.toList()) { platform ->
-                    val isSelected = state.selectedPlatform == platform
-                    val color = when (platform) {
-                        ConsolePlatform.N64 -> ConsoleN64
-                        ConsolePlatform.GAMECUBE -> ConsoleGamecube
-                        ConsolePlatform.PS3 -> ConsolePS3
-                        ConsolePlatform.SWITCH -> ConsoleSwitch
-                    }
-                    Row(
-                        modifier = Modifier
-                            .background(if (isSelected) color else SurfaceElevated, RoundedCornerShape(4.dp))
-                            .clickable { actions.onPlatformSelect(platform) }
-                            .padding(horizontal = 8.dp, vertical = 5.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = platform.displayName,
-                            style = LabelFilterStyle,
-                            color = Color.White,
-                            maxLines = 1,
-                            softWrap = false
-                        )
-                    }
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "${state.wishlistGames.size} items",
+                    text = "${state.wishlistGames.size} ${TextKeys.Collection.STATS_GAMES}",
                     style = CodeSkuStyle.copy(fontSize = 11.sp),
                     color = StatusUnverifiedFg
                 )
@@ -169,6 +80,21 @@ fun WishlistScreen(
                         )
                     }
                 }
+            }
+
+            // Botão Import CSV
+            Button(
+                onClick = { actions.onOpenImportDialog() },
+                colors = ButtonDefaults.buttonColors(containerColor = ConsoleGamecube),
+                shape = RoundedCornerShape(4.dp),
+                modifier = Modifier.height(30.dp).defaultMinSize(minHeight = 30.dp),
+                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp)
+            ) {
+                Text(
+                    text = "${TextKeys.Wishlist.IMPORT_BUTTON} 📥",
+                    style = LabelFilterStyle.copy(fontSize = 12.sp),
+                    color = Color.White
+                )
             }
         }
 
@@ -216,7 +142,6 @@ fun WishlistScreen(
                             actions.onGameSelected(game)
                             onNavigateToDetail(game)
                         },
-                        onMoveToHunting = { actions.onMoveToHunting(game) },
                         onRetryEnrichment = { actions.onRetryEnrichment(game) }
                     )
                     HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
@@ -227,14 +152,13 @@ fun WishlistScreen(
 }
 
 /**
- * Linha de jogo da Wishlist com badge de enriquecimento e ação de migração.
+ * Linha de jogo da Wishlist com badge de enriquecimento.
  */
 @Composable
 private fun WishlistGameRow(
     game: GameItem,
     isSelected: Boolean,
     onClick: () -> Unit,
-    onMoveToHunting: () -> Unit,
     onRetryEnrichment: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -275,7 +199,7 @@ private fun WishlistGameRow(
         // Badge de enriquecimento
         EnrichmentBadge(status = game.enrichmentStatus)
 
-        // Ação: mover para Hunting ou retry
+        // Ação de retry caso enriquecimento tenha falhado
         if (game.enrichmentStatus == EnrichmentStatus.FAILED) {
             Box(
                 modifier = Modifier
@@ -287,19 +211,6 @@ private fun WishlistGameRow(
                     text = "🔄 Retry",
                     style = LabelBadgeStyle.copy(fontSize = 10.sp),
                     color = StatusRiskFg
-                )
-            }
-        } else if (game.enrichmentStatus == EnrichmentStatus.COMPLETE) {
-            Box(
-                modifier = Modifier
-                    .background(StatusEditionBg, RoundedCornerShape(4.dp))
-                    .clickable { onMoveToHunting() }
-                    .padding(horizontal = 6.dp, vertical = 3.dp)
-            ) {
-                Text(
-                    text = TextKeys.Wishlist.MOVE_TO_HUNTING,
-                    style = LabelBadgeStyle.copy(fontSize = 10.sp),
-                    color = StatusEditionFg
                 )
             }
         }

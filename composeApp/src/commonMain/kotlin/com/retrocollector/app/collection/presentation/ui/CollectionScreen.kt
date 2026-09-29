@@ -36,7 +36,6 @@ fun CollectionScreen(
     onNavigateToDetail: (GameItem) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    var isSearchFocused by remember { mutableStateOf(false) }
     val currency = remember(state.settings) {
         state.settings.defaultCurrency.ifBlank { "CHF" }
     }
@@ -51,93 +50,6 @@ fun CollectionScreen(
             games = state.collectionGames,
             currency = currency
         )
-
-        // Barra de pesquisa
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(SurfaceCard)
-                .border(BorderStroke(1.dp, BorderSubtle))
-                .padding(10.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(32.dp)
-                    .background(SurfaceBase, RoundedCornerShape(4.dp))
-                    .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
-                    .padding(horizontal = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Text(text = "🔍", fontSize = 12.sp)
-                androidx.compose.foundation.text.BasicTextField(
-                    value = state.searchQuery,
-                    onValueChange = { actions.onSearchQueryChange(it) },
-                    textStyle = CodeSkuStyle.copy(color = TextPrimary),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onFocusChanged { isSearchFocused = it.isFocused },
-                    singleLine = true,
-                    decorationBox = { innerTextField ->
-                        Box(contentAlignment = Alignment.CenterStart) {
-                            if (state.searchQuery.isEmpty() && !isSearchFocused) {
-                                Text(
-                                    text = TextKeys.Dashboard.SEARCH_PLACEHOLDER,
-                                    style = CodeSkuStyle.copy(fontSize = 11.sp, color = StatusUnverifiedFg)
-                                )
-                            }
-                            innerTextField()
-                        }
-                    }
-                )
-            }
-        }
-
-        // Filtro de plataformas
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(SurfaceCard)
-                .border(BorderStroke(1.dp, BorderSubtle))
-                .padding(10.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                items(ConsolePlatform.entries.toList()) { platform ->
-                    val isSelected = state.selectedPlatform == platform
-                    val color = when (platform) {
-                        ConsolePlatform.N64 -> ConsoleN64
-                        ConsolePlatform.GAMECUBE -> ConsoleGamecube
-                        ConsolePlatform.PS3 -> ConsolePS3
-                        ConsolePlatform.SWITCH -> ConsoleSwitch
-                    }
-                    Row(
-                        modifier = Modifier
-                            .background(if (isSelected) color else SurfaceElevated, RoundedCornerShape(4.dp))
-                            .clickable { actions.onPlatformSelect(platform) }
-                            .padding(horizontal = 8.dp, vertical = 5.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = platform.displayName,
-                            style = LabelFilterStyle,
-                            color = Color.White,
-                            maxLines = 1,
-                            softWrap = false
-                        )
-                    }
-                }
-            }
-
-            Text(
-                text = "${state.collectionGames.size} items",
-                style = CodeSkuStyle.copy(fontSize = 11.sp),
-                color = StatusUnverifiedFg
-            )
-        }
 
         // Lista de jogos da coleção
         if (state.collectionGames.isEmpty()) {

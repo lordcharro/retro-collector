@@ -23,7 +23,7 @@ data class DiscoveredGameItem(
     val isAlreadyInWishlist: Boolean = false
 ) {
     fun toGameItem(
-        status: CollectionStatus = CollectionStatus.HUNTING,
+        status: CollectionStatus = CollectionStatus.WISHLIST,
         targetPrice: Double? = targetPriceChfOverride()
     ): GameItem {
         return GameItem(

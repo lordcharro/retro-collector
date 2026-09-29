@@ -81,7 +81,7 @@ class GetDashboardGamesUseCaseTest {
             productCode = "DOL-P-G4BE",
             spottedLocation = "Bern",
             languageStatus = LanguageStatus.SUBS_ONLY,
-            collectionStatus = CollectionStatus.HUNTING
+            collectionStatus = CollectionStatus.WISHLIST
         ),
         GameItem(
             id = "gc_zelda",
@@ -136,7 +136,7 @@ class GetDashboardGamesUseCaseTest {
 
     @Test
     fun `filters games by collection status`() = runTest {
-        val result = useCase(DashboardFilterCriteria(status = CollectionStatus.HUNTING)).first()
+        val result = useCase(DashboardFilterCriteria(status = CollectionStatus.WISHLIST)).first()
         assertEquals(1, result.size)
         assertEquals("Resident Evil 4", result.first().title)
     }
