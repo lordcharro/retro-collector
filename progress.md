@@ -32,7 +32,21 @@ Este ficheiro resume o estado atual do desenvolvimento, os artefactos gerados, e
 * [x] **Matriz de SKUs Seguros vs Arriscados**: Destaque para códigos europeus seguros (ex: `DOL-P-GALE (NOE/FRG)`) versus edições USK alemãs monolíngues sem inglês.
 * [x] **Tipografia e Cores**: Estilo Zinc escuro (`#09090B`, `#18181B`, `#27272A`), `FontFamily.Monospace` (JetBrains Mono) para códigos e preços em CHF, e cores cromáticas para as consolas (N64, GameCube, PS3, Switch).
 
-### 3. Compilação e Build Multiplataforma
+### 3. Secções de Wishlist, Coleção & Radar de Descoberta
+* [x] **Gestão de Wishlist com Importação CSV**:
+  * Importação em lote a partir de ficheiros ou texto CSV (`título, plataforma`).
+  * Enriquecimento automático em background com IA Gemini para inferência de SKUs europeus, anos de lançamento e preços de mercado em CHF.
+  * Estados visuais de enriquecimento (`PENDING`, `ENRICHING`, `COMPLETE`, `FAILED`) com botões de retry e passagem rápida para "Caça Ativa" (`HUNTING`).
+  * Deteção preventiva de duplicados (`DuplicateDetectionBanner`).
+* [x] **Secção de Coleção Própria (`OWNED`)**:
+  * Ecrã dedicado para os jogos já adquiridos com `CollectionStatsBar` apresentando contagem de jogos e valor total acumulado da coleção em CHF.
+* [x] **Radar de Descoberta de Jogos (`DISCOVER`)**:
+  * Exploração por chips de géneros predefinidos (*Point & Click*, *FPS & Tático*, *Estratégia & RTS*, *Survival Horror*, *RPG & JRPG*, *Stealth*, *Ação & Aventura*, *Plataformas*, *Pérolas Ocultas*).
+  * Pesquisa livre com linguagem natural e deteção de ports/remasters modernos para Nintendo Switch e PS3.
+  * Catálogo curado offline ([`CuratedDiscoveryDataSource`](file:///Users/ivolopes/development/physical%20disk%20follow/composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/datasource/CuratedDiscoveryDataSource.kt)) e cache em memória para proteção rigorosa da quota gratuita do Gemini.
+  * Estante de **Jogos Similares** integrada diretamente na vista detalhada dos dossiers.
+
+### 4. Compilação e Build Multiplataforma
 * [x] **macOS Desktop (JVM)**: Compilado com sucesso via `./gradlew compileKotlinDesktop` e empacotado em `RetroCollector-macos-x64-1.0.0.jar`.
 * [x] **Android Nativo**: Compilado com sucesso via `./gradlew :composeApp:assembleDebug`.
 * [x] **WebAssembly (wasmJs)**: Compilado e otimizado com sucesso via `./gradlew :composeApp:wasmJsBrowserDistribution`.
