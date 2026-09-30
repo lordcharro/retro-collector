@@ -21,20 +21,22 @@ import com.retrocollector.app.core.domain.model.AppSection
 import com.retrocollector.app.core.presentation.components.*
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
-import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
-import com.retrocollector.app.wishlist.presentation.ui.WishlistScreen
 import com.retrocollector.app.collection.presentation.ui.CollectionScreen
+import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
 import com.retrocollector.app.discovery.presentation.ui.DiscoveryScreen
+import com.retrocollector.app.discovery.presentation.viewmodel.DiscoveryUiState
+import com.retrocollector.app.wishlist.presentation.ui.WishlistScreen
+import com.retrocollector.app.wishlist.presentation.viewmodel.WishlistUiState
 
 @Composable
 fun MobileFieldDashboardScreen(
     state: DashboardUiState,
+    discoveryState: DiscoveryUiState = DiscoveryUiState(),
+    wishlistState: WishlistUiState = WishlistUiState(),
     actions: DashboardActions = DashboardActions(),
     onNavigateToDetail: (GameItem) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    var isSearchFocused by remember { mutableStateOf(false) }
-
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = SurfaceBase,
@@ -164,11 +166,11 @@ fun MobileFieldDashboardScreen(
     ) { paddingValues ->
         if (state.activeSection == AppSection.DISCOVER) {
             DiscoveryScreen(
-                discoveredGames = state.discoveredGames,
-                selectedGenre = state.selectedDiscoveryGenre,
-                selectedPlatform = state.selectedDiscoveryPlatform,
-                isDiscovering = state.isDiscovering,
-                searchQuery = state.discoverySearchQuery,
+                discoveredGames = discoveryState.discoveredGames,
+                selectedGenre = discoveryState.selectedGenre,
+                selectedPlatform = discoveryState.selectedPlatform,
+                isDiscovering = discoveryState.isDiscovering,
+                searchQuery = discoveryState.searchQuery,
                 onQueryChange = actions.onDiscoveryQueryChange,
                 onSearchSubmit = actions.onDiscoverySearchSubmit,
                 onGenreSelect = actions.onDiscoveryGenreSelect,
@@ -192,45 +194,26 @@ fun MobileFieldDashboardScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Barra de Pesquisa de SKU Tática Compartilhada
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(SurfaceCard, RoundedCornerShape(8.dp))
-                        .border(1.dp, BorderSubtle, RoundedCornerShape(8.dp))
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(text = "🔍", fontSize = 14.sp)
-                    androidx.compose.foundation.text.BasicTextField(
-                        value = state.searchQuery,
-                        onValueChange = { actions.onSearchQueryChange(it) },
-                        textStyle = BodyMd.copy(color = TextPrimary),
-                        modifier = Modifier
-                            .weight(1f)
-                            .onFocusChanged { isSearchFocused = it.isFocused },
-                        singleLine = true,
-                        decorationBox = { innerTextField ->
-                            Box(contentAlignment = Alignment.CenterStart) {
-                                if (state.searchQuery.isEmpty() && !isSearchFocused) {
-                                    Text(
-                                        text = TextKeys.Dashboard.SEARCH_PLACEHOLDER,
-                                        style = BodySm.copy(color = TextSecondary)
-                                    )
-                                }
-                                innerTextField()
-                            }
+                TactileSearchField(
+                    query = state.searchQuery,
+                    onQueryChange = { actions.onSearchQueryChange(it) },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = TextKeys.Dashboard.SEARCH_PLACEHOLDER,
+                    backgroundColor = SurfaceCard,
+                    shape = RoundedCornerShape(8.dp),
+                    textStyle = BodyMd.copy(color = TextPrimary),
+                    placeholderStyle = BodySm.copy(color = TextSecondary),
+                    trailingContent = {
+                        Box(
+                            modifier = Modifier
+                                .background(SurfaceElevated, RoundedCornerShape(4.dp))
+                                .clickable { actions.onOpenScanDialog() }
+                                .padding(horizontal = 6.dp, vertical = 4.dp)
+                        ) {
+                            Text(text = "📷", fontSize = 12.sp)
                         }
-                    )
-                    Box(
-                        modifier = Modifier
-                            .background(SurfaceElevated, RoundedCornerShape(4.dp))
-                            .clickable { actions.onOpenScanDialog() }
-                            .padding(horizontal = 6.dp, vertical = 4.dp)
-                    ) {
-                        Text(text = "📷", fontSize = 12.sp)
                     }
-                }
+                )
 
                 // Grelha de Consola
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -342,8 +325,11 @@ fun MobileFieldDashboardScreen(
 
                     AppSection.WISHLIST -> {
                         WishlistScreen(
-                            state = state,
-                            actions = actions,
+                            state = wishlistState,
+                            selectedGameId = state.selectedGame?.id,
+                            onGameSelected = actions.onGameSelected,
+                            onOpenImportDialog = actions.onOpenImportDialog,
+                            onRetryEnrichment = actions.onRetryEnrichment,
                             onNavigateToDetail = { game ->
                                 actions.onGameSelected(game)
                                 onNavigateToDetail(game)

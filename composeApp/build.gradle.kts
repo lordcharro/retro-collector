@@ -41,6 +41,7 @@ kotlin {
             implementation(libs.androidx.appcompat)
             implementation(libs.androidx.core.ktx)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.koin.android)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -49,6 +50,9 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
 
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)

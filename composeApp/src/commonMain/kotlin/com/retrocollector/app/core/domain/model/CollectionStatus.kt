@@ -16,6 +16,7 @@ enum class CollectionStatus(
     companion object {
         val displayStatuses: List<CollectionStatus> = listOf(WISHLIST, OWNED, PASS)
 
+        @Suppress("DEPRECATION")
         fun fromString(value: String?): CollectionStatus =
             entries.find { it.name.equals(value, ignoreCase = true) || it.label.equals(value, ignoreCase = true) }
                 ?.let { if (it == HUNTING) WISHLIST else it }

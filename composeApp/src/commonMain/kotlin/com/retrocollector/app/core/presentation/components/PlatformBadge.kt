@@ -8,6 +8,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.presentation.theme.*
@@ -29,6 +31,9 @@ fun PlatformBadge(
     Box(
         modifier = modifier
             .background(bgColor, RoundedCornerShape(4.dp))
+            .semantics {
+                contentDescription = "Plataforma: ${platform.displayName}"
+            }
             .padding(horizontal = 6.dp, vertical = 2.dp)
     ) {
         Text(

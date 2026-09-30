@@ -10,6 +10,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.retrocollector.app.core.domain.model.LanguageStatus
 import com.retrocollector.app.core.presentation.theme.*
@@ -29,7 +31,11 @@ fun LanguageRiskBadge(
         LanguageStatus.UNVERIFIED -> Triple(StatusUnverifiedBg, StatusUnverifiedFg, "❓")
     }
 
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier.semantics(mergeDescendants = true) {
+            contentDescription = "Estado de idioma: ${status.label}${if (showDescription && status.subLabel.isNotBlank()) ". ${status.subLabel}" else ""}"
+        }
+    ) {
         Row(
             modifier = Modifier
                 .background(bgColor, RoundedCornerShape(4.dp))

@@ -20,7 +20,9 @@ import androidx.compose.ui.unit.sp
 import com.retrocollector.app.core.domain.model.DiscoveredGameItem
 import com.retrocollector.app.core.presentation.components.LanguageRiskBadge
 import com.retrocollector.app.core.presentation.components.PlatformBadge
+import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
+import com.retrocollector.app.core.presentation.util.PriceFormatter
 
 @Composable
 fun DiscoveredGameCard(
@@ -69,7 +71,7 @@ fun DiscoveredGameCard(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = "📦 NA COLEÇÃO",
+                            text = TextKeys.Discovery.BADGE_IN_COLLECTION,
                             style = LabelBadgeStyle.copy(fontSize = 10.sp),
                             color = StatusEnglishFg
                         )
@@ -81,7 +83,7 @@ fun DiscoveredGameCard(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = "💝 NA WISHLIST",
+                            text = TextKeys.Discovery.BADGE_IN_WISHLIST,
                             style = LabelBadgeStyle.copy(fontSize = 10.sp),
                             color = StatusEditionFg
                         )
@@ -160,16 +162,12 @@ fun DiscoveredGameCard(
         ) {
             Column {
                 Text(
-                    text = "EST. MERCADO CH",
+                    text = TextKeys.Discovery.EST_MARKET_PRICE,
                     style = LabelBadgeStyle.copy(fontSize = 9.sp),
                     color = StatusUnverifiedFg
                 )
                 Text(
-                    text = game.estimatedPriceChf?.let { price ->
-                        val whole = price.toLong()
-                        val frac = ((price - whole) * 100).toLong().toString().padStart(2, '0')
-                        "CHF $whole.$frac"
-                    } ?: "CHF --",
+                    text = PriceFormatter.format(game.estimatedPriceChf, "CHF"),
                     style = CodePriceStyle.copy(fontSize = 13.sp),
                     color = TextPrimary
                 )
@@ -183,7 +181,7 @@ fun DiscoveredGameCard(
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                     modifier = Modifier.height(30.dp)
                 ) {
-                    Text(text = "🔍 Dossiê", style = LabelFilterStyle.copy(fontSize = 11.sp), color = TextPrimary)
+                    Text(text = TextKeys.Discovery.ACTION_DOSSIER, style = LabelFilterStyle.copy(fontSize = 11.sp), color = TextPrimary)
                 }
 
                 if (!game.isAlreadyInWishlist && !game.isAlreadyInCollection) {
@@ -194,10 +192,11 @@ fun DiscoveredGameCard(
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                         modifier = Modifier.height(30.dp)
                     ) {
-                        Text(text = "💝 + Wishlist", style = LabelFilterStyle.copy(fontSize = 11.sp), color = Color.White)
+                        Text(text = TextKeys.Discovery.ACTION_ADD_WISHLIST, style = LabelFilterStyle.copy(fontSize = 11.sp), color = Color.White)
                     }
                 }
             }
         }
     }
 }
+

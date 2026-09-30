@@ -20,7 +20,9 @@ import androidx.compose.ui.unit.sp
 import com.retrocollector.app.core.domain.model.DiscoveredGameItem
 import com.retrocollector.app.core.presentation.components.LanguageRiskBadge
 import com.retrocollector.app.core.presentation.components.PlatformBadge
+import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
+import com.retrocollector.app.core.presentation.util.PriceFormatter
 
 @Composable
 fun SimilarGamesShelf(
@@ -49,7 +51,7 @@ fun SimilarGamesShelf(
             ) {
                 Text(text = "🎯", fontSize = 13.sp)
                 Text(
-                    text = "JOGOS SEMELHANTES NO GÉNERO",
+                    text = TextKeys.Discovery.SHELF_TITLE,
                     style = LabelFilterStyle.copy(fontSize = 11.sp),
                     color = TextPrimary
                 )
@@ -63,7 +65,7 @@ fun SimilarGamesShelf(
                 )
             } else {
                 Text(
-                    text = "${similarGames.size} SUGESTÕES",
+                    text = "${similarGames.size} ${TextKeys.Discovery.SHELF_SUGGESTIONS}",
                     style = CodeSkuStyle.copy(fontSize = 10.sp),
                     color = StatusUnverifiedFg
                 )
@@ -78,7 +80,7 @@ fun SimilarGamesShelf(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Sem sugestões adicionais para este título.",
+                    text = TextKeys.Discovery.SHELF_EMPTY,
                     style = BodySm,
                     color = TextSecondary
                 )
@@ -89,7 +91,7 @@ fun SimilarGamesShelf(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(vertical = 4.dp)
             ) {
-                items(similarGames) { simGame ->
+                items(similarGames, key = { it.id }) { simGame ->
                     Column(
                         modifier = Modifier
                             .width(180.dp)
@@ -130,11 +132,7 @@ fun SimilarGamesShelf(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = simGame.estimatedPriceChf?.let { price ->
-                                    val whole = price.toLong()
-                                    val frac = ((price - whole) * 100).toLong().toString().padStart(2, '0')
-                                    "CHF $whole.$frac"
-                                } ?: "CHF --",
+                                text = PriceFormatter.format(simGame.estimatedPriceChf, "CHF"),
                                 style = CodePriceStyle.copy(fontSize = 11.sp),
                                 color = TextPrimary
                             )
@@ -160,3 +158,4 @@ fun SimilarGamesShelf(
         }
     }
 }
+

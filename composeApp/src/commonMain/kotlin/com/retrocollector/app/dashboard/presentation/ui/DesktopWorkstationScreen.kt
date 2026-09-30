@@ -24,21 +24,23 @@ import com.retrocollector.app.core.domain.model.AppSection
 import com.retrocollector.app.core.presentation.components.*
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
-import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
-import com.retrocollector.app.wishlist.presentation.ui.WishlistScreen
 import com.retrocollector.app.collection.presentation.ui.CollectionScreen
-import com.retrocollector.app.discovery.presentation.ui.DiscoveryScreen
+import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
 import com.retrocollector.app.discovery.presentation.components.SimilarGamesShelf
+import com.retrocollector.app.discovery.presentation.ui.DiscoveryScreen
+import com.retrocollector.app.discovery.presentation.viewmodel.DiscoveryUiState
+import com.retrocollector.app.wishlist.presentation.ui.WishlistScreen
+import com.retrocollector.app.wishlist.presentation.viewmodel.WishlistUiState
 
 @Composable
 fun DesktopWorkstationScreen(
     state: DashboardUiState,
+    discoveryState: DiscoveryUiState = DiscoveryUiState(),
+    wishlistState: WishlistUiState = WishlistUiState(),
     actions: DashboardActions = DashboardActions(),
     modifier: Modifier = Modifier
 ) {
     var followUpQuestion by remember { mutableStateOf("") }
-    var isSearchFocused by remember { mutableStateOf(false) }
-    var isChatFocused by remember { mutableStateOf(false) }
 
     Row(
         modifier = modifier
@@ -118,7 +120,7 @@ fun DesktopWorkstationScreen(
                             .background(SurfaceBase, RoundedCornerShape(2.dp))
                             .padding(horizontal = 4.dp, vertical = 1.dp)
                     ) {
-                        Text(text = "${state.catalogGames.size}", style = CodeSkuStyle.copy(fontSize = 11.sp), color = StatusUnverifiedFg)
+                        Text(text = "${state.games.size}", style = CodeSkuStyle.copy(fontSize = 11.sp), color = StatusUnverifiedFg)
                     }
                 }
 
@@ -146,7 +148,7 @@ fun DesktopWorkstationScreen(
                             .background(SurfaceBase, RoundedCornerShape(2.dp))
                             .padding(horizontal = 4.dp, vertical = 1.dp)
                     ) {
-                        val discCount = state.discoveredGames.size
+                        val discCount = discoveryState.discoveredGames.size
                         Text(
                             text = "$discCount",
                             style = CodeSkuStyle.copy(fontSize = 11.sp),
@@ -179,7 +181,7 @@ fun DesktopWorkstationScreen(
                             .background(SurfaceBase, RoundedCornerShape(2.dp))
                             .padding(horizontal = 4.dp, vertical = 1.dp)
                     ) {
-                        val wishCount = state.wishlistGames.size
+                        val wishCount = wishlistState.wishlistGames.size
                         Text(
                             text = "$wishCount",
                             style = CodeSkuStyle.copy(fontSize = 11.sp),
@@ -326,38 +328,13 @@ fun DesktopWorkstationScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Caixa de Pesquisa rápida (altura 32dp alinhada)
-                Row(
-                    modifier = Modifier
-                        .width(420.dp)
-                        .height(32.dp)
-                        .background(SurfaceBase, RoundedCornerShape(4.dp))
-                        .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
-                        .padding(horizontal = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Text(text = "🔍", fontSize = 12.sp)
-                    androidx.compose.foundation.text.BasicTextField(
-                        value = state.searchQuery,
-                        onValueChange = { actions.onSearchQueryChange(it) },
-                        textStyle = CodeSkuStyle.copy(color = TextPrimary),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onFocusChanged { isSearchFocused = it.isFocused },
-                        singleLine = true,
-                        decorationBox = { innerTextField ->
-                            Box(contentAlignment = Alignment.CenterStart) {
-                                if (state.searchQuery.isEmpty() && !isSearchFocused) {
-                                    Text(
-                                        text = TextKeys.Dashboard.SEARCH_PLACEHOLDER,
-                                        style = CodeSkuStyle.copy(fontSize = 11.sp, color = StatusUnverifiedFg)
-                                    )
-                                }
-                                innerTextField()
-                            }
-                        }
-                    )
-                }
+                TactileSearchField(
+                    query = state.searchQuery,
+                    onQueryChange = { actions.onSearchQueryChange(it) },
+                    placeholder = TextKeys.Dashboard.SEARCH_PLACEHOLDER,
+                    modifier = Modifier.width(420.dp),
+                    minHeight = 32.dp
+                )
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -430,7 +407,7 @@ fun DesktopWorkstationScreen(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    items(ConsolePlatform.entries.toList()) { platform ->
+                                    items(ConsolePlatform.entries.toList(), key = { it.id }) { platform ->
                                         val isSelected = state.selectedPlatform == platform
                                         val color = when (platform) {
                                             ConsolePlatform.N64 -> ConsoleN64
@@ -502,30 +479,33 @@ fun DesktopWorkstationScreen(
                     }
 
                     AppSection.DISCOVER -> {
-                            DiscoveryScreen(
-                                discoveredGames = state.discoveredGames,
-                                selectedGenre = state.selectedDiscoveryGenre,
-                                selectedPlatform = state.selectedDiscoveryPlatform,
-                                isDiscovering = state.isDiscovering,
-                                searchQuery = state.discoverySearchQuery,
-                                onQueryChange = actions.onDiscoveryQueryChange,
-                                onSearchSubmit = actions.onDiscoverySearchSubmit,
-                                onGenreSelect = actions.onDiscoveryGenreSelect,
-                                onPlatformSelect = actions.onDiscoveryPlatformSelect,
-                                onOpenDossier = actions.onOpenDiscoveredDossier,
-                                onAddToWishlist = actions.onAddDiscoveredToWishlist,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
+                        DiscoveryScreen(
+                            discoveredGames = discoveryState.discoveredGames,
+                            selectedGenre = discoveryState.selectedGenre,
+                            selectedPlatform = discoveryState.selectedPlatform,
+                            isDiscovering = discoveryState.isDiscovering,
+                            searchQuery = discoveryState.searchQuery,
+                            onQueryChange = actions.onDiscoveryQueryChange,
+                            onSearchSubmit = actions.onDiscoverySearchSubmit,
+                            onGenreSelect = actions.onDiscoveryGenreSelect,
+                            onPlatformSelect = actions.onDiscoveryPlatformSelect,
+                            onOpenDossier = actions.onOpenDiscoveredDossier,
+                            onAddToWishlist = actions.onAddDiscoveredToWishlist,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
 
-                        AppSection.WISHLIST -> {
-                            WishlistScreen(
-                                state = state,
-                                actions = actions,
-                                onNavigateToDetail = { actions.onGameSelected(it) },
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
+                    AppSection.WISHLIST -> {
+                        WishlistScreen(
+                            state = wishlistState,
+                            selectedGameId = state.selectedGame?.id,
+                            onGameSelected = actions.onGameSelected,
+                            onOpenImportDialog = actions.onOpenImportDialog,
+                            onRetryEnrichment = actions.onRetryEnrichment,
+                            onNavigateToDetail = { actions.onGameSelected(it) },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
 
                         AppSection.COLLECTION -> {
                             CollectionScreen(
@@ -589,43 +569,10 @@ fun DesktopWorkstationScreen(
                                     }
         
                                     // Botões de Estado de Coleção: Hunting, Owned, Avoid
-                                    Row(
-                                        modifier = Modifier
-                                            .wrapContentWidth()
-                                            .background(SurfaceBase, RoundedCornerShape(4.dp))
-                                            .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
-                                            .padding(2.dp),
-                                        horizontalArrangement = Arrangement.spacedBy(2.dp)
-                                    ) {
-                                        CollectionStatus.displayStatuses.forEach { status ->
-                                            @Suppress("DEPRECATION")
-                                            val isCurrent = game.collectionStatus == status ||
-                                                (status == CollectionStatus.WISHLIST && game.collectionStatus == CollectionStatus.HUNTING)
-                                            val bg = if (isCurrent) {
-                                                when (status) {
-                                                    CollectionStatus.WISHLIST -> StatusEditionBg
-                                                    CollectionStatus.OWNED -> StatusEnglishBg
-                                                    CollectionStatus.PASS -> StatusRiskBg
-                                                    else -> StatusEditionBg
-                                                }
-                                            } else Color.Transparent
-
-                                            Box(
-                                                modifier = Modifier
-                                                    .background(bg, RoundedCornerShape(3.dp))
-                                                    .clickable { actions.onUpdateGameStatus(game, status) }
-                                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                                            ) {
-                                                Text(
-                                                    text = "${status.icon} ${status.label}",
-                                                    style = LabelFilterStyle,
-                                                    color = TextPrimary,
-                                                    maxLines = 1,
-                                                    softWrap = false
-                                                )
-                                            }
-                                        }
-                                    }
+                                    CollectionStatusSelector(
+                                        currentStatus = game.collectionStatus,
+                                        onStatusSelect = { actions.onUpdateGameStatus(game, it) }
+                                    )
                                 }
         
                                 // Faixa de Dossiê Tático: Matriz de SKUs e Radar de Preço
@@ -746,31 +693,16 @@ fun DesktopWorkstationScreen(
                                     }
         
                                     Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(SurfaceBase, RoundedCornerShape(6.dp))
-                                            .border(1.dp, BorderSubtle, RoundedCornerShape(6.dp))
-                                            .padding(horizontal = 10.dp, vertical = 6.dp),
-                                        verticalAlignment = Alignment.CenterVertically
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        androidx.compose.foundation.text.BasicTextField(
+                                        TactileTextField(
                                             value = followUpQuestion,
                                             onValueChange = { followUpQuestion = it },
-                                            textStyle = BodyMd.copy(color = TextPrimary),
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .onFocusChanged { isChatFocused = it.isFocused },
-                                            decorationBox = { innerTextField ->
-                                                Box(contentAlignment = Alignment.CenterStart) {
-                                                    if (followUpQuestion.isEmpty() && !isChatFocused) {
-                                                        Text(
-                                                            text = TextKeys.Dossier.CHAT_PLACEHOLDER,
-                                                            style = BodyMd.copy(color = StatusUnverifiedFg)
-                                                        )
-                                                    }
-                                                    innerTextField()
-                                                }
-                                            }
+                                            placeholder = TextKeys.Dossier.CHAT_PLACEHOLDER,
+                                            modifier = Modifier.weight(1f),
+                                            singleLine = true
                                         )
         
                                         Button(

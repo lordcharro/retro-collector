@@ -8,6 +8,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -16,6 +22,7 @@ import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.GameItem
 import com.retrocollector.app.core.domain.model.LanguageStatus
 import com.retrocollector.app.core.presentation.theme.*
+import com.retrocollector.app.core.presentation.util.PriceFormatter
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -37,7 +44,17 @@ fun GameListItemRow(
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .defaultMinSize(minHeight = 48.dp)
             .background(rowBg)
+            .semantics(mergeDescendants = true) {
+                role = Role.Button
+                contentDescription = "${game.title}, Plataforma ${game.platform.displayName}, ${game.languageStatus.label}"
+                stateDescription = if (isSelected) "Selecionado" else "Não selecionado"
+                onClick(label = "Abrir dossiê de ${game.title}") {
+                    onClick()
+                    true
+                }
+            }
             .clickable(onClick = onClick)
     ) {
         // Indicador lateral de seleção ativa
@@ -132,15 +149,9 @@ fun GameListItemRow(
                 verticalArrangement = Arrangement.spacedBy(3.dp)
             ) {
                 val displayPrice = game.askingPriceChf ?: game.targetPriceChf ?: game.paidPriceChf
-                val priceFormatted = if (displayPrice != null) {
-                    val whole = displayPrice.toLong()
-                    val fraction = ((displayPrice - whole) * 100).toLong()
-                    val fracStr = if (fraction < 10) "0$fraction" else "$fraction"
-                    "CHF $whole.$fracStr"
-                } else "—"
 
                 Text(
-                    text = priceFormatted,
+                    text = PriceFormatter.format(displayPrice, "CHF"),
                     style = CodePriceStyle,
                     color = TextPrimary,
                     maxLines = 1,

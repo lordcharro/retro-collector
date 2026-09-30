@@ -43,3 +43,9 @@ val AccentBlue = Color(0xFF93CCFF)
 val AccentGreen = Color(0xFF4EDEA3)
 val UserChatBg = Color(0xFF2E2A5C)
 val UserChatBorder = Color(0xFF3F3A78)
+
+// Enrichment Status Tokens
+val EnrichmentPendingBg = Color(0xFF3F3F46)
+val EnrichmentPendingFg = StatusUnverifiedFg
+val EnrichmentRunningBg = Color(0xFF1E3A5F)
+val EnrichmentRunningFg = Color(0xFF3B82F6)

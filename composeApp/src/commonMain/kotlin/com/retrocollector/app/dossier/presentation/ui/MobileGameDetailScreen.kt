@@ -40,7 +40,6 @@ fun MobileGameDetailScreen(
     onAddSimilarGameToWishlist: (DiscoveredGameItem) -> Unit = {}
 ) {
     var followUpQuestion by remember { mutableStateOf("") }
-    var isChatFocused by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -86,43 +85,11 @@ fun MobileGameDetailScreen(
             ) {
                 // Estado da Coleção (Hunting, Owned, Avoid)
                 item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(SurfaceCard, RoundedCornerShape(6.dp))
-                            .border(1.dp, BorderSubtle, RoundedCornerShape(6.dp))
-                            .padding(4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        CollectionStatus.displayStatuses.forEach { status ->
-                            @Suppress("DEPRECATION")
-                            val isCurrent = game.collectionStatus == status ||
-                                (status == CollectionStatus.WISHLIST && game.collectionStatus == CollectionStatus.HUNTING)
-                            val bg = if (isCurrent) {
-                                when (status) {
-                                    CollectionStatus.WISHLIST -> StatusEditionBg
-                                    CollectionStatus.OWNED -> StatusEnglishBg
-                                    CollectionStatus.PASS -> StatusRiskBg
-                                    else -> StatusEditionBg
-                                }
-                            } else Color.Transparent
-
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .background(bg, RoundedCornerShape(4.dp))
-                                    .clickable { onUpdateGameStatus(game, status) }
-                                    .padding(vertical = 6.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "${status.icon} ${status.label}",
-                                    style = LabelFilterStyle.copy(fontSize = 11.sp),
-                                    color = if (isCurrent) TextPrimary else TextSecondary
-                                )
-                            }
-                        }
-                    }
+                    CollectionStatusSelector(
+                        currentStatus = game.collectionStatus,
+                        onStatusSelect = { onUpdateGameStatus(game, it) },
+                        fillMaxWidth = true
+                    )
                 }
 
                 // Banner de Status de Idioma
@@ -280,27 +247,12 @@ fun MobileGameDetailScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    androidx.compose.foundation.text.BasicTextField(
+                    TactileTextField(
                         value = followUpQuestion,
                         onValueChange = { followUpQuestion = it },
-                        textStyle = BodyMd.copy(color = TextPrimary),
-                        modifier = Modifier
-                            .weight(1f)
-                            .background(SurfaceBase, RoundedCornerShape(4.dp))
-                            .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
-                            .padding(8.dp)
-                            .onFocusChanged { isChatFocused = it.isFocused },
-                        decorationBox = { innerTextField ->
-                            Box(contentAlignment = Alignment.CenterStart) {
-                                if (followUpQuestion.isEmpty() && !isChatFocused) {
-                                    Text(
-                                        text = TextKeys.Dossier.CHAT_PLACEHOLDER,
-                                        style = BodySm.copy(color = StatusUnverifiedFg)
-                                    )
-                                }
-                                innerTextField()
-                            }
-                        }
+                        placeholder = TextKeys.Dossier.CHAT_PLACEHOLDER,
+                        modifier = Modifier.weight(1f),
+                        singleLine = true
                     )
 
                     Button(

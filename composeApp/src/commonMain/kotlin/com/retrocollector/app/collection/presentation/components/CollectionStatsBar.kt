@@ -4,7 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -15,6 +14,7 @@ import androidx.compose.ui.unit.sp
 import com.retrocollector.app.core.domain.model.GameItem
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
+import com.retrocollector.app.core.presentation.util.PriceFormatter
 
 /**
  * Barra de estatísticas da coleção pessoal.
@@ -63,7 +63,7 @@ fun CollectionStatsBar(
             Text(text = "💰", fontSize = 14.sp)
             if (hasAnyPrice) {
                 Text(
-                    text = "$currency ${formatPrice(totalValue)}",
+                    text = PriceFormatter.format(totalValue, currency),
                     style = CodePriceStyle.copy(fontSize = 14.sp),
                     color = StatusEnglishFg
                 )
@@ -83,10 +83,4 @@ fun CollectionStatsBar(
     }
 }
 
-private fun formatPrice(price: Double): String {
-    val rounded = (price * 100).toLong()
-    val whole = rounded / 100
-    val fraction = rounded % 100
-    return "$whole.${fraction.toString().padStart(2, '0')}"
-}
 

@@ -6,14 +6,12 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -23,8 +21,7 @@ import com.retrocollector.app.core.presentation.components.EnrichmentBadge
 import com.retrocollector.app.core.presentation.components.PlatformBadge
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
-import com.retrocollector.app.dashboard.presentation.ui.DashboardActions
-import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
+import com.retrocollector.app.wishlist.presentation.viewmodel.WishlistUiState
 
 /**
  * Ecrã da Wishlist — lista tática de jogos desejados com suporte
@@ -32,8 +29,11 @@ import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
  */
 @Composable
 fun WishlistScreen(
-    state: DashboardUiState,
-    actions: DashboardActions,
+    state: WishlistUiState,
+    selectedGameId: String? = null,
+    onGameSelected: (GameItem) -> Unit = {},
+    onOpenImportDialog: () -> Unit = {},
+    onRetryEnrichment: (GameItem) -> Unit = {},
     onNavigateToDetail: (GameItem) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -84,7 +84,7 @@ fun WishlistScreen(
 
             // Botão Import CSV
             Button(
-                onClick = { actions.onOpenImportDialog() },
+                onClick = onOpenImportDialog,
                 colors = ButtonDefaults.buttonColors(containerColor = ConsoleGamecube),
                 shape = RoundedCornerShape(4.dp),
                 modifier = Modifier.height(30.dp).defaultMinSize(minHeight = 30.dp),
@@ -118,7 +118,7 @@ fun WishlistScreen(
                         color = TextSecondary
                     )
                     Button(
-                        onClick = { actions.onOpenImportDialog() },
+                        onClick = onOpenImportDialog,
                         colors = ButtonDefaults.buttonColors(containerColor = ConsoleGamecube),
                         shape = RoundedCornerShape(6.dp)
                     ) {
@@ -137,12 +137,12 @@ fun WishlistScreen(
                 items(state.wishlistGames, key = { it.id }) { game ->
                     WishlistGameRow(
                         game = game,
-                        isSelected = state.selectedGame?.id == game.id,
+                        isSelected = selectedGameId == game.id,
                         onClick = {
-                            actions.onGameSelected(game)
+                            onGameSelected(game)
                             onNavigateToDetail(game)
                         },
-                        onRetryEnrichment = { actions.onRetryEnrichment(game) }
+                        onRetryEnrichment = { onRetryEnrichment(game) }
                     )
                     HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
                 }

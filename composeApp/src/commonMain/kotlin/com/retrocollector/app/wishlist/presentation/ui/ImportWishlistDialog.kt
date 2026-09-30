@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.retrocollector.app.core.presentation.components.TactileTextField
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.wishlist.domain.usecase.ImportResult
@@ -34,7 +35,6 @@ fun ImportWishlistDialog(
     modifier: Modifier = Modifier
 ) {
     var csvText by remember { mutableStateOf("") }
-    var isFocused by remember { mutableStateOf(false) }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -79,34 +79,16 @@ fun ImportWishlistDialog(
                 }
 
                 // Campo de texto multilinha para CSV
-                Box(
+                TactileTextField(
+                    value = csvText,
+                    onValueChange = { csvText = it },
+                    placeholder = "Enter one game per line: title, platform",
+                    singleLine = false,
+                    shape = RoundedCornerShape(6.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(140.dp)
-                        .background(SurfaceBase, RoundedCornerShape(6.dp))
-                        .border(1.dp, if (isFocused) AccentBlue else BorderSubtle, RoundedCornerShape(6.dp))
-                        .padding(10.dp)
-                ) {
-                    androidx.compose.foundation.text.BasicTextField(
-                        value = csvText,
-                        onValueChange = { csvText = it },
-                        textStyle = BodyMd.copy(color = TextPrimary),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .onFocusChanged { isFocused = it.isFocused },
-                        decorationBox = { innerTextField ->
-                            Box {
-                                if (csvText.isEmpty() && !isFocused) {
-                                    Text(
-                                        text = "Enter one game per line: title, platform",
-                                        style = BodySm.copy(color = StatusUnverifiedFg)
-                                    )
-                                }
-                                innerTextField()
-                            }
-                        }
-                    )
-                }
+                )
 
                 // Resultado da importação (se existir)
                 if (importResult != null) {

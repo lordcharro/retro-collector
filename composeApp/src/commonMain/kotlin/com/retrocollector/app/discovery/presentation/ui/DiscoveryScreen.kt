@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.sp
 import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.DiscoveredGameItem
 import com.retrocollector.app.core.domain.model.GameGenre
+import com.retrocollector.app.core.presentation.components.TactileSearchField
+import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.discovery.presentation.components.DiscoveredGameCard
 
@@ -45,8 +47,6 @@ fun DiscoveryScreen(
     onAddToWishlist: (DiscoveredGameItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var isSearchFocused by remember { mutableStateOf(false) }
-
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -67,17 +67,17 @@ fun DiscoveryScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Text(text = "DISCOVERY RADAR", style = HeadlineMd, color = TextPrimary)
+                    Text(text = TextKeys.Discovery.TITLE, style = HeadlineMd, color = TextPrimary)
                     Box(
                         modifier = Modifier
                             .background(ConsoleGamecube, RoundedCornerShape(3.dp))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
-                        Text(text = "GEMINI AI", style = LabelBadgeStyle.copy(fontSize = 10.sp), color = Color.White)
+                        Text(text = TextKeys.Discovery.BADGE_AI, style = LabelBadgeStyle.copy(fontSize = 10.sp), color = Color.White)
                     }
                 }
                 Text(
-                    text = "Explora pérolas PAL, recomendações por género e edições seguras europeias",
+                    text = TextKeys.Discovery.SUBTITLE,
                     style = BodySm,
                     color = TextSecondary
                 )
@@ -90,38 +90,19 @@ fun DiscoveryScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(38.dp)
-                    .background(SurfaceCard, RoundedCornerShape(4.dp))
-                    .border(BorderStroke(1.dp, if (isSearchFocused) ConsoleGamecube else BorderSubtle), RoundedCornerShape(4.dp))
-                    .padding(horizontal = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(text = "✨", fontSize = 13.sp)
-                BasicTextField(
-                    value = searchQuery,
-                    onValueChange = onQueryChange,
-                    textStyle = BodyMd.copy(color = TextPrimary),
-                    modifier = Modifier
-                        .weight(1f)
-                        .onFocusChanged { isSearchFocused = it.isFocused },
-                    singleLine = true,
-                    decorationBox = { innerTextField ->
-                        Box(contentAlignment = Alignment.CenterStart) {
-                            if (searchQuery.isEmpty() && !isSearchFocused) {
-                                Text(
-                                    text = "Pergunta à IA: ex: 'jogos do género do monkey island' ou 'FPS táticos no PS3'...",
-                                    style = BodyMd.copy(fontSize = 12.sp, color = StatusUnverifiedFg)
-                                )
-                            }
-                            innerTextField()
-                        }
-                    }
-                )
-            }
+            TactileSearchField(
+                query = searchQuery,
+                onQueryChange = onQueryChange,
+                placeholder = TextKeys.Discovery.SEARCH_PLACEHOLDER,
+                onSearchSubmit = onSearchSubmit,
+                searchIcon = "✨",
+                minHeight = 38.dp,
+                backgroundColor = SurfaceCard,
+                focusedBorderColor = ConsoleGamecube,
+                textStyle = BodyMd.copy(color = TextPrimary),
+                placeholderStyle = BodyMd.copy(fontSize = 12.sp, color = StatusUnverifiedFg),
+                modifier = Modifier.weight(1f)
+            )
 
             Button(
                 onClick = { onSearchSubmit(searchQuery) },
@@ -138,7 +119,7 @@ fun DiscoveryScreen(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text(text = "RUN 🚀", style = LabelFilterStyle.copy(fontSize = 12.sp), color = Color.White)
+                    Text(text = TextKeys.Discovery.ACTION_RUN, style = LabelFilterStyle.copy(fontSize = 12.sp), color = Color.White)
                 }
             }
         }
@@ -276,7 +257,7 @@ fun DiscoveryScreen(
                             ) {
                                 Box(modifier = Modifier.size(7.dp).background(StatusUnverifiedFg, RoundedCornerShape(3.5.dp)))
                                 Text(
-                                    text = "Todas as Consolas",
+                                    text = TextKeys.Discovery.ALL_PLATFORMS,
                                     style = BodyMd,
                                     color = if (selectedPlatform == null) ConsoleGamecube else TextPrimary
                                 )
@@ -336,7 +317,7 @@ fun DiscoveryScreen(
                 ) {
                     CircularProgressIndicator(color = ConsoleGamecube, strokeWidth = 3.dp)
                     Text(
-                        text = "A consultar o arquivo de retrogaming PAL do Gemini...",
+                        text = TextKeys.Discovery.LOADING_RADAR,
                         style = BodyMd,
                         color = StatusUnverifiedFg
                     )
@@ -354,10 +335,10 @@ fun DiscoveryScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(text = "🧭", fontSize = 32.sp)
-                    Text(text = "Nenhum jogo encontrado para estes critérios.", style = HeadlineSm, color = TextPrimary)
+                    Text(text = TextKeys.Discovery.EMPTY_TITLE, style = HeadlineSm, color = TextPrimary)
                     Text(
-                        text = "Tenta selecionar outro género ou pesquisar por termos diferentes.",
-                        style = BodyMd,
+                        text = TextKeys.Discovery.EMPTY_SUBTITLE,
+                        style = BodySm,
                         color = TextSecondary
                     )
                 }
@@ -367,7 +348,7 @@ fun DiscoveryScreen(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(discoveredGames) { game ->
+                items(discoveredGames, key = { it.id }) { game ->
                     DiscoveredGameCard(
                         game = game,
                         onOpenDossier = onOpenDossier,

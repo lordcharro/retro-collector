@@ -1,26 +1,22 @@
 package com.retrocollector.app.dashboard.presentation.viewmodel
 
+import androidx.compose.runtime.Immutable
 import com.retrocollector.app.core.domain.model.*
 import com.retrocollector.app.core.domain.repository.IGameRepository
-import com.retrocollector.app.core.domain.usecase.FindDuplicateGameUseCase
 import com.retrocollector.app.dashboard.domain.model.DashboardFilterCriteria
 import com.retrocollector.app.dashboard.domain.usecase.DeleteGameUseCase
 import com.retrocollector.app.dashboard.domain.usecase.GetDashboardGamesUseCase
 import com.retrocollector.app.dashboard.domain.usecase.SaveGameUseCase
+import com.retrocollector.app.discovery.domain.usecase.GetSimilarGamesUseCase
 import com.retrocollector.app.dossier.domain.usecase.SendFollowUpChatUseCase
 import com.retrocollector.app.scanner.domain.usecase.AnalyzeGameWithGeminiUseCase
 import com.retrocollector.app.settings.domain.model.AppSettings
 import com.retrocollector.app.settings.domain.usecase.TestGeminiConnectionUseCase
 import com.retrocollector.app.settings.domain.usecase.UpdateSettingsUseCase
-import com.retrocollector.app.wishlist.domain.usecase.EnrichWishlistGameUseCase
-import com.retrocollector.app.wishlist.domain.usecase.ImportResult
-import com.retrocollector.app.wishlist.domain.usecase.ImportWishlistUseCase
-import com.retrocollector.app.discovery.domain.usecase.DiscoverGamesUseCase
-import com.retrocollector.app.discovery.domain.usecase.GetSimilarGamesUseCase
-import androidx.compose.runtime.Immutable
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -38,29 +34,13 @@ data class DashboardUiState(
     val isAnalyzing: Boolean = false,
     val isScanDialogOpen: Boolean = false,
     val isSettingsOpen: Boolean = false,
-    val statusMessage: String? = null,
     val settings: AppSettings = AppSettings(),
-    // Navegação por secções
     val activeSection: AppSection = AppSection.ACTIVITY,
-    // Wishlist
-    val isImportDialogOpen: Boolean = false,
-    val importResult: ImportResult? = null,
-    val enrichmentProgress: Pair<Int, Int>? = null, // (completed, total)
-    // Listas filtradas por secção
-    val wishlistGames: List<GameItem> = emptyList(),
     val collectionGames: List<GameItem> = emptyList(),
-    val catalogGames: List<GameItem> = emptyList(),
-    // Discovery & Similarity
-    val discoveredGames: List<DiscoveredGameItem> = emptyList(),
-    val selectedDiscoveryGenre: GameGenre = GameGenre.ALL,
-    val selectedDiscoveryPlatform: ConsolePlatform? = null,
-    val discoverySearchQuery: String = "",
-    val isDiscovering: Boolean = false,
     val similarGamesForActiveGame: List<DiscoveredGameItem> = emptyList(),
     val isSimilarGamesLoading: Boolean = false
 )
 
-@Suppress("TooManyFunctions")
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class DashboardViewModel(
     private val repository: IGameRepository,
@@ -71,9 +51,6 @@ class DashboardViewModel(
     private val sendFollowUpChatUseCase: SendFollowUpChatUseCase,
     private val updateSettingsUseCase: UpdateSettingsUseCase,
     private val testGeminiConnectionUseCase: TestGeminiConnectionUseCase = TestGeminiConnectionUseCase(repository),
-    private val importWishlistUseCase: ImportWishlistUseCase = ImportWishlistUseCase(repository),
-    private val enrichWishlistGameUseCase: EnrichWishlistGameUseCase = EnrichWishlistGameUseCase(repository),
-    private val discoverGamesUseCase: DiscoverGamesUseCase = DiscoverGamesUseCase(repository),
     private val getSimilarGamesUseCase: GetSimilarGamesUseCase = GetSimilarGamesUseCase(repository),
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val scope: CoroutineScope = CoroutineScope(dispatcher)
@@ -81,9 +58,10 @@ class DashboardViewModel(
     private val _uiState = MutableStateFlow(DashboardUiState())
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
+    private val _effects = Channel<DashboardEffect>(Channel.BUFFERED)
+    val effects: Flow<DashboardEffect> = _effects.receiveAsFlow()
+
     init {
-        // Carregar recomendações iniciais de Discovery
-        fetchDiscoveryGames()
         // Observar settings do repositório
         scope.launch {
             repository.settings.collect { set ->
@@ -115,22 +93,14 @@ class DashboardViewModel(
                         repository.getChatMessagesForGame(newSelected.id)
                     } else emptyList()
 
-                    // Separar jogos por secção
-                    val wishlist = filtered.filter {
-                        it.collectionStatus == CollectionStatus.WISHLIST ||
-                            @Suppress("DEPRECATION") (it.collectionStatus == CollectionStatus.HUNTING)
-                    }
                     val collection = filtered.filter {
                         it.collectionStatus == CollectionStatus.OWNED
                     }
-                    val activity = filtered
 
                     state.copy(
                         games = filtered,
                         selectedGame = newSelected,
                         activeChatMessages = chats,
-                        catalogGames = activity,
-                        wishlistGames = wishlist,
                         collectionGames = collection
                     )
                 }
@@ -227,7 +197,6 @@ class DashboardViewModel(
         val trimmed = question.trim()
         if (trimmed.isBlank() && imageBase64 == null) return
 
-        // Adicionar mensagem de utilizador imediatamente para atualização reativa do ecrã
         val nowMs = Clock.System.now().toEpochMilliseconds()
         val userMsg = ChatMessage(
             id = "user_$nowMs",
@@ -260,134 +229,31 @@ class DashboardViewModel(
 
     fun analyzeNewGame(query: String, imageBase64: String?, spottedLocation: String, askingPriceChf: Double?) {
         scope.launch {
-            _uiState.update { it.copy(isAnalyzing = true, statusMessage = null) }
+            _uiState.update { it.copy(isAnalyzing = true) }
             val result = analyzeGameUseCase(query, imageBase64, spottedLocation, askingPriceChf)
-            result.onSuccess { (chatMsg, gameItem) ->
+            result.onSuccess { (_, gameItem) ->
+                _uiState.update {
+                    it.copy(
+                        isAnalyzing = false,
+                        isScanDialogOpen = false
+                    )
+                }
                 if (gameItem != null) {
                     saveGameUseCase(gameItem)
                     onGameSelected(gameItem)
+                    _effects.send(DashboardEffect.ScanCompleted(gameItem))
+                    _effects.send(DashboardEffect.NavigateToGameDetail(gameItem))
                 }
-                _uiState.update {
-                    it.copy(
-                        isAnalyzing = false,
-                        isScanDialogOpen = false,
-                        statusMessage = "Análise concluída com sucesso!"
-                    )
-                }
+                _effects.send(DashboardEffect.ShowToast("Análise concluída com sucesso!"))
             }.onFailure { err ->
-                _uiState.update {
-                    it.copy(
-                        isAnalyzing = false,
-                        statusMessage = "Erro na análise: ${err.message}"
-                    )
-                }
+                _uiState.update { it.copy(isAnalyzing = false) }
+                _effects.send(DashboardEffect.ShowToast("Erro na análise: ${err.message}", isError = true))
             }
         }
     }
-
-    // ─── Navegação entre Secções ─────────────────────────────────
 
     fun onSectionSelect(section: AppSection) {
         _uiState.update { it.copy(activeSection = section) }
-    }
-
-    // ─── Wishlist: Importação e Enriquecimento ───────────────────
-
-    fun openImportDialog() {
-        _uiState.update { it.copy(isImportDialogOpen = true, importResult = null) }
-    }
-
-    fun closeImportDialog() {
-        _uiState.update { it.copy(isImportDialogOpen = false, importResult = null) }
-    }
-
-    fun importWishlistCsv(csvContent: String) {
-        val result = importWishlistUseCase(csvContent)
-        _uiState.update { it.copy(importResult = result) }
-
-        // Iniciar enriquecimento em background para os jogos adicionados
-        if (result.added.isNotEmpty()) {
-            enrichGamesInBackground(result.added)
-        }
-    }
-
-    private fun enrichGamesInBackground(games: List<GameItem>) {
-        val total = games.size
-        _uiState.update { it.copy(enrichmentProgress = Pair(0, total)) }
-
-        scope.launch {
-            var completed = 0
-            for (game in games) {
-                try {
-                    enrichWishlistGameUseCase(game.id)
-                } catch (e: kotlinx.coroutines.CancellationException) {
-                    throw e
-                } catch (_: Exception) {
-                    // Falha individual não bloqueia os restantes
-                }
-                completed++
-                _uiState.update { it.copy(enrichmentProgress = Pair(completed, total)) }
-            }
-            _uiState.update { it.copy(enrichmentProgress = null) }
-        }
-    }
-
-    fun moveToHunting(game: GameItem) {
-        val updated = game.copy(
-            collectionStatus = CollectionStatus.WISHLIST,
-            updatedAt = Clock.System.now().toEpochMilliseconds()
-        )
-        saveGameUseCase(updated)
-    }
-
-    fun retryEnrichment(game: GameItem) {
-        scope.launch {
-            try {
-                enrichWishlistGameUseCase(game.id)
-            } catch (e: kotlinx.coroutines.CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // Erro já tratado internamente pelo use case
-            }
-        }
-    }
-
-    // ─── Discovery & Similarity ───────────────────────────────────
-
-    fun onDiscoveryGenreSelect(genre: GameGenre) {
-        _uiState.update { it.copy(selectedDiscoveryGenre = genre) }
-        fetchDiscoveryGames()
-    }
-
-    fun onDiscoveryQueryChange(query: String) {
-        _uiState.update { it.copy(discoverySearchQuery = query) }
-    }
-
-    fun onDiscoverySearchSubmit(query: String) {
-        _uiState.update { it.copy(discoverySearchQuery = query) }
-        fetchDiscoveryGames(forceRefresh = true)
-    }
-
-    fun onDiscoveryPlatformSelect(platform: ConsolePlatform?) {
-        _uiState.update {
-            val newPlat = if (it.selectedDiscoveryPlatform == platform) null else platform
-            it.copy(selectedDiscoveryPlatform = newPlat)
-        }
-        fetchDiscoveryGames()
-    }
-
-    fun onAddDiscoveredToWishlist(discovered: DiscoveredGameItem, targetPriceChf: Double? = null) {
-        val gameItem = discovered.toGameItem(
-            status = CollectionStatus.WISHLIST,
-            targetPrice = targetPriceChf
-        )
-        saveGameUseCase(gameItem)
-        _uiState.update { state ->
-            val updatedList = state.discoveredGames.map {
-                if (it.id == discovered.id) it.copy(isAlreadyInWishlist = true) else it
-            }
-            state.copy(discoveredGames = updatedList)
-        }
     }
 
     fun onOpenDiscoveredDossier(discovered: DiscoveredGameItem) {
@@ -408,28 +274,6 @@ class DashboardViewModel(
                 state.copy(
                     similarGamesForActiveGame = result.getOrDefault(emptyList()),
                     isSimilarGamesLoading = false
-                )
-            }
-        }
-    }
-
-    private fun fetchDiscoveryGames(forceRefresh: Boolean = false) {
-        val currentGenre = _uiState.value.selectedDiscoveryGenre
-        val currentPlatform = _uiState.value.selectedDiscoveryPlatform
-        val currentQuery = _uiState.value.discoverySearchQuery
-
-        _uiState.update { it.copy(isDiscovering = true) }
-        scope.launch {
-            val result = discoverGamesUseCase(
-                query = currentQuery,
-                genre = currentGenre,
-                platform = currentPlatform,
-                forceRefresh = forceRefresh
-            )
-            _uiState.update { state ->
-                state.copy(
-                    discoveredGames = result.getOrDefault(emptyList()),
-                    isDiscovering = false
                 )
             }
         }

@@ -23,8 +23,8 @@ fun EnrichmentBadge(
     modifier: Modifier = Modifier
 ) {
     val style = when (status) {
-        EnrichmentStatus.PENDING -> EnrichmentStyle("⏳", "Pending", Color(0xFF3F3F46), StatusUnverifiedFg)
-        EnrichmentStatus.ENRICHING -> EnrichmentStyle("🔄", "Enriching", Color(0xFF1E3A5F), Color(0xFF3B82F6))
+        EnrichmentStatus.PENDING -> EnrichmentStyle("⏳", "Pending", EnrichmentPendingBg, EnrichmentPendingFg)
+        EnrichmentStatus.ENRICHING -> EnrichmentStyle("🔄", "Enriching", EnrichmentRunningBg, EnrichmentRunningFg)
         EnrichmentStatus.COMPLETE -> EnrichmentStyle("✅", "Ready", StatusEnglishBg, StatusEnglishFg)
         EnrichmentStatus.FAILED -> EnrichmentStyle("❌", "Failed", StatusRiskBg, StatusRiskFg)
     }

@@ -171,6 +171,26 @@ object TextKeys {
         const val EMPTY_STATE = "No games in your collection yet. Mark games as Owned to see them here."
     }
 
+    object Discovery {
+        const val TITLE = "DISCOVERY RADAR"
+        const val SUBTITLE = "Explore PAL gems, recommendations by genre, and verified European editions"
+        const val BADGE_AI = "GEMINI AI"
+        const val SEARCH_PLACEHOLDER = "Ask AI: e.g. 'games like Monkey Island' or 'tactical FPS on PS3'..."
+        const val ACTION_RUN = "RUN 🚀"
+        const val ALL_PLATFORMS = "All Consoles"
+        const val LOADING_RADAR = "Consulting Gemini PAL retrogaming archive..."
+        const val EMPTY_TITLE = "No games found matching these criteria."
+        const val EMPTY_SUBTITLE = "Try selecting a different genre or searching for other terms."
+        const val SHELF_TITLE = "SIMILAR GAMES IN GENRE"
+        const val SHELF_EMPTY = "No additional suggestions available for this title."
+        const val SHELF_SUGGESTIONS = "SUGGESTIONS"
+        const val ACTION_DOSSIER = "🔍 Dossier"
+        const val ACTION_ADD_WISHLIST = "💝 + Wishlist"
+        const val BADGE_IN_COLLECTION = "📦 IN COLLECTION"
+        const val BADGE_IN_WISHLIST = "💝 IN WISHLIST"
+        const val EST_MARKET_PRICE = "EST. CH MARKET"
+    }
+
     object Duplicate {
         const val BANNER_TITLE = "💝 This game is already in your Wishlist!"
         const val BANNER_SUBTITLE = "Move it to active hunting to start evaluating deals."

@@ -5,6 +5,8 @@ import com.retrocollector.app.core.data.datasource.GeminiRemoteDataSource
 import com.retrocollector.app.core.data.datasource.StitchGeminiStructuredVerdict
 import com.retrocollector.app.core.data.firestore.FirestoreService
 import com.retrocollector.app.core.data.scraper.ListingScraper
+import com.retrocollector.app.settings.data.datasource.SettingsLocalDataSource
+import com.retrocollector.app.settings.data.datasource.createSettingsLocalDataSource
 import com.retrocollector.app.settings.domain.model.AppSettings
 import com.retrocollector.app.core.domain.model.*
 import com.retrocollector.app.core.domain.repository.IGameRepository
@@ -21,12 +23,13 @@ class GameRepositoryImpl(
     private val firestoreService: FirestoreService = FirestoreService(),
     private val geminiDataSource: GeminiRemoteDataSource = GeminiRemoteDataSource(),
     private val listingScraper: ListingScraper = ListingScraper(),
+    private val settingsLocalDataSource: SettingsLocalDataSource = createSettingsLocalDataSource(),
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : IGameRepository {
 
     private val scope = CoroutineScope(ioDispatcher)
 
-    private val _settings = MutableStateFlow(AppSettings())
+    private val _settings = MutableStateFlow(settingsLocalDataSource.getSettings())
     override val settings: StateFlow<AppSettings> = _settings.asStateFlow()
 
     private val _games = MutableStateFlow<List<GameItem>>(getInitialMockGames())
@@ -75,6 +78,7 @@ class GameRepositoryImpl(
 
     override fun updateSettings(settings: AppSettings) {
         _settings.value = settings
+        settingsLocalDataSource.saveSettings(settings)
     }
 
     override suspend fun syncFromFirestore(): Result<Unit> {

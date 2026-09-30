@@ -4,6 +4,8 @@ import androidx.compose.runtime.Immutable
 import com.retrocollector.app.core.domain.model.AppSection
 import com.retrocollector.app.core.domain.model.CollectionStatus
 import com.retrocollector.app.core.domain.model.ConsolePlatform
+import com.retrocollector.app.core.domain.model.DiscoveredGameItem
+import com.retrocollector.app.core.domain.model.GameGenre
 import com.retrocollector.app.core.domain.model.GameItem
 
 /**
@@ -30,11 +32,11 @@ data class DashboardActions(
     val onMoveToHunting: (GameItem) -> Unit = {},
     val onRetryEnrichment: (GameItem) -> Unit = {},
     // Discovery
-    val onDiscoveryGenreSelect: (com.retrocollector.app.core.domain.model.GameGenre) -> Unit = {},
+    val onDiscoveryGenreSelect: (GameGenre) -> Unit = {},
     val onDiscoveryQueryChange: (String) -> Unit = {},
     val onDiscoverySearchSubmit: (String) -> Unit = {},
     val onDiscoveryPlatformSelect: (ConsolePlatform?) -> Unit = {},
-    val onOpenDiscoveredDossier: (com.retrocollector.app.core.domain.model.DiscoveredGameItem) -> Unit = {},
-    val onAddDiscoveredToWishlist: (com.retrocollector.app.core.domain.model.DiscoveredGameItem) -> Unit = {},
+    val onOpenDiscoveredDossier: (DiscoveredGameItem) -> Unit = {},
+    val onAddDiscoveredToWishlist: (DiscoveredGameItem) -> Unit = {},
     val onLoadSimilarGames: (GameItem) -> Unit = {}
 )

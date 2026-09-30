@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.retrocollector.app.core.presentation.components.TactileTextField
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 
@@ -40,16 +41,12 @@ fun QuickScanDialog(
     var urlInput by remember { mutableStateOf("") }
     var urlLocation by remember { mutableStateOf("Ricardo.ch") }
     var urlPriceStr by remember { mutableStateOf("") }
-    var isUrlFocused by remember { mutableStateOf(false) }
 
     // Estado da Aba Manual
     var manualQuery by remember { mutableStateOf("") }
     var manualLocation by remember { mutableStateOf("Ricardo.ch") }
     var manualPriceStr by remember { mutableStateOf("") }
     var imageInput by remember { mutableStateOf("") }
-    var isManualQueryFocused by remember { mutableStateOf(false) }
-    var isImageFocused by remember { mutableStateOf(false) }
-    var isManualPriceFocused by remember { mutableStateOf(false) }
 
     val isApiKeyInImage = remember(imageInput) {
         val trimmed = imageInput.trim()
@@ -157,7 +154,7 @@ fun QuickScanDialog(
                                 style = LabelFilterStyle,
                                 color = TextPrimary
                             )
-                            BasicTextField(
+                            TactileTextField(
                                 value = urlInput,
                                 onValueChange = {
                                     urlInput = it
@@ -167,25 +164,8 @@ fun QuickScanDialog(
                                         urlLocation = "Tutti.ch"
                                     }
                                 },
-                                textStyle = BodyMd.copy(color = TextPrimary),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(SurfaceBase, RoundedCornerShape(4.dp))
-                                    .border(1.dp, if (isUrlFocused) AccentBlue else BorderSubtle, RoundedCornerShape(4.dp))
-                                    .padding(10.dp)
-                                    .onFocusChanged { isUrlFocused = it.isFocused },
-                                singleLine = true,
-                                decorationBox = { innerTextField ->
-                                    Box(contentAlignment = Alignment.CenterStart) {
-                                        if (urlInput.isEmpty() && !isUrlFocused) {
-                                            Text(
-                                                text = "https://www.ricardo.ch/de/a/... ou Tutti.ch",
-                                                style = BodySm.copy(color = StatusUnverifiedFg)
-                                            )
-                                        }
-                                        innerTextField()
-                                    }
-                                }
+                                placeholder = "https://www.ricardo.ch/de/a/... ou Tutti.ch",
+                                modifier = Modifier.fillMaxWidth()
                             )
 
                             // Feedback informativo sobre o link
@@ -232,27 +212,12 @@ fun QuickScanDialog(
                         // Preço Opcional para sobrescrever
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(text = "PREÇO ESTIMADO ($curr) (OPCIONAL)", style = LabelFilterStyle, color = TextPrimary)
-                            BasicTextField(
+                            TactileTextField(
                                 value = urlPriceStr,
                                 onValueChange = { urlPriceStr = it },
+                                placeholder = "Deixar vazio para extrair automaticamente do anúncio",
                                 textStyle = CodePriceStyle.copy(color = TextPrimary),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(SurfaceBase, RoundedCornerShape(4.dp))
-                                    .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
-                                    .padding(10.dp),
-                                singleLine = true,
-                                decorationBox = { innerTextField ->
-                                    Box(contentAlignment = Alignment.CenterStart) {
-                                        if (urlPriceStr.isEmpty()) {
-                                            Text(
-                                                text = "Deixar vazio para extrair automaticamente do anúncio",
-                                                style = BodySm.copy(color = StatusUnverifiedFg)
-                                            )
-                                        }
-                                        innerTextField()
-                                    }
-                                }
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
 
@@ -289,7 +254,7 @@ fun QuickScanDialog(
                         // --- ABA PESQUISA MANUAL / SKU ---
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(text = "TÍTULO DO JOGO, CÓDIGO SERIAL OU CÓDIGO DE BARRAS", style = LabelFilterStyle, color = TextPrimary)
-                            BasicTextField(
+                            TactileTextField(
                                 value = manualQuery,
                                 onValueChange = {
                                     manualQuery = it
@@ -299,25 +264,8 @@ fun QuickScanDialog(
                                         manualLocation = "Tutti.ch"
                                     }
                                 },
-                                textStyle = BodyMd.copy(color = TextPrimary),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(SurfaceBase, RoundedCornerShape(4.dp))
-                                    .border(1.dp, if (isManualQueryFocused) AccentBlue else BorderSubtle, RoundedCornerShape(4.dp))
-                                    .padding(10.dp)
-                                    .onFocusChanged { isManualQueryFocused = it.isFocused },
-                                singleLine = true,
-                                decorationBox = { innerTextField ->
-                                    Box(contentAlignment = Alignment.CenterStart) {
-                                        if (manualQuery.isEmpty() && !isManualQueryFocused) {
-                                            Text(
-                                                text = "ex: Tomb Raider PS3, BLES-01780 ou 0045496351052",
-                                                style = BodySm.copy(color = StatusUnverifiedFg)
-                                            )
-                                        }
-                                        innerTextField()
-                                    }
-                                }
+                                placeholder = "ex: Tomb Raider PS3, BLES-01780 ou 0045496351052",
+                                modifier = Modifier.fillMaxWidth()
                             )
 
                             if (isManualQueryUrl) {
@@ -365,32 +313,14 @@ fun QuickScanDialog(
                         // Foto Opcional
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(text = "FOTO DO DISCO OU LOMBADA (OPCIONAL)", style = LabelFilterStyle, color = TextPrimary)
-                            BasicTextField(
+                            TactileTextField(
                                 value = imageInput,
                                 onValueChange = { imageInput = it },
+                                placeholder = "URL da foto do disco (https://...) ou imagem Base64",
                                 textStyle = BodySm.copy(color = TextPrimary),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(SurfaceBase, RoundedCornerShape(4.dp))
-                                    .border(
-                                        1.dp,
-                                        if (isApiKeyInImage) StatusEditionFg else if (isImageFocused) AccentBlue else BorderSubtle,
-                                        RoundedCornerShape(4.dp)
-                                    )
-                                    .padding(10.dp)
-                                    .onFocusChanged { isImageFocused = it.isFocused },
-                                singleLine = true,
-                                decorationBox = { innerTextField ->
-                                    Box(contentAlignment = Alignment.CenterStart) {
-                                        if (imageInput.isEmpty() && !isImageFocused) {
-                                            Text(
-                                                text = "URL da foto do disco (https://...) ou imagem Base64",
-                                                style = BodySm.copy(color = StatusUnverifiedFg)
-                                            )
-                                        }
-                                        innerTextField()
-                                    }
-                                }
+                                focusedBorderColor = if (isApiKeyInImage) StatusEditionFg else AccentBlue,
+                                unfocusedBorderColor = if (isApiKeyInImage) StatusEditionFg else BorderSubtle,
+                                modifier = Modifier.fillMaxWidth()
                             )
 
                             // Alertas de validação inteligente
@@ -432,25 +362,13 @@ fun QuickScanDialog(
                         // Preço Pedido
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(text = "${TextKeys.Radar.ASKING_PRICE} ($curr)", style = LabelFilterStyle, color = TextPrimary)
-                            BasicTextField(
+                            TactileTextField(
                                 value = manualPriceStr,
                                 onValueChange = { manualPriceStr = it },
+                                placeholder = "35.00",
                                 textStyle = CodePriceStyle.copy(color = TextPrimary),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(SurfaceBase, RoundedCornerShape(4.dp))
-                                    .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
-                                    .padding(10.dp)
-                                    .onFocusChanged { isManualPriceFocused = it.isFocused },
-                                singleLine = true,
-                                decorationBox = { innerTextField ->
-                                    Box(contentAlignment = Alignment.CenterStart) {
-                                        if (manualPriceStr.isEmpty() && !isManualPriceFocused) {
-                                            Text(text = "35.00", style = CodePriceStyle.copy(color = StatusUnverifiedFg))
-                                        }
-                                        innerTextField()
-                                    }
-                                }
+                                placeholderStyle = CodePriceStyle.copy(color = StatusUnverifiedFg),
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
 

@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.retrocollector.app.core.presentation.components.TactileTextField
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.settings.domain.model.AppSettings
@@ -54,10 +55,6 @@ fun SettingsDialog(
             "gemini-3.8-flash" to "3.8 Flash (Preview)"
         )
     }
-
-    var isGeminiFocused by remember { mutableStateOf(false) }
-    var isFirebaseFocused by remember { mutableStateOf(false) }
-    var isCookieFocused by remember { mutableStateOf(false) }
 
     val currencies = remember {
         listOf(
@@ -256,46 +253,28 @@ fun SettingsDialog(
                         // API Key Input
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(text = TextKeys.Settings.GEMINI_API_KEY_LABEL, style = LabelFilterStyle, color = TextPrimary)
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(SurfaceCard, RoundedCornerShape(4.dp))
-                                    .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
-                                    .padding(horizontal = 10.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                BasicTextField(
-                                    value = geminiKey,
-                                    onValueChange = {
-                                        geminiKey = it
-                                        testStatusMessage = null
-                                    },
-                                    textStyle = CodeSkuStyle.copy(color = TextPrimary),
-                                    visualTransformation = if (isKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .onFocusChanged { isGeminiFocused = it.isFocused },
-                                    singleLine = true,
-                                    decorationBox = { innerTextField ->
-                                        Box(contentAlignment = Alignment.CenterStart) {
-                                            if (geminiKey.isEmpty() && !isGeminiFocused) {
-                                                Text(
-                                                    text = TextKeys.Settings.GEMINI_API_KEY_HINT,
-                                                    style = CodeSkuStyle.copy(color = StatusUnverifiedFg)
-                                                )
-                                            }
-                                            innerTextField()
-                                        }
-                                    }
-                                )
-                                Text(
-                                    text = if (isKeyVisible) "🙈" else "👁️",
-                                    modifier = Modifier
-                                        .clickable { isKeyVisible = !isKeyVisible }
-                                        .padding(start = 6.dp),
-                                    fontSize = 14.sp
-                                )
-                            }
+                            TactileTextField(
+                                value = geminiKey,
+                                onValueChange = {
+                                    geminiKey = it
+                                    testStatusMessage = null
+                                },
+                                placeholder = TextKeys.Settings.GEMINI_API_KEY_HINT,
+                                textStyle = CodeSkuStyle.copy(color = TextPrimary),
+                                placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg),
+                                visualTransformation = if (isKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                backgroundColor = SurfaceCard,
+                                modifier = Modifier.fillMaxWidth(),
+                                trailingIcon = {
+                                    Text(
+                                        text = if (isKeyVisible) "🙈" else "👁️",
+                                        modifier = Modifier
+                                            .clickable { isKeyVisible = !isKeyVisible }
+                                            .padding(start = 4.dp),
+                                        fontSize = 14.sp
+                                    )
+                                }
+                            )
                             Text(
                                 text = TextKeys.Settings.GEMINI_EXPLAINER,
                                 style = BodySm.copy(fontSize = 11.sp),
@@ -519,28 +498,14 @@ fun SettingsDialog(
                                     color = StatusEnglishFg
                                 )
                             }
-                            BasicTextField(
+                            TactileTextField(
                                 value = ricardoCookie,
                                 onValueChange = { ricardoCookie = it },
+                                placeholder = "Ex: ricardo_session=... ou token da tua conta",
                                 textStyle = CodeSkuStyle.copy(color = TextPrimary, fontSize = 11.sp),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(SurfaceCard, RoundedCornerShape(4.dp))
-                                    .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
-                                    .padding(horizontal = 10.dp, vertical = 8.dp)
-                                    .onFocusChanged { isCookieFocused = it.isFocused },
-                                singleLine = true,
-                                decorationBox = { innerTextField ->
-                                    Box(contentAlignment = Alignment.CenterStart) {
-                                        if (ricardoCookie.isEmpty() && !isCookieFocused) {
-                                            Text(
-                                                text = "Ex: ricardo_session=... ou token da tua conta",
-                                                style = CodeSkuStyle.copy(color = StatusUnverifiedFg, fontSize = 11.sp)
-                                            )
-                                        }
-                                        innerTextField()
-                                    }
-                                }
+                                placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg, fontSize = 11.sp),
+                                backgroundColor = SurfaceCard,
+                                modifier = Modifier.fillMaxWidth()
                             )
                             Text(
                                 text = "Permite autenticar os pedidos ao Ricardo.ch com a tua conta para evitar desafios de Captcha.",
@@ -580,28 +545,14 @@ fun SettingsDialog(
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(text = TextKeys.Settings.FIREBASE_PROJECT_ID_LABEL, style = LabelFilterStyle, color = TextPrimary)
-                            BasicTextField(
+                            TactileTextField(
                                 value = firebaseProjectId,
                                 onValueChange = { firebaseProjectId = it },
+                                placeholder = TextKeys.Settings.FIREBASE_PROJECT_ID_HINT,
                                 textStyle = CodeSkuStyle.copy(color = TextPrimary),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(SurfaceCard, RoundedCornerShape(4.dp))
-                                    .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
-                                    .padding(10.dp)
-                                    .onFocusChanged { isFirebaseFocused = it.isFocused },
-                                singleLine = true,
-                                decorationBox = { innerTextField ->
-                                    Box(contentAlignment = Alignment.CenterStart) {
-                                        if (firebaseProjectId.isEmpty() && !isFirebaseFocused) {
-                                            Text(
-                                                text = TextKeys.Settings.FIREBASE_PROJECT_ID_HINT,
-                                                style = CodeSkuStyle.copy(color = StatusUnverifiedFg)
-                                            )
-                                        }
-                                        innerTextField()
-                                    }
-                                }
+                                placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg),
+                                backgroundColor = SurfaceCard,
+                                modifier = Modifier.fillMaxWidth()
                             )
                             Text(
                                 text = "Synchronizes verified game acquisitions across Mac, Android, and Web.",
