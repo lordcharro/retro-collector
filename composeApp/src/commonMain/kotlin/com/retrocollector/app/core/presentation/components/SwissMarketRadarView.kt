@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.sp
 import com.retrocollector.app.core.domain.model.SwissMarketRadar
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
+import com.retrocollector.app.core.presentation.util.PriceFormatter
 
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.ui.text.style.TextOverflow
@@ -78,7 +79,7 @@ fun SwissMarketRadarView(
                     softWrap = false
                 )
                 Text(
-                    text = if (effectiveAsking != null) "$currency $effectiveAsking" else "—",
+                    text = PriceFormatter.format(effectiveAsking, currency),
                     style = CodePriceStyle,
                     color = TextPrimary,
                     maxLines = 1,
@@ -95,7 +96,7 @@ fun SwissMarketRadarView(
                     softWrap = false
                 )
                 Text(
-                    text = if (median != null) "$currency $median" else "—",
+                    text = PriceFormatter.format(median, currency),
                     style = CodePriceStyle,
                     color = AccentBlue,
                     maxLines = 1,

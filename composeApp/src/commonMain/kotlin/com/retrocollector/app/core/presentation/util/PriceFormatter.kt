@@ -26,4 +26,9 @@ object PriceFormatter {
 
         return if (includeCurrency) "$currency $formattedNumber" else formattedNumber
     }
+
+    /**
+     * Formats only the numerical amount with 2 decimal places, omitting currency.
+     */
+    fun formatAmount(amount: Double): String = format(amount, includeCurrency = false)
 }

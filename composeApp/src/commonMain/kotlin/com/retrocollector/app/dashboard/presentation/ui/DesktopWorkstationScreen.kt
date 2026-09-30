@@ -95,127 +95,35 @@ fun DesktopWorkstationScreen(
                     modifier = Modifier.padding(vertical = 6.dp, horizontal = 6.dp)
                 )
 
-                // Item: Activity (Prospeção ativa)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(if (state.activeSection == AppSection.ACTIVITY) SurfaceElevated else Color.Transparent, RoundedCornerShape(4.dp))
-                        .clickable { actions.onSectionSelect(AppSection.ACTIVITY) }
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(modifier = Modifier.width(20.dp), contentAlignment = Alignment.Center) {
-                            Text(text = AppSection.ACTIVITY.icon, fontSize = 14.sp, textAlign = TextAlign.Center)
-                        }
-                        Text(text = AppSection.ACTIVITY.label, style = BodyMd, color = if (state.activeSection == AppSection.ACTIVITY) TextPrimary else TextSecondary)
-                    }
-                    Box(
-                        modifier = Modifier
-                            .background(SurfaceBase, RoundedCornerShape(2.dp))
-                            .padding(horizontal = 4.dp, vertical = 1.dp)
-                    ) {
-                        Text(text = "${state.games.size}", style = CodeSkuStyle.copy(fontSize = 11.sp), color = StatusUnverifiedFg)
-                    }
-                }
+                SidebarSectionItem(
+                    section = AppSection.ACTIVITY,
+                    count = state.games.size,
+                    isSelected = state.activeSection == AppSection.ACTIVITY,
+                    onClick = { actions.onSectionSelect(AppSection.ACTIVITY) }
+                )
 
-                // Item: Discover (Radar de Descoberta)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(if (state.activeSection == AppSection.DISCOVER) SurfaceElevated else Color.Transparent, RoundedCornerShape(4.dp))
-                        .clickable { actions.onSectionSelect(AppSection.DISCOVER) }
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(modifier = Modifier.width(20.dp), contentAlignment = Alignment.Center) {
-                            Text(text = AppSection.DISCOVER.icon, fontSize = 14.sp, textAlign = TextAlign.Center)
-                        }
-                        Text(text = AppSection.DISCOVER.label, style = BodyMd, color = if (state.activeSection == AppSection.DISCOVER) TextPrimary else TextSecondary)
-                    }
-                    Box(
-                        modifier = Modifier
-                            .background(SurfaceBase, RoundedCornerShape(2.dp))
-                            .padding(horizontal = 4.dp, vertical = 1.dp)
-                    ) {
-                        val discCount = discoveryState.discoveredGames.size
-                        Text(
-                            text = "$discCount",
-                            style = CodeSkuStyle.copy(fontSize = 11.sp),
-                            color = if (discCount > 0) ConsoleGamecube else StatusUnverifiedFg
-                        )
-                    }
-                }
+                SidebarSectionItem(
+                    section = AppSection.DISCOVER,
+                    count = discoveryState.discoveredGames.size,
+                    isSelected = state.activeSection == AppSection.DISCOVER,
+                    onClick = { actions.onSectionSelect(AppSection.DISCOVER) },
+                    badgeColor = if (discoveryState.discoveredGames.isNotEmpty()) ConsoleGamecube else StatusUnverifiedFg
+                )
 
-                // Item: Wishlist
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(if (state.activeSection == AppSection.WISHLIST) SurfaceElevated else Color.Transparent, RoundedCornerShape(4.dp))
-                        .clickable { actions.onSectionSelect(AppSection.WISHLIST) }
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(modifier = Modifier.width(20.dp), contentAlignment = Alignment.Center) {
-                            Text(text = AppSection.WISHLIST.icon, fontSize = 14.sp, textAlign = TextAlign.Center)
-                        }
-                        Text(text = AppSection.WISHLIST.label, style = BodyMd, color = if (state.activeSection == AppSection.WISHLIST) TextPrimary else TextSecondary)
-                    }
-                    Box(
-                        modifier = Modifier
-                            .background(SurfaceBase, RoundedCornerShape(2.dp))
-                            .padding(horizontal = 4.dp, vertical = 1.dp)
-                    ) {
-                        val wishCount = wishlistState.wishlistGames.size
-                        Text(
-                            text = "$wishCount",
-                            style = CodeSkuStyle.copy(fontSize = 11.sp),
-                            color = if (wishCount > 0) StatusEditionFg else StatusUnverifiedFg
-                        )
-                    }
-                }
+                SidebarSectionItem(
+                    section = AppSection.WISHLIST,
+                    count = wishlistState.wishlistGames.size,
+                    isSelected = state.activeSection == AppSection.WISHLIST,
+                    onClick = { actions.onSectionSelect(AppSection.WISHLIST) },
+                    badgeColor = if (wishlistState.wishlistGames.isNotEmpty()) StatusEditionFg else StatusUnverifiedFg
+                )
 
-                // Item: Collection
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(if (state.activeSection == AppSection.COLLECTION) SurfaceElevated else Color.Transparent, RoundedCornerShape(4.dp))
-                        .clickable { actions.onSectionSelect(AppSection.COLLECTION) }
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(modifier = Modifier.width(20.dp), contentAlignment = Alignment.Center) {
-                            Text(text = AppSection.COLLECTION.icon, fontSize = 14.sp, textAlign = TextAlign.Center)
-                        }
-                        Text(text = AppSection.COLLECTION.label, style = BodyMd, color = if (state.activeSection == AppSection.COLLECTION) TextPrimary else TextSecondary)
-                    }
-                    Box(
-                        modifier = Modifier
-                            .background(SurfaceBase, RoundedCornerShape(2.dp))
-                            .padding(horizontal = 4.dp, vertical = 1.dp)
-                    ) {
-                        Text(text = "${state.collectionGames.size}", style = CodeSkuStyle.copy(fontSize = 11.sp), color = StatusUnverifiedFg)
-                    }
-                }
+                SidebarSectionItem(
+                    section = AppSection.COLLECTION,
+                    count = state.collectionGames.size,
+                    isSelected = state.activeSection == AppSection.COLLECTION,
+                    onClick = { actions.onSectionSelect(AppSection.COLLECTION) }
+                )
 
                 // Item: Settings & Sync
                 Row(
@@ -463,35 +371,13 @@ fun DesktopWorkstationScreen(
         
                             // Feed com as linhas de jogos ou Empty State
                             if (state.games.isEmpty()) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .weight(1f)
-                                        .padding(24.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    Text(text = "🔍", fontSize = 28.sp)
-                                    Spacer(modifier = Modifier.height(10.dp))
-                                    Text(
-                                        text = TextKeys.Dashboard.EMPTY_CATALOG,
-                                        style = BodySm,
-                                        color = TextSecondary,
-                                        textAlign = TextAlign.Center
-                                    )
-                                    Spacer(modifier = Modifier.height(14.dp))
-                                    OutlinedButton(
-                                        onClick = actions.onClearFilters,
-                                        border = BorderStroke(1.dp, BorderStrong),
-                                        shape = RoundedCornerShape(4.dp)
-                                    ) {
-                                        Text(
-                                            text = TextKeys.Dashboard.CLEAR_FILTERS,
-                                            style = LabelFilterStyle,
-                                            color = TextPrimary
-                                        )
-                                    }
-                                }
+                                TacticalEmptyState(
+                                    icon = "🔍",
+                                    title = TextKeys.Dashboard.EMPTY_CATALOG,
+                                    actionLabel = TextKeys.Dashboard.CLEAR_FILTERS,
+                                    onActionClick = actions.onClearFilters,
+                                    modifier = Modifier.weight(1f)
+                                )
                             } else {
                                 LazyColumn(
                                     modifier = Modifier.fillMaxWidth().weight(1f)
@@ -532,6 +418,7 @@ fun DesktopWorkstationScreen(
                         WishlistScreen(
                             state = wishlistState,
                             selectedGameId = state.selectedGame?.id,
+                            currency = state.settings.defaultCurrency.ifBlank { "CHF" },
                             onGameSelected = actions.onGameSelected,
                             onOpenImportDialog = actions.onOpenImportDialog,
                             onRetryEnrichment = actions.onRetryEnrichment,
@@ -607,31 +494,14 @@ fun DesktopWorkstationScreen(
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         if (game.collectionStatus == CollectionStatus.OWNED) {
-                                            var priceText by remember(game.id, game.paidPriceChf) {
-                                                mutableStateOf(game.paidPriceChf?.toString() ?: "")
-                                            }
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                            ) {
-                                                Text(
-                                                    text = "${TextKeys.Dossier.PAID_PRICE_LABEL}:",
-                                                    style = LabelFilterStyle,
-                                                    color = StatusEnglishFg
-                                                )
-                                                TactileTextField(
-                                                    value = priceText,
-                                                    onValueChange = { newText ->
-                                                        priceText = newText
-                                                        val parsed = newText.toDoubleOrNull()
-                                                        if (parsed != null || newText.isBlank()) {
-                                                            actions.onUpdatePaidPrice(game, parsed)
-                                                        }
-                                                    },
-                                                    placeholder = "${state.settings.defaultCurrency.ifBlank { "CHF" }} 0.00",
-                                                    modifier = Modifier.width(90.dp)
-                                                )
-                                            }
+                                            PaidPriceInput(
+                                                paidPrice = game.paidPriceChf,
+                                                currency = state.settings.defaultCurrency,
+                                                label = "${TextKeys.Dossier.PAID_PRICE_LABEL}:",
+                                                onPriceSubmitted = { parsed ->
+                                                    actions.onUpdatePaidPrice(game, parsed)
+                                                }
+                                            )
                                         }
 
                                         CollectionStatusSelector(
@@ -648,33 +518,17 @@ fun DesktopWorkstationScreen(
                                         }
 
                                         if (showDeleteConfirm) {
-                                            AlertDialog(
-                                                onDismissRequest = { showDeleteConfirm = false },
-                                                title = { Text(TextKeys.Dossier.DELETE_CONFIRM_TITLE, style = HeadlineSm, color = TextPrimary) },
-                                                text = { Text(TextKeys.Dossier.DELETE_CONFIRM_MESSAGE, style = BodyMd, color = TextSecondary) },
-                                                confirmButton = {
-                                                    Button(
-                                                        onClick = {
-                                                            showDeleteConfirm = false
-                                                            actions.onDeleteGame(game.id)
-                                                        },
-                                                        colors = ButtonDefaults.buttonColors(containerColor = StatusRiskFg),
-                                                        shape = RoundedCornerShape(4.dp)
-                                                    ) {
-                                                        Text(TextKeys.Dossier.DELETE_CONFIRM_BUTTON, style = LabelFilterStyle, color = Color.White)
-                                                    }
+                                            TactileConfirmDialog(
+                                                title = TextKeys.Dossier.DELETE_CONFIRM_TITLE,
+                                                message = TextKeys.Dossier.DELETE_CONFIRM_MESSAGE,
+                                                confirmLabel = TextKeys.Dossier.DELETE_CONFIRM_BUTTON,
+                                                dismissLabel = TextKeys.Dossier.DELETE_CANCEL_BUTTON,
+                                                isDestructive = true,
+                                                onConfirm = {
+                                                    showDeleteConfirm = false
+                                                    actions.onDeleteGame(game.id)
                                                 },
-                                                dismissButton = {
-                                                    OutlinedButton(
-                                                        onClick = { showDeleteConfirm = false },
-                                                        border = BorderStroke(1.dp, BorderStrong),
-                                                        shape = RoundedCornerShape(4.dp)
-                                                    ) {
-                                                        Text(TextKeys.Dossier.DELETE_CANCEL_BUTTON, style = LabelFilterStyle, color = TextPrimary)
-                                                    }
-                                                },
-                                                containerColor = SurfaceCard,
-                                                shape = RoundedCornerShape(8.dp)
+                                                onDismiss = { showDeleteConfirm = false }
                                             )
                                         }
                                     }
@@ -949,5 +803,50 @@ fun DesktopWorkstationScreenPreview() {
             wishlistState = WishlistUiState(),
             actions = DashboardActions()
         )
+    }
+}
+
+@Composable
+private fun SidebarSectionItem(
+    section: AppSection,
+    count: Int,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    badgeColor: Color = StatusUnverifiedFg
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(if (isSelected) SurfaceElevated else Color.Transparent, RoundedCornerShape(4.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Box(modifier = Modifier.width(20.dp), contentAlignment = Alignment.Center) {
+                Text(text = section.icon, fontSize = 14.sp, textAlign = TextAlign.Center)
+            }
+            Text(
+                text = section.label,
+                style = BodyMd,
+                color = if (isSelected) TextPrimary else TextSecondary
+            )
+        }
+        Box(
+            modifier = Modifier
+                .background(SurfaceBase, RoundedCornerShape(2.dp))
+                .padding(horizontal = 4.dp, vertical = 1.dp)
+        ) {
+            Text(
+                text = "$count",
+                style = CodeSkuStyle.copy(fontSize = 11.sp),
+                color = badgeColor
+            )
+        }
     }
 }

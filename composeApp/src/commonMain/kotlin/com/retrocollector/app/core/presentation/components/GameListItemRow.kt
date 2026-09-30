@@ -30,7 +30,8 @@ fun GameListItemRow(
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    currency: String = "CHF"
+    currency: String = "CHF",
+    trailingContent: (@Composable () -> Unit)? = null
 ) {
     val platformColor = when (game.platform) {
         ConsolePlatform.N64 -> ConsoleN64
@@ -143,22 +144,26 @@ fun GameListItemRow(
                 }
             }
 
-            // Coluna Direita: Preço em CHF e Badge de Risco de Língua
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(3.dp)
-            ) {
-                val displayPrice = game.askingPriceChf ?: game.targetPriceChf ?: game.paidPriceChf
+            // Coluna Direita: Conteúdo customizado (slot) ou Preço padrão e Badge de Risco de Língua
+            if (trailingContent != null) {
+                trailingContent()
+            } else {
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(3.dp)
+                ) {
+                    val displayPrice = game.askingPriceChf ?: game.targetPriceChf ?: game.paidPriceChf
 
-                Text(
-                    text = PriceFormatter.format(displayPrice, currency),
-                    style = CodePriceStyle,
-                    color = TextPrimary,
-                    maxLines = 1,
-                    softWrap = false
-                )
+                    Text(
+                        text = PriceFormatter.format(displayPrice, currency),
+                        style = CodePriceStyle,
+                        color = TextPrimary,
+                        maxLines = 1,
+                        softWrap = false
+                    )
 
-                LanguageRiskBadge(status = game.languageStatus)
+                    LanguageRiskBadge(status = game.languageStatus)
+                }
             }
         }
     }

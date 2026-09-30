@@ -101,53 +101,19 @@ fun MobileFieldDashboardScreen(
                 containerColor = SurfaceCard,
                 tonalElevation = 8.dp
             ) {
-                NavigationBarItem(
-                    selected = state.activeSection == AppSection.ACTIVITY,
-                    onClick = { actions.onSectionSelect(AppSection.ACTIVITY) },
-                    icon = { Text(AppSection.ACTIVITY.icon, fontSize = 18.sp) },
-                    label = { Text(AppSection.ACTIVITY.label, style = LabelFilterStyle) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = AccentBlue,
-                        selectedTextColor = AccentBlue,
-                        indicatorColor = SurfaceElevated
+                AppSection.entries.forEach { section ->
+                    NavigationBarItem(
+                        selected = state.activeSection == section,
+                        onClick = { actions.onSectionSelect(section) },
+                        icon = { Text(section.icon, fontSize = 18.sp) },
+                        label = { Text(section.label, style = LabelFilterStyle) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = AccentBlue,
+                            selectedTextColor = AccentBlue,
+                            indicatorColor = SurfaceElevated
+                        )
                     )
-                )
-
-                NavigationBarItem(
-                    selected = state.activeSection == AppSection.DISCOVER,
-                    onClick = { actions.onSectionSelect(AppSection.DISCOVER) },
-                    icon = { Text(AppSection.DISCOVER.icon, fontSize = 18.sp) },
-                    label = { Text(AppSection.DISCOVER.label, style = LabelFilterStyle) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = AccentBlue,
-                        selectedTextColor = AccentBlue,
-                        indicatorColor = SurfaceElevated
-                    )
-                )
-
-                NavigationBarItem(
-                    selected = state.activeSection == AppSection.WISHLIST,
-                    onClick = { actions.onSectionSelect(AppSection.WISHLIST) },
-                    icon = { Text(AppSection.WISHLIST.icon, fontSize = 18.sp) },
-                    label = { Text(AppSection.WISHLIST.label, style = LabelFilterStyle) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = AccentBlue,
-                        selectedTextColor = AccentBlue,
-                        indicatorColor = SurfaceElevated
-                    )
-                )
-
-                NavigationBarItem(
-                    selected = state.activeSection == AppSection.COLLECTION,
-                    onClick = { actions.onSectionSelect(AppSection.COLLECTION) },
-                    icon = { Text(AppSection.COLLECTION.icon, fontSize = 18.sp) },
-                    label = { Text(AppSection.COLLECTION.label, style = LabelFilterStyle) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = AccentBlue,
-                        selectedTextColor = AccentBlue,
-                        indicatorColor = SurfaceElevated
-                    )
-                )
+                }
 
                 NavigationBarItem(
                     selected = false,
@@ -304,34 +270,13 @@ fun MobileFieldDashboardScreen(
                             modifier = Modifier.fillMaxWidth().weight(1f)
                         ) {
                             if (state.games.isEmpty()) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(24.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    Text(text = "🔍", fontSize = 28.sp)
-                                    Spacer(modifier = Modifier.height(10.dp))
-                                    Text(
-                                        text = TextKeys.Dashboard.EMPTY_CATALOG,
-                                        style = BodySm,
-                                        color = TextSecondary,
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                    )
-                                    Spacer(modifier = Modifier.height(14.dp))
-                                    OutlinedButton(
-                                        onClick = actions.onClearFilters,
-                                        border = BorderStroke(1.dp, BorderStrong),
-                                        shape = RoundedCornerShape(4.dp)
-                                    ) {
-                                        Text(
-                                            text = TextKeys.Dashboard.CLEAR_FILTERS,
-                                            style = LabelFilterStyle,
-                                            color = TextPrimary
-                                        )
-                                    }
-                                }
+                                TacticalEmptyState(
+                                    icon = "🔍",
+                                    title = TextKeys.Dashboard.EMPTY_CATALOG,
+                                    actionLabel = TextKeys.Dashboard.CLEAR_FILTERS,
+                                    onActionClick = actions.onClearFilters,
+                                    modifier = Modifier.fillMaxSize()
+                                )
                             } else {
                                 LazyColumn(
                                     modifier = Modifier.fillMaxSize(),
@@ -358,6 +303,7 @@ fun MobileFieldDashboardScreen(
                         WishlistScreen(
                             state = wishlistState,
                             selectedGameId = state.selectedGame?.id,
+                            currency = state.settings.defaultCurrency.ifBlank { "CHF" },
                             onGameSelected = actions.onGameSelected,
                             onOpenImportDialog = actions.onOpenImportDialog,
                             onRetryEnrichment = actions.onRetryEnrichment,

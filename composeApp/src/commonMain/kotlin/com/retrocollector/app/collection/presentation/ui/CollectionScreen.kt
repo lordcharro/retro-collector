@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.sp
 import com.retrocollector.app.collection.presentation.components.CollectionStatsBar
 import com.retrocollector.app.core.domain.model.*
 import com.retrocollector.app.core.presentation.components.GameListItemRow
+import com.retrocollector.app.core.presentation.components.TacticalEmptyState
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.dashboard.presentation.ui.DashboardActions
@@ -48,22 +49,11 @@ fun CollectionScreen(
 
         // Lista de jogos da coleção
         if (state.collectionGames.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(text = "📦", fontSize = 32.sp)
-                    Text(
-                        text = TextKeys.Collection.EMPTY_STATE,
-                        style = BodyMd,
-                        color = TextSecondary
-                    )
-                }
-            }
+            TacticalEmptyState(
+                icon = "📦",
+                title = TextKeys.Collection.EMPTY_STATE,
+                modifier = Modifier.fillMaxSize()
+            )
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxWidth().weight(1f)

@@ -90,34 +90,18 @@ fun MobileGameDetailScreen(
                 }
 
                 if (showDeleteConfirm) {
-                    AlertDialog(
-                        onDismissRequest = { showDeleteConfirm = false },
-                        title = { Text(TextKeys.Dossier.DELETE_CONFIRM_TITLE, style = HeadlineSm, color = TextPrimary) },
-                        text = { Text(TextKeys.Dossier.DELETE_CONFIRM_MESSAGE, style = BodyMd, color = TextSecondary) },
-                        confirmButton = {
-                            Button(
-                                onClick = {
-                                    showDeleteConfirm = false
-                                    onDeleteGame(game.id)
-                                    onBack()
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = StatusRiskFg),
-                                shape = RoundedCornerShape(4.dp)
-                            ) {
-                                Text(TextKeys.Dossier.DELETE_CONFIRM_BUTTON, style = LabelFilterStyle, color = Color.White)
-                            }
+                    TactileConfirmDialog(
+                        title = TextKeys.Dossier.DELETE_CONFIRM_TITLE,
+                        message = TextKeys.Dossier.DELETE_CONFIRM_MESSAGE,
+                        confirmLabel = TextKeys.Dossier.DELETE_CONFIRM_BUTTON,
+                        dismissLabel = TextKeys.Dossier.DELETE_CANCEL_BUTTON,
+                        isDestructive = true,
+                        onConfirm = {
+                            showDeleteConfirm = false
+                            onDeleteGame(game.id)
+                            onBack()
                         },
-                        dismissButton = {
-                            OutlinedButton(
-                                onClick = { showDeleteConfirm = false },
-                                border = BorderStroke(1.dp, BorderStrong),
-                                shape = RoundedCornerShape(4.dp)
-                            ) {
-                                Text(TextKeys.Dossier.DELETE_CANCEL_BUTTON, style = LabelFilterStyle, color = TextPrimary)
-                            }
-                        },
-                        containerColor = SurfaceCard,
-                        shape = RoundedCornerShape(8.dp)
+                        onDismiss = { showDeleteConfirm = false }
                     )
                 }
             }
@@ -170,20 +154,10 @@ fun MobileGameDetailScreen(
                                         color = TextSecondary
                                     )
                                 }
-                                var priceText by remember(game.id, game.paidPriceChf) {
-                                    mutableStateOf(game.paidPriceChf?.toString() ?: "")
-                                }
-                                TactileTextField(
-                                    value = priceText,
-                                    onValueChange = { newText ->
-                                        priceText = newText
-                                        val parsed = newText.toDoubleOrNull()
-                                        if (parsed != null || newText.isBlank()) {
-                                            onUpdatePaidPrice(game, parsed)
-                                        }
-                                    },
-                                    placeholder = "$currency 0.00",
-                                    modifier = Modifier.width(100.dp)
+                                PaidPriceInput(
+                                    paidPrice = game.paidPriceChf,
+                                    currency = currency,
+                                    onPriceSubmitted = { onUpdatePaidPrice(game, it) }
                                 )
                             }
                         }

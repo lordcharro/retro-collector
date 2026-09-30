@@ -25,6 +25,7 @@ import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.DiscoveredGameItem
 import com.retrocollector.app.core.domain.model.GameGenre
 import com.retrocollector.app.core.domain.model.LanguageStatus
+import com.retrocollector.app.core.presentation.components.TacticalEmptyState
 import com.retrocollector.app.core.presentation.components.TactileSearchField
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
@@ -325,25 +326,14 @@ fun DiscoveryScreen(
                 }
             }
         } else if (discoveredGames.isEmpty()) {
-            Box(
+            TacticalEmptyState(
+                icon = "🧭",
+                title = TextKeys.Discovery.EMPTY_TITLE,
+                subtitle = TextKeys.Discovery.EMPTY_SUBTITLE,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(text = "🧭", fontSize = 32.sp)
-                    Text(text = TextKeys.Discovery.EMPTY_TITLE, style = HeadlineSm, color = TextPrimary)
-                    Text(
-                        text = TextKeys.Discovery.EMPTY_SUBTITLE,
-                        style = BodySm,
-                        color = TextSecondary
-                    )
-                }
-            }
+                    .weight(1f)
+            )
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxWidth().weight(1f),
