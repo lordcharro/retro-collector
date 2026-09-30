@@ -38,6 +38,7 @@ fun WishlistScreen(
     onOpenImportDialog: () -> Unit = {},
     onRetryEnrichment: (GameItem) -> Unit = {},
     onNavigateToDetail: (GameItem) -> Unit = {},
+    onClearSearch: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -59,8 +60,13 @@ fun WishlistScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                val countText = if (state.searchQuery.isNotBlank()) {
+                    "${state.wishlistGames.size}/${state.allWishlistCount} ${TextKeys.Collection.STATS_GAMES}"
+                } else {
+                    "${state.allWishlistCount} ${TextKeys.Collection.STATS_GAMES}"
+                }
                 Text(
-                    text = "${state.wishlistGames.size} ${TextKeys.Collection.STATS_GAMES}",
+                    text = countText,
                     style = CodeSkuStyle.copy(fontSize = 11.sp),
                     color = StatusUnverifiedFg
                 )
@@ -102,12 +108,21 @@ fun WishlistScreen(
         }
 
         // Lista de jogos da Wishlist
-        if (state.wishlistGames.isEmpty()) {
+        if (state.allWishlistCount == 0) {
             TacticalEmptyState(
                 icon = "💝",
                 title = TextKeys.Wishlist.EMPTY_STATE,
                 actionLabel = TextKeys.Wishlist.IMPORT_BUTTON,
                 onActionClick = onOpenImportDialog,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else if (state.wishlistGames.isEmpty()) {
+            TacticalEmptyState(
+                icon = "🔍",
+                title = TextKeys.Wishlist.EMPTY_SEARCH_TITLE,
+                subtitle = TextKeys.Wishlist.EMPTY_SEARCH_SUBTITLE,
+                actionLabel = TextKeys.Wishlist.CLEAR_SEARCH,
+                onActionClick = onClearSearch,
                 modifier = Modifier.fillMaxSize()
             )
         } else {

@@ -148,4 +148,66 @@ class WishlistViewModelTest {
         viewModel.resetImportResult()
         assertNull(viewModel.uiState.value.importResult)
     }
+
+    @Test
+    fun `wishlist games are sorted alphabetically A-Z by default`() = runTest {
+        val gameA = sampleWishlistGame.copy(id = "w1", title = "Banjo-Kazooie")
+        val gameB = sampleWishlistGame.copy(id = "w2", title = "Zelda: Majora's Mask")
+        val gameC = sampleWishlistGame.copy(id = "w3", title = "F-Zero X")
+        repository.upsertGame(gameB)
+        repository.upsertGame(gameA)
+        repository.upsertGame(gameC)
+
+        val titles = viewModel.uiState.value.wishlistGames.map { it.title }
+        assertEquals(listOf("Banjo-Kazooie", "F-Zero X", "GoldenEye 007", "Zelda: Majora's Mask"), titles)
+    }
+
+    @Test
+    fun `search query filters wishlist games`() = runTest {
+        val marioGame = sampleWishlistGame.copy(id = "w1", title = "Super Mario 64")
+        val fzeroGame = sampleWishlistGame.copy(id = "w2", title = "F-Zero X")
+        repository.upsertGame(marioGame)
+        repository.upsertGame(fzeroGame)
+
+        viewModel.onSearchQueryChange("Mario")
+
+        val state = viewModel.uiState.value
+        assertEquals(1, state.wishlistGames.size)
+        assertEquals("Super Mario 64", state.wishlistGames.first().title)
+        assertEquals(3, state.allWishlistCount)
+    }
+
+    @Test
+    fun `search query ranks exact and prefix matches above partial matches`() = runTest {
+        val exactMatch = sampleWishlistGame.copy(id = "w1", title = "Mario")
+        val prefixMatch = sampleWishlistGame.copy(id = "w2", title = "Mario Kart 64")
+        val wordPrefixMatch = sampleWishlistGame.copy(id = "w3", title = "Super Mario 64")
+        val containsMatch = sampleWishlistGame.copy(id = "w4", title = "Paper-Marioland")
+        repository.upsertGame(containsMatch)
+        repository.upsertGame(wordPrefixMatch)
+        repository.upsertGame(exactMatch)
+        repository.upsertGame(prefixMatch)
+
+        viewModel.onSearchQueryChange("Mario")
+
+        val state = viewModel.uiState.value
+        val titles = state.wishlistGames.map { it.title }
+        assertEquals("Mario", titles[0])
+        assertEquals("Mario Kart 64", titles[1])
+        assertTrue(titles.contains("Super Mario 64"))
+        assertTrue(titles.contains("Paper-Marioland"))
+    }
+
+    @Test
+    fun `clearSearch restores full sorted wishlist`() = runTest {
+        val marioGame = sampleWishlistGame.copy(id = "w1", title = "Super Mario 64")
+        repository.upsertGame(marioGame)
+
+        viewModel.onSearchQueryChange("Mario")
+        assertEquals(1, viewModel.uiState.value.wishlistGames.size)
+
+        viewModel.clearSearch()
+        assertEquals(2, viewModel.uiState.value.wishlistGames.size)
+        assertEquals("", viewModel.uiState.value.searchQuery)
+    }
 }

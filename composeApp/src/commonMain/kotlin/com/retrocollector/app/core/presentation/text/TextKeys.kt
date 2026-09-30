@@ -176,6 +176,9 @@ object TextKeys {
         const val IMPORT_PROGRESS = "Enriching games with AI..."
         const val MOVE_TO_HUNTING = "🎯 Move to Hunting"
         const val EMPTY_STATE = "Your wishlist is empty. Import a CSV or add games from Quick Scan."
+        const val EMPTY_SEARCH_TITLE = "No games found in Wishlist"
+        const val EMPTY_SEARCH_SUBTITLE = "Try adjusting your search terms or clear the filter."
+        const val CLEAR_SEARCH = "Clear Search"
         const val ENRICHMENT_BANNER = "🤖 AI Enrichment"
     }
 

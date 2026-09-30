@@ -112,10 +112,10 @@ fun DesktopWorkstationScreen(
 
                 SidebarSectionItem(
                     section = AppSection.WISHLIST,
-                    count = wishlistState.wishlistGames.size,
+                    count = wishlistState.allWishlistCount,
                     isSelected = state.activeSection == AppSection.WISHLIST,
                     onClick = { actions.onSectionSelect(AppSection.WISHLIST) },
-                    badgeColor = if (wishlistState.wishlistGames.isNotEmpty()) StatusEditionFg else StatusUnverifiedFg
+                    badgeColor = if (wishlistState.allWishlistCount > 0) StatusEditionFg else StatusUnverifiedFg
                 )
 
                 SidebarSectionItem(
@@ -423,6 +423,7 @@ fun DesktopWorkstationScreen(
                             onOpenImportDialog = actions.onOpenImportDialog,
                             onRetryEnrichment = actions.onRetryEnrichment,
                             onNavigateToDetail = { actions.onGameSelected(it) },
+                            onClearSearch = actions.onClearFilters,
                             modifier = Modifier.fillMaxSize()
                         )
                     }

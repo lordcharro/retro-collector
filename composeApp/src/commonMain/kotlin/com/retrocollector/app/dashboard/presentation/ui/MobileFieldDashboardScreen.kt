@@ -311,6 +311,7 @@ fun MobileFieldDashboardScreen(
                                 actions.onGameSelected(game)
                                 onNavigateToDetail(game)
                             },
+                            onClearSearch = actions.onClearFilters,
                             modifier = Modifier.fillMaxWidth().weight(1f)
                         )
                     }

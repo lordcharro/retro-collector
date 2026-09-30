@@ -7,6 +7,8 @@ import com.retrocollector.app.wishlist.domain.usecase.ImportResult
 @Immutable
 data class WishlistUiState(
     val wishlistGames: List<GameItem> = emptyList(),
+    val allWishlistCount: Int = 0,
+    val searchQuery: String = "",
     val isImportDialogOpen: Boolean = false,
     val importResult: ImportResult? = null,
     val enrichmentProgress: Pair<Int, Int>? = null // (completed, total)

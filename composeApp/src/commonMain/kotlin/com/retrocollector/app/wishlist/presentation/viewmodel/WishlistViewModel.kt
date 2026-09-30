@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -22,17 +23,68 @@ class WishlistViewModel(
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val scope: CoroutineScope = CoroutineScope(dispatcher)
 ) {
+    private val _searchQuery = MutableStateFlow("")
     private val _uiState = MutableStateFlow(WishlistUiState())
     val uiState: StateFlow<WishlistUiState> = _uiState.asStateFlow()
 
     init {
         scope.launch {
-            repository.games.collect { allGames ->
-                val wishlist = allGames.filter {
+            combine(repository.games, _searchQuery) { allGames, query ->
+                val allWishlist = allGames.filter {
                     it.collectionStatus == CollectionStatus.WISHLIST
                 }
-                _uiState.update { it.copy(wishlistGames = wishlist) }
+                val filteredAndSorted = filterAndSortWishlist(allWishlist, query)
+                Pair(allWishlist.size, filteredAndSorted)
+            }.collect { (totalCount, games) ->
+                _uiState.update {
+                    it.copy(
+                        wishlistGames = games,
+                        allWishlistCount = totalCount,
+                        searchQuery = _searchQuery.value
+                    )
+                }
             }
+        }
+    }
+
+    fun onSearchQueryChange(query: String) {
+        _searchQuery.value = query
+    }
+
+    fun clearSearch() {
+        _searchQuery.value = ""
+    }
+
+    private fun filterAndSortWishlist(games: List<GameItem>, query: String): List<GameItem> {
+        val trimmedQuery = query.trim()
+        if (trimmedQuery.isEmpty()) {
+            return games.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.title })
+        }
+
+        return games
+            .filter { game ->
+                game.title.contains(trimmedQuery, ignoreCase = true) ||
+                    game.franchiseName.contains(trimmedQuery, ignoreCase = true) ||
+                    (game.productCode?.contains(trimmedQuery, ignoreCase = true) == true) ||
+                    (game.barcode?.contains(trimmedQuery, ignoreCase = true) == true) ||
+                    game.spottedLocation.contains(trimmedQuery, ignoreCase = true)
+            }
+            .sortedWith(
+                compareBy<GameItem> { game ->
+                    getRelevanceRank(game, trimmedQuery)
+                }.thenBy(String.CASE_INSENSITIVE_ORDER) { it.title }
+            )
+    }
+
+    private fun getRelevanceRank(game: GameItem, query: String): Int {
+        val title = game.title
+        return when {
+            title.equals(query, ignoreCase = true) -> 0
+            title.startsWith(query, ignoreCase = true) -> 1
+            title.split(" ", "-", ":").any { it.startsWith(query, ignoreCase = true) } -> 2
+            title.contains(query, ignoreCase = true) -> 3
+            game.franchiseName.contains(query, ignoreCase = true) -> 4
+            else -> 5
         }
     }
 

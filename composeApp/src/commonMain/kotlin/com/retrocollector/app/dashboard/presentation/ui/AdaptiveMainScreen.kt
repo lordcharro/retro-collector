@@ -62,14 +62,20 @@ fun AdaptiveMainScreen(
         DashboardActions(
             onStatusSelect = dashboardViewModel::onStatusSelect,
             onPlatformSelect = dashboardViewModel::onPlatformSelect,
-            onSearchQueryChange = dashboardViewModel::onSearchQueryChange,
+            onSearchQueryChange = { query ->
+                dashboardViewModel.onSearchQueryChange(query)
+                wishlistViewModel.onSearchQueryChange(query)
+            },
             onToggleEnglishOnly = dashboardViewModel::toggleEnglishOnlyFilter,
             onToggleUskAlerts = dashboardViewModel::toggleUskAlertsFilter,
             onGameSelected = dashboardViewModel::onGameSelected,
             onUpdateGameStatus = dashboardViewModel::updateGameStatus,
             onUpdatePaidPrice = dashboardViewModel::updateGamePaidPrice,
             onDeleteGame = dashboardViewModel::deleteGame,
-            onClearFilters = dashboardViewModel::clearFilters,
+            onClearFilters = {
+                dashboardViewModel.clearFilters()
+                wishlistViewModel.clearSearch()
+            },
             onOpenScanDialog = dashboardViewModel::openScanDialog,
             onOpenSettings = dashboardViewModel::openSettings,
             onSendFollowUpMessage = dashboardViewModel::sendFollowUpMessage,
