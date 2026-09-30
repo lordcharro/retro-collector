@@ -1,9 +1,5 @@
 package com.retrocollector.app.core.data.gemini
 
-import com.retrocollector.app.core.domain.model.CollectionStatus
-import com.retrocollector.app.core.domain.model.ConsolePlatform
-import com.retrocollector.app.core.domain.model.GameItem
-import com.retrocollector.app.core.domain.model.LanguageStatus
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

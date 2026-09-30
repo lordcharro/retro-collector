@@ -11,10 +11,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.GameItem
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.core.presentation.util.PriceFormatter
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Barra de estatísticas da coleção pessoal.
@@ -80,6 +82,21 @@ fun CollectionStatsBar(
                 color = StatusUnverifiedFg
             )
         }
+    }
+}
+
+@Preview
+@Composable
+fun CollectionStatsBarPreview() {
+    RetroTactileTheme {
+        CollectionStatsBar(
+            games = listOf(
+                GameItem(id = "1", title = "Game 1", platform = ConsolePlatform.GAMECUBE, paidPriceChf = 35.0),
+                GameItem(id = "2", title = "Game 2", platform = ConsolePlatform.N64, paidPriceChf = 45.0),
+                GameItem(id = "3", title = "Game 3", platform = ConsolePlatform.PS3, paidPriceChf = 20.0)
+            ),
+            currency = "CHF"
+        )
     }
 }
 

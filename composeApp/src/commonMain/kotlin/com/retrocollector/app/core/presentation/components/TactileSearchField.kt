@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun TactileSearchField(
@@ -70,4 +71,16 @@ fun TactileSearchField(
             trailingContent?.invoke()
         }
     )
+}
+
+@Preview
+@Composable
+fun TactileSearchFieldPreview() {
+    RetroTactileTheme {
+        TactileSearchField(
+            query = "Resident Evil",
+            onQueryChange = {},
+            modifier = Modifier.padding(16.dp)
+        )
+    }
 }

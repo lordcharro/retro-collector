@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.retrocollector.app.core.domain.model.SkuInfo
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -110,5 +111,22 @@ fun SafeSkuMatrixView(
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun SafeSkuMatrixViewPreview() {
+    RetroTactileTheme {
+        SafeSkuMatrixView(
+            safeSkus = listOf(
+                SkuInfo(code = "DOL-P-G4BE", region = "UKV", editionNote = "English audio + Multi-5 subs", isSafe = true),
+                SkuInfo(code = "DOL-P-G4BP", region = "EUR", editionNote = "English audio + Multi-5 subs", isSafe = true)
+            ),
+            riskySkus = listOf(
+                SkuInfo(code = "DOL-P-G4BD", region = "NOE", editionNote = "German text & subs only", isSafe = false)
+            ),
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }

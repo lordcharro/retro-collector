@@ -20,6 +20,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.retrocollector.app.core.presentation.theme.*
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun TactileTextField(
@@ -87,5 +88,18 @@ fun TactileTextField(
         }
 
         trailingIcon?.invoke()
+    }
+}
+
+@Preview
+@Composable
+fun TactileTextFieldPreview() {
+    RetroTactileTheme {
+        TactileTextField(
+            value = "Resident Evil 4",
+            onValueChange = {},
+            placeholder = "Nome do jogo...",
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }

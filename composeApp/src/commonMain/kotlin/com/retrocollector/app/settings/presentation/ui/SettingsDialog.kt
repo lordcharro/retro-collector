@@ -7,13 +7,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -25,6 +23,7 @@ import com.retrocollector.app.core.presentation.components.TactileTextField
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.settings.domain.model.AppSettings
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -592,6 +591,24 @@ fun SettingsDialog(
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun SettingsDialogPreview() {
+    RetroTactileTheme {
+        SettingsDialog(
+            settings = AppSettings(
+                geminiApiKey = "AIzaSyPreviewKeyExample",
+                geminiModel = "gemini-3.7-flash",
+                firebaseProjectId = "retro-collector-swiss",
+                defaultCurrency = "CHF",
+                isScraperEnabled = true
+            ),
+            onSaveSettings = {},
+            onDismiss = {}
+        )
     }
 }
 

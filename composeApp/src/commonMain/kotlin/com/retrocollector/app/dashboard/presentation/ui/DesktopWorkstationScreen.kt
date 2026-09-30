@@ -13,14 +13,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.retrocollector.app.core.domain.model.*
-import com.retrocollector.app.core.domain.model.AppSection
 import com.retrocollector.app.core.presentation.components.*
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
@@ -31,6 +29,7 @@ import com.retrocollector.app.discovery.presentation.ui.DiscoveryScreen
 import com.retrocollector.app.discovery.presentation.viewmodel.DiscoveryUiState
 import com.retrocollector.app.wishlist.presentation.ui.WishlistScreen
 import com.retrocollector.app.wishlist.presentation.viewmodel.WishlistUiState
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun DesktopWorkstationScreen(
@@ -742,5 +741,61 @@ fun DesktopWorkstationScreen(
                         }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun DesktopWorkstationScreenPreview() {
+    RetroTactileTheme {
+        val sampleGame = GameItem(
+            id = "gc_re4",
+            title = "Resident Evil 4",
+            franchiseName = "Resident Evil",
+            platform = ConsolePlatform.GAMECUBE,
+            releaseYear = "2005",
+            productCode = "DOL-P-G4BE",
+            spottedLocation = "Brockenhaus Bern",
+            askingPriceChf = 35.0,
+            paidPriceChf = 35.0,
+            collectionStatus = CollectionStatus.HUNTING,
+            languageStatus = LanguageStatus.SUBS_ONLY,
+            marketRadar = SwissMarketRadar(
+                spottedPriceChf = 35.0,
+                medianPriceChf = 31.50,
+                historicalMinChf = 28.0,
+                historicalMaxChf = 36.0,
+                trend = "Stable"
+            ),
+            safeSkus = listOf(
+                SkuInfo(code = "DOL-P-G4BE", region = "UKV", editionNote = "EN audio + EN/FR/DE/ES/IT subs", isSafe = true)
+            ),
+            collectorVerdict = "Edição UKV/EUR recomendada com legendas multilíngues completas."
+        )
+        val sampleGames = listOf(
+            sampleGame,
+            GameItem(
+                id = "n64_sm64",
+                title = "Super Mario 64",
+                franchiseName = "Mario",
+                platform = ConsolePlatform.N64,
+                releaseYear = "1997",
+                productCode = "NUS-NSMP-EUR",
+                spottedLocation = "Ricardo.ch",
+                askingPriceChf = 45.0,
+                collectionStatus = CollectionStatus.HUNTING,
+                languageStatus = LanguageStatus.FULL_ENGLISH
+            )
+        )
+        DesktopWorkstationScreen(
+            state = DashboardUiState(
+                games = sampleGames,
+                selectedGame = sampleGame,
+                activeSection = AppSection.ACTIVITY
+            ),
+            discoveryState = DiscoveryUiState(),
+            wishlistState = WishlistUiState(),
+            actions = DashboardActions()
+        )
     }
 }

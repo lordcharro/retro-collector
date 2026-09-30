@@ -22,6 +22,7 @@ import com.retrocollector.app.core.presentation.components.PlatformBadge
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.wishlist.presentation.viewmodel.WishlistUiState
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Ecrã da Wishlist — lista tática de jogos desejados com suporte
@@ -214,5 +215,51 @@ private fun WishlistGameRow(
                 )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun WishlistScreenPreview() {
+    RetroTactileTheme {
+        val sampleWishlist = listOf(
+            GameItem(
+                id = "n64_zelda_oot",
+                title = "The Legend of Zelda: Ocarina of Time",
+                franchiseName = "Zelda",
+                platform = ConsolePlatform.N64,
+                releaseYear = "1998",
+                productCode = "NUS-CZLE-EUR",
+                collectionStatus = CollectionStatus.HUNTING,
+                enrichmentStatus = EnrichmentStatus.COMPLETE
+            ),
+            GameItem(
+                id = "gc_metroid_prime",
+                title = "Metroid Prime",
+                franchiseName = "Metroid",
+                platform = ConsolePlatform.GAMECUBE,
+                releaseYear = "2002",
+                productCode = "DOL-GM8E-USA",
+                collectionStatus = CollectionStatus.HUNTING,
+                enrichmentStatus = EnrichmentStatus.PENDING
+            ),
+            GameItem(
+                id = "ps3_demons_souls",
+                title = "Demon's Souls",
+                franchiseName = "Souls",
+                platform = ConsolePlatform.PS3,
+                releaseYear = "2009",
+                productCode = "BLES-00932",
+                collectionStatus = CollectionStatus.HUNTING,
+                enrichmentStatus = EnrichmentStatus.FAILED
+            )
+        )
+        WishlistScreen(
+            state = WishlistUiState(
+                wishlistGames = sampleWishlist,
+                enrichmentProgress = Pair(1, 3)
+            ),
+            selectedGameId = sampleWishlist.first().id
+        )
     }
 }

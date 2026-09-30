@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -18,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -26,10 +24,12 @@ import androidx.compose.ui.unit.sp
 import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.DiscoveredGameItem
 import com.retrocollector.app.core.domain.model.GameGenre
+import com.retrocollector.app.core.domain.model.LanguageStatus
 import com.retrocollector.app.core.presentation.components.TactileSearchField
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.discovery.presentation.components.DiscoveredGameCard
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Suppress("LongParameterList")
 @Composable
@@ -357,5 +357,51 @@ fun DiscoveryScreen(
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun DiscoveryScreenPreview() {
+    RetroTactileTheme {
+        val sampleDiscovered = listOf(
+            DiscoveredGameItem(
+                id = "disc_fzero_gx",
+                title = "F-Zero GX",
+                franchiseName = "F-Zero",
+                platform = ConsolePlatform.GAMECUBE,
+                releaseYear = "2003",
+                genreDisplayName = "Corrida Futurista",
+                genreTags = listOf("Racing", "Sci-Fi"),
+                recommendationReason = "Um dos jogos de corrida arcade mais rápidos e difíceis de sempre, desenvolvido pela Amusement Vision (Sega).",
+                languageStatus = LanguageStatus.FULL_ENGLISH,
+                estimatedPriceChf = 65.0
+            ),
+            DiscoveredGameItem(
+                id = "disc_perfect_dark",
+                title = "Perfect Dark",
+                franchiseName = "Perfect Dark",
+                platform = ConsolePlatform.N64,
+                releaseYear = "2000",
+                genreDisplayName = "FPS de Espionagem",
+                genreTags = listOf("FPS", "Action"),
+                recommendationReason = "Sucessor espiritual de GoldenEye 007 com bots avançados e iluminação dinâmica impressionante no N64 Expansion Pak.",
+                languageStatus = LanguageStatus.FULL_ENGLISH,
+                estimatedPriceChf = 35.0
+            )
+        )
+        DiscoveryScreen(
+            discoveredGames = sampleDiscovered,
+            selectedGenre = GameGenre.ALL,
+            selectedPlatform = null,
+            isDiscovering = false,
+            searchQuery = "",
+            onQueryChange = {},
+            onSearchSubmit = {},
+            onGenreSelect = {},
+            onPlatformSelect = {},
+            onOpenDossier = {},
+            onAddToWishlist = {}
+        )
     }
 }

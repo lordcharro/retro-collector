@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.retrocollector.app.core.domain.model.EnrichmentStatus
 import com.retrocollector.app.core.presentation.theme.*
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Badge visual para o estado de enriquecimento de um jogo da Wishlist.
@@ -52,3 +53,19 @@ private data class EnrichmentStyle(
     val bgColor: Color,
     val fgColor: Color
 )
+
+@Preview
+@Composable
+fun EnrichmentBadgePreview() {
+    RetroTactileTheme {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            EnrichmentBadge(status = EnrichmentStatus.PENDING)
+            EnrichmentBadge(status = EnrichmentStatus.ENRICHING)
+            EnrichmentBadge(status = EnrichmentStatus.COMPLETE)
+            EnrichmentBadge(status = EnrichmentStatus.FAILED)
+        }
+    }
+}

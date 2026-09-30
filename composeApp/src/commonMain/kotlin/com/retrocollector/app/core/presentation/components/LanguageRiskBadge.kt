@@ -65,7 +65,7 @@ fun LanguageRiskBadge(
 
 @Preview
 @Composable
-internal fun LanguageRiskBadgePreview() {
+fun LanguageRiskBadgePreview() {
     RetroTactileTheme {
         LanguageRiskBadge(
             status = LanguageStatus.FULL_ENGLISH,

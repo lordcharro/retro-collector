@@ -17,12 +17,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.DiscoveredGameItem
+import com.retrocollector.app.core.domain.model.LanguageStatus
 import com.retrocollector.app.core.presentation.components.LanguageRiskBadge
 import com.retrocollector.app.core.presentation.components.PlatformBadge
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.core.presentation.util.PriceFormatter
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun DiscoveredGameCard(
@@ -197,6 +200,30 @@ fun DiscoveredGameCard(
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun DiscoveredGameCardPreview() {
+    RetroTactileTheme {
+        DiscoveredGameCard(
+            game = DiscoveredGameItem(
+                id = "disc_fzero_gx",
+                title = "F-Zero GX",
+                franchiseName = "F-Zero",
+                platform = ConsolePlatform.GAMECUBE,
+                releaseYear = "2003",
+                genreDisplayName = "Corrida Futurista",
+                genreTags = listOf("Racing", "Sci-Fi"),
+                recommendationReason = "Um dos jogos de corrida arcade mais rápidos e difíceis de sempre, desenvolvido pela Sega.",
+                languageStatus = LanguageStatus.FULL_ENGLISH,
+                estimatedPriceChf = 65.0
+            ),
+            onOpenDossier = {},
+            onAddToWishlist = {},
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }
 

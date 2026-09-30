@@ -3,7 +3,6 @@ package com.retrocollector.app.dossier.presentation.ui
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,7 +11,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,8 +20,14 @@ import com.retrocollector.app.core.presentation.components.*
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.core.domain.model.ChatMessage
+import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.DiscoveredGameItem
+import com.retrocollector.app.core.domain.model.LanguageStatus
+import com.retrocollector.app.core.domain.model.MessageSender
+import com.retrocollector.app.core.domain.model.SkuInfo
+import com.retrocollector.app.core.domain.model.SwissMarketRadar
 import com.retrocollector.app.discovery.presentation.components.SimilarGamesShelf
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun MobileGameDetailScreen(
@@ -281,5 +285,64 @@ fun MobileGameDetailScreen(
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun MobileGameDetailScreenPreview() {
+    RetroTactileTheme {
+        val sampleGame = GameItem(
+            id = "gc_re4",
+            title = "Resident Evil 4",
+            franchiseName = "Resident Evil",
+            platform = ConsolePlatform.GAMECUBE,
+            releaseYear = "2005",
+            productCode = "DOL-P-G4BE",
+            spottedLocation = "Brockenhaus Bern",
+            askingPriceChf = 35.0,
+            paidPriceChf = 35.0,
+            collectionStatus = CollectionStatus.OWNED,
+            languageStatus = LanguageStatus.SUBS_ONLY,
+            marketRadar = SwissMarketRadar(
+                spottedPriceChf = 35.0,
+                medianPriceChf = 31.50,
+                historicalMinChf = 28.0,
+                historicalMaxChf = 36.0,
+                trend = "Stable"
+            ),
+            safeSkus = listOf(
+                SkuInfo(
+                    code = "DOL-P-G4BE",
+                    region = "UKV",
+                    editionNote = "EN audio + EN/FR/DE/ES/IT subs",
+                    isSafe = true
+                ),
+                SkuInfo(code = "DOL-P-G4BP", region = "EUR", editionNote = "EN audio + Multi-5 subs", isSafe = true)
+            ),
+            riskySkus = listOf(
+                SkuInfo(code = "DOL-P-G4BD", region = "NOE", editionNote = "German text & subs only", isSafe = false)
+            ),
+            collectorVerdict = "Edição UKV/EUR recomendada com legendas multilíngues completas. Evitar versão alemã com censura em modos bónus."
+        )
+        val sampleMessages = listOf(
+            ChatMessage(
+                id = "msg_1",
+                contextId = "gc_re4",
+                sender = MessageSender.USER,
+                text = "Qual é o melhor SKU europeu para ter inglês completo?"
+            ),
+            ChatMessage(
+                id = "msg_2",
+                contextId = "gc_re4",
+                sender = MessageSender.GEMINI,
+                text = "O SKU DOL-P-G4BE (UKV) ou DOL-P-G4BP (EUR) contém o áudio original em inglês e texto multilíngue sem censura."
+            )
+        )
+        MobileGameDetailScreen(
+            game = sampleGame,
+            chatMessages = sampleMessages,
+            onBack = {}
+        )
     }
 }

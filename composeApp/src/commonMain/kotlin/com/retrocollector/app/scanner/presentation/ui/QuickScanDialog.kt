@@ -6,12 +6,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -410,7 +408,7 @@ fun QuickScanDialog(
 
 @org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
-internal fun QuickScanDialogPreview() {
+fun QuickScanDialogPreview() {
     RetroTactileTheme {
         QuickScanDialog()
     }

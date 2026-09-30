@@ -2,10 +2,8 @@ package com.retrocollector.app.settings
 
 import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.settings.data.datasource.DesktopSettingsLocalDataSource
-import com.retrocollector.app.settings.domain.model.AppSettings
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.io.File
 
 class DesktopSettingsLocalDataSourceTest {
 

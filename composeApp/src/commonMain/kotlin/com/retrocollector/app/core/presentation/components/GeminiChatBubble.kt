@@ -13,8 +13,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.retrocollector.app.core.domain.model.ChatMessage
+import com.retrocollector.app.core.domain.model.ConsolePlatform
+import com.retrocollector.app.core.domain.model.GameItem
 import com.retrocollector.app.core.domain.model.MessageSender
 import com.retrocollector.app.core.presentation.theme.*
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun GeminiChatBubble(
@@ -165,6 +168,42 @@ fun GeminiChatBubble(
                     )
                 }
             }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun GeminiChatBubblePreview() {
+    RetroTactileTheme {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            GeminiChatBubble(
+                message = ChatMessage(
+                    id = "1",
+                    contextId = "gc_re4",
+                    sender = MessageSender.USER,
+                    text = "Existe alguma diferença entre as edições UK e NOE deste jogo?",
+                    imageBase64 = "mock_base64_data"
+                )
+            )
+            GeminiChatBubble(
+                message = ChatMessage(
+                    id = "2",
+                    contextId = "gc_re4",
+                    sender = MessageSender.GEMINI,
+                    text = "A edição UK possui o SKU DOL-P-G4BE com áudio e texto em inglês completo. A edição NOE possui texto exclusivamente em alemão.",
+                    suggestedGameUpdate = GameItem(
+                        id = "gc_re4",
+                        title = "Resident Evil 4",
+                        platform = ConsolePlatform.GAMECUBE,
+                        collectorVerdict = "Edição UKV/EUR recomendada com legendas multilíngues completas. Evitar versão alemã (NOE) com censura nos modos bónus.",
+                        censorshipWarning = "A versão alemã (NOE) removeu o Assignment Ada e The Mercenaries."
+                    )
+                )
+            )
         }
     }
 }

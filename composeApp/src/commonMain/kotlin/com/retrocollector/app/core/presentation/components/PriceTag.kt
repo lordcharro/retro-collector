@@ -6,8 +6,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import com.retrocollector.app.core.presentation.theme.CodePriceStyle
+import com.retrocollector.app.core.presentation.theme.RetroTactileTheme
 import com.retrocollector.app.core.presentation.theme.TextPrimary
 import com.retrocollector.app.core.presentation.util.PriceFormatter
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun PriceTag(
@@ -30,4 +32,12 @@ fun PriceTag(
         softWrap = false,
         modifier = modifier
     )
+}
+
+@Preview
+@Composable
+fun PriceTagPreview() {
+    RetroTactileTheme {
+        PriceTag(amount = 45.0, currency = "CHF")
+    }
 }

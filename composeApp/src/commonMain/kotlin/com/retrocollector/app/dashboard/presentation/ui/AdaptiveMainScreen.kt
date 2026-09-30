@@ -10,7 +10,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.retrocollector.app.core.domain.model.AppSection
 import com.retrocollector.app.core.domain.model.GameItem
 import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardEffect
 import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardViewModel

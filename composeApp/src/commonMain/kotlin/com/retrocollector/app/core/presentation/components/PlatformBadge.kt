@@ -46,7 +46,7 @@ fun PlatformBadge(
 
 @Preview
 @Composable
-internal fun PlatformBadgePreview() {
+fun PlatformBadgePreview() {
     RetroTactileTheme {
         PlatformBadge(platform = ConsolePlatform.GAMECUBE)
     }
