@@ -23,7 +23,8 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 fun SwissMarketRadarView(
     radar: SwissMarketRadar,
     modifier: Modifier = Modifier,
-    askingPriceChf: Double? = null
+    askingPriceChf: Double? = null,
+    currency: String = "CHF"
 ) {
     val effectiveAsking = askingPriceChf ?: radar.spottedPriceChf
     val median = radar.medianPriceChf
@@ -77,7 +78,7 @@ fun SwissMarketRadarView(
                     softWrap = false
                 )
                 Text(
-                    text = if (effectiveAsking != null) "CHF $effectiveAsking" else "—",
+                    text = if (effectiveAsking != null) "$currency $effectiveAsking" else "—",
                     style = CodePriceStyle,
                     color = TextPrimary,
                     maxLines = 1,
@@ -94,7 +95,7 @@ fun SwissMarketRadarView(
                     softWrap = false
                 )
                 Text(
-                    text = if (median != null) "CHF $median" else "—",
+                    text = if (median != null) "$currency $median" else "—",
                     style = CodePriceStyle,
                     color = AccentBlue,
                     maxLines = 1,

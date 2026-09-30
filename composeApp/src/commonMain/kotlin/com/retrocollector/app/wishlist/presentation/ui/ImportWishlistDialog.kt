@@ -30,6 +30,7 @@ fun ImportWishlistDialog(
     enrichmentProgress: Pair<Int, Int>?,
     onImport: (String) -> Unit,
     onDismiss: () -> Unit,
+    onResetImportResult: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var csvText by remember { mutableStateOf("") }
@@ -171,33 +172,62 @@ fun ImportWishlistDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                 ) {
-                    OutlinedButton(
-                        onClick = onDismiss,
-                        border = BorderStroke(1.dp, BorderSubtle),
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-                        Text(
-                            text = TextKeys.Scanner.CLOSE,
-                            style = LabelFilterStyle,
-                            color = TextSecondary
-                        )
-                    }
+                    if (importResult != null) {
+                        OutlinedButton(
+                            onClick = {
+                                csvText = ""
+                                onResetImportResult()
+                            },
+                            border = BorderStroke(1.dp, BorderSubtle),
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Text(
+                                text = TextKeys.Wishlist.IMPORT_RESET_BUTTON,
+                                style = LabelFilterStyle,
+                                color = TextPrimary
+                            )
+                        }
 
-                    val lineCount = remember(csvText) {
-                        csvText.lines().count { it.trim().isNotBlank() }
-                    }
+                        Button(
+                            onClick = onDismiss,
+                            colors = ButtonDefaults.buttonColors(containerColor = ConsoleGamecube),
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Text(
+                                text = TextKeys.Wishlist.IMPORT_FINISH_BUTTON,
+                                style = LabelFilterStyle,
+                                color = Color.White
+                            )
+                        }
+                    } else {
+                        OutlinedButton(
+                            onClick = onDismiss,
+                            border = BorderStroke(1.dp, BorderSubtle),
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Text(
+                                text = TextKeys.Scanner.CLOSE,
+                                style = LabelFilterStyle,
+                                color = TextSecondary
+                            )
+                        }
 
-                    Button(
-                        onClick = { onImport(csvText) },
-                        enabled = csvText.isNotBlank() && importResult == null,
-                        colors = ButtonDefaults.buttonColors(containerColor = ConsoleGamecube),
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-                        Text(
-                            text = "${TextKeys.Wishlist.IMPORT_BUTTON_LABEL} ($lineCount)",
-                            style = LabelFilterStyle,
-                            color = Color.White
-                        )
+                        val lineCount = remember(csvText) {
+                            csvText.lines().count { it.trim().isNotBlank() }
+                        }
+
+                        Button(
+                            onClick = { onImport(csvText) },
+                            enabled = csvText.isNotBlank(),
+                            colors = ButtonDefaults.buttonColors(containerColor = ConsoleGamecube),
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Text(
+                                text = "${TextKeys.Wishlist.IMPORT_BUTTON_LABEL} ($lineCount)",
+                                style = LabelFilterStyle,
+                                color = Color.White
+                            )
+                        }
                     }
                 }
             }

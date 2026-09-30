@@ -21,15 +21,21 @@ data class DashboardActions(
     val onToggleUskAlerts: () -> Unit = {},
     val onGameSelected: (GameItem) -> Unit = {},
     val onUpdateGameStatus: (GameItem, CollectionStatus) -> Unit = { _, _ -> },
+    val onUpdatePaidPrice: (GameItem, Double?) -> Unit = { _, _ -> },
+    val onDeleteGame: (String) -> Unit = {},
+    val onClearFilters: () -> Unit = {},
     val onOpenScanDialog: () -> Unit = {},
     val onOpenSettings: () -> Unit = {},
     val onSendFollowUpMessage: (String) -> Unit = {},
+    // Mobile Navigation
+    val onOpenMobileDetail: (GameItem) -> Unit = {},
+    val onCloseMobileDetail: () -> Unit = {},
     // Navegação entre secções
     val onSectionSelect: (AppSection) -> Unit = {},
     // Wishlist
     val onOpenImportDialog: () -> Unit = {},
     val onImportWishlistCsv: (String) -> Unit = {},
-    val onMoveToHunting: (GameItem) -> Unit = {},
+    val onResetWishlistImportResult: () -> Unit = {},
     val onRetryEnrichment: (GameItem) -> Unit = {},
     // Discovery
     val onDiscoveryGenreSelect: (GameGenre) -> Unit = {},

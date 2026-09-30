@@ -3,7 +3,6 @@ package com.retrocollector.app.wishlist.presentation.viewmodel
 import com.retrocollector.app.core.domain.model.CollectionStatus
 import com.retrocollector.app.core.domain.model.GameItem
 import com.retrocollector.app.core.domain.repository.IGameRepository
-import com.retrocollector.app.dashboard.domain.usecase.SaveGameUseCase
 import com.retrocollector.app.wishlist.domain.usecase.EnrichWishlistGameUseCase
 import com.retrocollector.app.wishlist.domain.usecase.ImportWishlistUseCase
 import kotlinx.coroutines.CoroutineDispatcher
@@ -20,7 +19,6 @@ class WishlistViewModel(
     private val repository: IGameRepository,
     private val importWishlistUseCase: ImportWishlistUseCase = ImportWishlistUseCase(repository),
     private val enrichWishlistGameUseCase: EnrichWishlistGameUseCase = EnrichWishlistGameUseCase(repository),
-    private val saveGameUseCase: SaveGameUseCase = SaveGameUseCase(repository),
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val scope: CoroutineScope = CoroutineScope(dispatcher)
 ) {
@@ -31,8 +29,7 @@ class WishlistViewModel(
         scope.launch {
             repository.games.collect { allGames ->
                 val wishlist = allGames.filter {
-                    it.collectionStatus == CollectionStatus.WISHLIST ||
-                        @Suppress("DEPRECATION") (it.collectionStatus == CollectionStatus.HUNTING)
+                    it.collectionStatus == CollectionStatus.WISHLIST
                 }
                 _uiState.update { it.copy(wishlistGames = wishlist) }
             }
@@ -45,6 +42,10 @@ class WishlistViewModel(
 
     fun closeImportDialog() {
         _uiState.update { it.copy(isImportDialogOpen = false, importResult = null) }
+    }
+
+    fun resetImportResult() {
+        _uiState.update { it.copy(importResult = null) }
     }
 
     fun importWishlistCsv(csvContent: String) {
@@ -75,14 +76,6 @@ class WishlistViewModel(
             }
             _uiState.update { it.copy(enrichmentProgress = null) }
         }
-    }
-
-    fun moveToHunting(game: GameItem) {
-        val updated = game.copy(
-            collectionStatus = CollectionStatus.WISHLIST,
-            updatedAt = Clock.System.now().toEpochMilliseconds()
-        )
-        saveGameUseCase(updated)
     }
 
     fun retryEnrichment(game: GameItem) {

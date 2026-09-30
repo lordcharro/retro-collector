@@ -79,8 +79,7 @@ val presentationModule = module {
         WishlistViewModel(
             repository = get(),
             importWishlistUseCase = get(),
-            enrichWishlistGameUseCase = get(),
-            saveGameUseCase = get()
+            enrichWishlistGameUseCase = get()
         )
     }
 }

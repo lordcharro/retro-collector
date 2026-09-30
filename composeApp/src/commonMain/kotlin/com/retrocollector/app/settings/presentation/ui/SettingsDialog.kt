@@ -33,6 +33,7 @@ fun SettingsDialog(
     onSaveSettings: (AppSettings) -> Unit,
     onDismiss: () -> Unit,
     onTestGeminiConnection: ((String, String, (Result<String>) -> Unit) -> Unit)? = null,
+    onTestFirestoreConnection: ((String, (Result<String>) -> Unit) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var geminiKey by remember { mutableStateOf(settings.geminiApiKey) }
@@ -44,6 +45,8 @@ fun SettingsDialog(
     var isKeyVisible by remember { mutableStateOf(false) }
     var testStatusMessage by remember { mutableStateOf<String?>(null) }
     var isTestingGemini by remember { mutableStateOf(false) }
+    var firestoreStatusMessage by remember { mutableStateOf<String?>(null) }
+    var isTestingFirestore by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     val geminiModels = remember {
@@ -558,6 +561,77 @@ fun SettingsDialog(
                                 style = BodySm.copy(fontSize = 11.sp),
                                 color = TextSecondary
                             )
+                        }
+
+                        // Test Firestore Connection Button & Status Feedback
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Button(
+                                onClick = {
+                                    val trimmed = firebaseProjectId.trim()
+                                    if (trimmed.isNotBlank()) {
+                                        if (onTestFirestoreConnection != null) {
+                                            coroutineScope.launch {
+                                                isTestingFirestore = true
+                                                firestoreStatusMessage = TextKeys.Settings.FIREBASE_TESTING
+                                                try {
+                                                    withTimeoutOrNull(12_000) {
+                                                        onTestFirestoreConnection(trimmed) { result ->
+                                                            result.fold(
+                                                                onSuccess = { msg -> firestoreStatusMessage = msg },
+                                                                onFailure = { err ->
+                                                                    firestoreStatusMessage = err.message ?: TextKeys.Settings.FIREBASE_STATUS_FAILED
+                                                                }
+                                                            )
+                                                        }
+                                                    } ?: run {
+                                                        firestoreStatusMessage = "Tempo limite esgotado (12s). Verifica o Project ID."
+                                                    }
+                                                } catch (e: Exception) {
+                                                    firestoreStatusMessage = e.message ?: TextKeys.Settings.FIREBASE_STATUS_FAILED
+                                                } finally {
+                                                    isTestingFirestore = false
+                                                }
+                                            }
+                                        } else {
+                                            firestoreStatusMessage = TextKeys.Settings.FIREBASE_STATUS_CONNECTED
+                                        }
+                                    } else {
+                                        firestoreStatusMessage = TextKeys.Settings.FIREBASE_STATUS_NO_PROJECT
+                                    }
+                                },
+                                enabled = !isTestingFirestore,
+                                colors = ButtonDefaults.buttonColors(containerColor = SurfaceElevated),
+                                shape = RoundedCornerShape(4.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    text = if (isTestingFirestore) "⏳ " + TextKeys.Settings.FIREBASE_TESTING else "⚡ " + TextKeys.Settings.FIREBASE_TEST_BUTTON,
+                                    style = LabelFilterStyle,
+                                    color = TextPrimary
+                                )
+                            }
+
+                            firestoreStatusMessage?.let { msg ->
+                                val isTesting = isTestingFirestore || msg == TextKeys.Settings.FIREBASE_TESTING
+                                val isSuccess = msg == TextKeys.Settings.FIREBASE_STATUS_CONNECTED ||
+                                    msg.startsWith("Firestore connected") ||
+                                    msg.startsWith("Ligação")
+                                val textColor = when {
+                                    isTesting -> StatusEditionFg
+                                    isSuccess -> StatusEnglishFg
+                                    else -> StatusRiskFg
+                                }
+                                Text(
+                                    text = msg,
+                                    style = BodySm.copy(fontSize = 11.sp),
+                                    color = textColor,
+                                    modifier = Modifier.weight(1f, fill = false).padding(start = 8.dp)
+                                )
+                            }
                         }
                     }
                 }

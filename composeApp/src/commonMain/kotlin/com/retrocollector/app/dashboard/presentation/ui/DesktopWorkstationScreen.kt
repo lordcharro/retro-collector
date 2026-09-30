@@ -461,17 +461,50 @@ fun DesktopWorkstationScreen(
                                 }
                             }
         
-                            // Feed com as linhas de jogos
-                            LazyColumn(
-                                modifier = Modifier.fillMaxWidth().weight(1f)
-                            ) {
-                                items(state.games, key = { it.id }) { game ->
-                                    GameListItemRow(
-                                        game = game,
-                                        isSelected = state.selectedGame?.id == game.id,
-                                        onClick = { actions.onGameSelected(game) }
+                            // Feed com as linhas de jogos ou Empty State
+                            if (state.games.isEmpty()) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f)
+                                        .padding(24.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text(text = "🔍", fontSize = 28.sp)
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    Text(
+                                        text = TextKeys.Dashboard.EMPTY_CATALOG,
+                                        style = BodySm,
+                                        color = TextSecondary,
+                                        textAlign = TextAlign.Center
                                     )
-                                    HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
+                                    Spacer(modifier = Modifier.height(14.dp))
+                                    OutlinedButton(
+                                        onClick = actions.onClearFilters,
+                                        border = BorderStroke(1.dp, BorderStrong),
+                                        shape = RoundedCornerShape(4.dp)
+                                    ) {
+                                        Text(
+                                            text = TextKeys.Dashboard.CLEAR_FILTERS,
+                                            style = LabelFilterStyle,
+                                            color = TextPrimary
+                                        )
+                                    }
+                                }
+                            } else {
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxWidth().weight(1f)
+                                ) {
+                                    items(state.games, key = { it.id }) { game ->
+                                        GameListItemRow(
+                                            game = game,
+                                            isSelected = state.selectedGame?.id == game.id,
+                                            currency = state.settings.defaultCurrency.ifBlank { "CHF" },
+                                            onClick = { actions.onGameSelected(game) }
+                                        )
+                                        HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
+                                    }
                                 }
                             }
                         }
@@ -490,6 +523,7 @@ fun DesktopWorkstationScreen(
                             onPlatformSelect = actions.onDiscoveryPlatformSelect,
                             onOpenDossier = actions.onOpenDiscoveredDossier,
                             onAddToWishlist = actions.onAddDiscoveredToWishlist,
+                            currency = state.settings.defaultCurrency.ifBlank { "CHF" },
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -567,13 +601,85 @@ fun DesktopWorkstationScreen(
                                         }
                                     }
         
-                                    // Botões de Estado de Coleção: Hunting, Owned, Avoid
-                                    CollectionStatusSelector(
-                                        currentStatus = game.collectionStatus,
-                                        onStatusSelect = { actions.onUpdateGameStatus(game, it) }
-                                    )
+                                    // Ações de Estado de Coleção, Preço Pago e Remoção
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        if (game.collectionStatus == CollectionStatus.OWNED) {
+                                            var priceText by remember(game.id, game.paidPriceChf) {
+                                                mutableStateOf(game.paidPriceChf?.toString() ?: "")
+                                            }
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Text(
+                                                    text = "${TextKeys.Dossier.PAID_PRICE_LABEL}:",
+                                                    style = LabelFilterStyle,
+                                                    color = StatusEnglishFg
+                                                )
+                                                TactileTextField(
+                                                    value = priceText,
+                                                    onValueChange = { newText ->
+                                                        priceText = newText
+                                                        val parsed = newText.toDoubleOrNull()
+                                                        if (parsed != null || newText.isBlank()) {
+                                                            actions.onUpdatePaidPrice(game, parsed)
+                                                        }
+                                                    },
+                                                    placeholder = "${state.settings.defaultCurrency.ifBlank { "CHF" }} 0.00",
+                                                    modifier = Modifier.width(90.dp)
+                                                )
+                                            }
+                                        }
+
+                                        CollectionStatusSelector(
+                                            currentStatus = game.collectionStatus,
+                                            onStatusSelect = { actions.onUpdateGameStatus(game, it) }
+                                        )
+
+                                        var showDeleteConfirm by remember(game.id) { mutableStateOf(false) }
+
+                                        IconButton(
+                                            onClick = { showDeleteConfirm = true }
+                                        ) {
+                                            Text("🗑️", fontSize = 16.sp)
+                                        }
+
+                                        if (showDeleteConfirm) {
+                                            AlertDialog(
+                                                onDismissRequest = { showDeleteConfirm = false },
+                                                title = { Text(TextKeys.Dossier.DELETE_CONFIRM_TITLE, style = HeadlineSm, color = TextPrimary) },
+                                                text = { Text(TextKeys.Dossier.DELETE_CONFIRM_MESSAGE, style = BodyMd, color = TextSecondary) },
+                                                confirmButton = {
+                                                    Button(
+                                                        onClick = {
+                                                            showDeleteConfirm = false
+                                                            actions.onDeleteGame(game.id)
+                                                        },
+                                                        colors = ButtonDefaults.buttonColors(containerColor = StatusRiskFg),
+                                                        shape = RoundedCornerShape(4.dp)
+                                                    ) {
+                                                        Text(TextKeys.Dossier.DELETE_CONFIRM_BUTTON, style = LabelFilterStyle, color = Color.White)
+                                                    }
+                                                },
+                                                dismissButton = {
+                                                    OutlinedButton(
+                                                        onClick = { showDeleteConfirm = false },
+                                                        border = BorderStroke(1.dp, BorderStrong),
+                                                        shape = RoundedCornerShape(4.dp)
+                                                    ) {
+                                                        Text(TextKeys.Dossier.DELETE_CANCEL_BUTTON, style = LabelFilterStyle, color = TextPrimary)
+                                                    }
+                                                },
+                                                containerColor = SurfaceCard,
+                                                shape = RoundedCornerShape(8.dp)
+                                            )
+                                        }
+                                    }
                                 }
-        
+
                                 // Faixa de Dossiê Tático: Matriz de SKUs e Radar de Preço
                                 Column(
                                     modifier = Modifier
@@ -584,6 +690,7 @@ fun DesktopWorkstationScreen(
                                     verticalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
                                     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                                        val currentCurrency = state.settings.defaultCurrency.ifBlank { "CHF" }
                                         if (maxWidth >= 520.dp) {
                                             Row(
                                                 modifier = Modifier.fillMaxWidth(),
@@ -595,10 +702,11 @@ fun DesktopWorkstationScreen(
                                                     riskySkus = game.riskySkus,
                                                     modifier = Modifier.weight(1f)
                                                 )
-        
+
                                                 game.marketRadar?.let { radar ->
                                                     SwissMarketRadarView(
                                                         radar = radar,
+                                                        currency = currentCurrency,
                                                         modifier = Modifier.weight(1f)
                                                     )
                                                 }
@@ -613,10 +721,11 @@ fun DesktopWorkstationScreen(
                                                     riskySkus = game.riskySkus,
                                                     modifier = Modifier.fillMaxWidth()
                                                 )
-        
+
                                                 game.marketRadar?.let { radar ->
                                                     SwissMarketRadarView(
                                                         radar = radar,
+                                                        currency = currentCurrency,
                                                         modifier = Modifier.fillMaxWidth()
                                                     )
                                                 }
@@ -624,12 +733,13 @@ fun DesktopWorkstationScreen(
                                         }
                                     }
                                 }
-        
+
                                 // Prateleira de Jogos Semelhantes / Mesmo Género
                                 Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                                     SimilarGamesShelf(
                                         similarGames = state.similarGamesForActiveGame,
                                         isLoading = state.isSimilarGamesLoading,
+                                        currency = state.settings.defaultCurrency.ifBlank { "CHF" },
                                         onSelectGame = { actions.onOpenDiscoveredDossier(it) },
                                         onAddToWishlist = { actions.onAddDiscoveredToWishlist(it) }
                                     )
@@ -732,11 +842,53 @@ fun DesktopWorkstationScreen(
                                 }
                             }
                         } else {
-                            Box(
-                                modifier = Modifier.weight(0.58f).fillMaxHeight(),
-                                contentAlignment = Alignment.Center
+                            Column(
+                                modifier = Modifier
+                                    .weight(0.58f)
+                                    .fillMaxHeight()
+                                    .padding(32.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
                             ) {
-                                Text(text = TextKeys.Dashboard.NO_GAME_SELECTED, style = BodyMd, color = TextSecondary)
+                                Text(text = "🎮", fontSize = 42.sp)
+                                Spacer(modifier = Modifier.height(14.dp))
+                                Text(
+                                    text = TextKeys.Dashboard.NO_GAME_SELECTED_TITLE,
+                                    style = HeadlineSm,
+                                    color = TextPrimary,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = TextKeys.Dashboard.NO_GAME_SELECTED,
+                                    style = BodySm,
+                                    color = TextSecondary,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(20.dp))
+                                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    Button(
+                                        onClick = actions.onOpenScanDialog,
+                                        colors = ButtonDefaults.buttonColors(containerColor = ConsoleGamecube),
+                                        shape = RoundedCornerShape(4.dp)
+                                    ) {
+                                        Text(text = TextKeys.Dashboard.ACTION_QUICK_SCAN, style = LabelFilterStyle, color = Color.White)
+                                    }
+                                    OutlinedButton(
+                                        onClick = { actions.onSectionSelect(AppSection.DISCOVER) },
+                                        border = BorderStroke(1.dp, BorderStrong),
+                                        shape = RoundedCornerShape(4.dp)
+                                    ) {
+                                        Text(text = TextKeys.Dashboard.ACTION_DISCOVER, style = LabelFilterStyle, color = TextPrimary)
+                                    }
+                                    OutlinedButton(
+                                        onClick = actions.onOpenImportDialog,
+                                        border = BorderStroke(1.dp, BorderStrong),
+                                        shape = RoundedCornerShape(4.dp)
+                                    ) {
+                                        Text(text = TextKeys.Dashboard.ACTION_IMPORT_WISHLIST, style = LabelFilterStyle, color = TextPrimary)
+                                    }
+                                }
                             }
                         }
             }
@@ -758,7 +910,7 @@ fun DesktopWorkstationScreenPreview() {
             spottedLocation = "Brockenhaus Bern",
             askingPriceChf = 35.0,
             paidPriceChf = 35.0,
-            collectionStatus = CollectionStatus.HUNTING,
+            collectionStatus = CollectionStatus.WISHLIST,
             languageStatus = LanguageStatus.SUBS_ONLY,
             marketRadar = SwissMarketRadar(
                 spottedPriceChf = 35.0,
@@ -783,7 +935,7 @@ fun DesktopWorkstationScreenPreview() {
                 productCode = "NUS-NSMP-EUR",
                 spottedLocation = "Ricardo.ch",
                 askingPriceChf = 45.0,
-                collectionStatus = CollectionStatus.HUNTING,
+                collectionStatus = CollectionStatus.OWNED,
                 languageStatus = LanguageStatus.FULL_ENGLISH
             )
         )

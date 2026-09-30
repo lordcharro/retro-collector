@@ -303,20 +303,52 @@ fun MobileFieldDashboardScreen(
                             border = BorderStroke(1.dp, BorderSubtle),
                             modifier = Modifier.fillMaxWidth().weight(1f)
                         ) {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(bottom = 80.dp)
-                            ) {
-                                items(state.games, key = { it.id }) { game ->
-                                    GameListItemRow(
-                                        game = game,
-                                        isSelected = state.selectedGame?.id == game.id,
-                                        onClick = {
-                                            actions.onGameSelected(game)
-                                            onNavigateToDetail(game)
-                                        }
+                            if (state.games.isEmpty()) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(24.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text(text = "🔍", fontSize = 28.sp)
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    Text(
+                                        text = TextKeys.Dashboard.EMPTY_CATALOG,
+                                        style = BodySm,
+                                        color = TextSecondary,
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                     )
-                                    HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
+                                    Spacer(modifier = Modifier.height(14.dp))
+                                    OutlinedButton(
+                                        onClick = actions.onClearFilters,
+                                        border = BorderStroke(1.dp, BorderStrong),
+                                        shape = RoundedCornerShape(4.dp)
+                                    ) {
+                                        Text(
+                                            text = TextKeys.Dashboard.CLEAR_FILTERS,
+                                            style = LabelFilterStyle,
+                                            color = TextPrimary
+                                        )
+                                    }
+                                }
+                            } else {
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentPadding = PaddingValues(bottom = 80.dp)
+                                ) {
+                                    items(state.games, key = { it.id }) { game ->
+                                        GameListItemRow(
+                                            game = game,
+                                            isSelected = state.selectedGame?.id == game.id,
+                                            currency = state.settings.defaultCurrency.ifBlank { "CHF" },
+                                            onClick = {
+                                                actions.onGameSelected(game)
+                                                onNavigateToDetail(game)
+                                            }
+                                        )
+                                        HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
+                                    }
                                 }
                             }
                         }
@@ -369,7 +401,7 @@ fun MobileFieldDashboardScreenPreview() {
             productCode = "DOL-P-G4BE",
             spottedLocation = "Brockenhaus Bern",
             askingPriceChf = 35.0,
-            collectionStatus = CollectionStatus.HUNTING,
+            collectionStatus = CollectionStatus.WISHLIST,
             languageStatus = LanguageStatus.SUBS_ONLY
         )
         val sampleGames = listOf(
@@ -383,7 +415,7 @@ fun MobileFieldDashboardScreenPreview() {
                 productCode = "NUS-NSMP-EUR",
                 spottedLocation = "Ricardo.ch",
                 askingPriceChf = 45.0,
-                collectionStatus = CollectionStatus.HUNTING,
+                collectionStatus = CollectionStatus.OWNED,
                 languageStatus = LanguageStatus.FULL_ENGLISH
             )
         )

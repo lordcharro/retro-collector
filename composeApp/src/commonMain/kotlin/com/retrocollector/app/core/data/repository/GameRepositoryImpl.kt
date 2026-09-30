@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
+@Suppress("LargeClass")
 class GameRepositoryImpl(
     private val firestoreService: FirestoreService = FirestoreService(),
     private val geminiDataSource: GeminiRemoteDataSource = GeminiRemoteDataSource(),
@@ -41,6 +42,15 @@ class GameRepositoryImpl(
     private val discoveryCache = mutableMapOf<String, List<DiscoveredGameItem>>()
     private val similarGamesCache = mutableMapOf<String, List<DiscoveredGameItem>>()
 
+    init {
+        val projectId = _settings.value.firebaseProjectId.trim()
+        if (projectId.isNotBlank()) {
+            scope.launch {
+                syncFromFirestore()
+            }
+        }
+    }
+
     override fun getGameById(id: String): GameItem? {
         return _games.value.find { it.id == id }
     }
@@ -56,16 +66,22 @@ class GameRepositoryImpl(
         _games.value = current
 
         // Sincronização em background com Firestore se project ID estiver configurado
-        val projectId = _settings.value.firebaseProjectId
+        val projectId = _settings.value.firebaseProjectId.trim()
         if (projectId.isNotBlank()) {
             scope.launch {
-                // fire-and-forget sync
+                firestoreService.saveGame(projectId, game)
             }
         }
     }
 
     override fun deleteGame(id: String) {
         _games.value = _games.value.filter { it.id != id }
+        val projectId = _settings.value.firebaseProjectId.trim()
+        if (projectId.isNotBlank()) {
+            scope.launch {
+                firestoreService.deleteGame(projectId, id)
+            }
+        }
     }
 
     override fun getChatMessagesForGame(gameId: String): List<ChatMessage> {
@@ -77,18 +93,30 @@ class GameRepositoryImpl(
     }
 
     override fun updateSettings(settings: AppSettings) {
+        val previousProjectId = _settings.value.firebaseProjectId.trim()
         _settings.value = settings
         settingsLocalDataSource.saveSettings(settings)
+
+        val newProjectId = settings.firebaseProjectId.trim()
+        if (newProjectId.isNotBlank() && newProjectId != previousProjectId) {
+            scope.launch {
+                syncFromFirestore()
+            }
+        }
     }
 
     override suspend fun syncFromFirestore(): Result<Unit> {
-        val projectId = _settings.value.firebaseProjectId
+        val projectId = _settings.value.firebaseProjectId.trim()
         if (projectId.isBlank()) return Result.success(Unit)
 
         val result = firestoreService.getGames(projectId)
         return result.map { remoteGames ->
             if (remoteGames.isNotEmpty()) {
-                _games.value = remoteGames
+                val localMap = _games.value.associateBy { it.id }.toMutableMap()
+                remoteGames.forEach { remote ->
+                    localMap[remote.id] = remote
+                }
+                _games.value = localMap.values.toList()
             }
             Unit
         }
@@ -403,8 +431,7 @@ class GameRepositoryImpl(
             }
             item.copy(
                 isAlreadyInCollection = matching?.collectionStatus == CollectionStatus.OWNED,
-                isAlreadyInWishlist = matching?.collectionStatus == CollectionStatus.WISHLIST ||
-                    @Suppress("DEPRECATION") (matching?.collectionStatus == CollectionStatus.HUNTING)
+                isAlreadyInWishlist = matching?.collectionStatus == CollectionStatus.WISHLIST
             )
         }
     }

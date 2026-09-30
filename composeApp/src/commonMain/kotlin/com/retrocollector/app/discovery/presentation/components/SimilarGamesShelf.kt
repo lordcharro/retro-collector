@@ -33,7 +33,8 @@ fun SimilarGamesShelf(
     isLoading: Boolean,
     onSelectGame: (DiscoveredGameItem) -> Unit,
     onAddToWishlist: (DiscoveredGameItem) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    currency: String = "CHF"
 ) {
     Column(
         modifier = modifier
@@ -135,7 +136,7 @@ fun SimilarGamesShelf(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = PriceFormatter.format(simGame.estimatedPriceChf, "CHF"),
+                                text = PriceFormatter.format(simGame.estimatedPriceChf, currency),
                                 style = CodePriceStyle.copy(fontSize = 11.sp),
                                 color = TextPrimary
                             )

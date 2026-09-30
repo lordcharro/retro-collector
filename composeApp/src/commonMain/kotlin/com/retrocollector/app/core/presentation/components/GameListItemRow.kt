@@ -29,7 +29,8 @@ fun GameListItemRow(
     game: GameItem,
     isSelected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    currency: String = "CHF"
 ) {
     val platformColor = when (game.platform) {
         ConsolePlatform.N64 -> ConsoleN64
@@ -150,7 +151,7 @@ fun GameListItemRow(
                 val displayPrice = game.askingPriceChf ?: game.targetPriceChf ?: game.paidPriceChf
 
                 Text(
-                    text = PriceFormatter.format(displayPrice, "CHF"),
+                    text = PriceFormatter.format(displayPrice, currency),
                     style = CodePriceStyle,
                     color = TextPrimary,
                     maxLines = 1,

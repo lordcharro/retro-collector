@@ -21,6 +21,8 @@ import com.retrocollector.app.wishlist.presentation.ui.ImportWishlistDialog
 import com.retrocollector.app.wishlist.presentation.viewmodel.WishlistViewModel
 import kotlinx.coroutines.flow.collectLatest
 
+import com.retrocollector.app.core.presentation.util.PlatformBackHandler
+
 @Composable
 fun AdaptiveMainScreen(
     dashboardViewModel: DashboardViewModel,
@@ -32,8 +34,12 @@ fun AdaptiveMainScreen(
     val discoveryState by discoveryViewModel.uiState.collectAsState()
     val wishlistState by wishlistViewModel.uiState.collectAsState()
 
-    var mobileDetailGame by remember { mutableStateOf<GameItem?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Intercetação do botão Voltar nativo (Android)
+    PlatformBackHandler(enabled = state.isMobileDetailOpen) {
+        dashboardViewModel.closeMobileDetail()
+    }
 
     // Coleta de Efeitos One-Off via Channel
     LaunchedEffect(dashboardViewModel) {
@@ -43,7 +49,7 @@ fun AdaptiveMainScreen(
                     snackbarHostState.showSnackbar(effect.message)
                 }
                 is DashboardEffect.NavigateToGameDetail -> {
-                    mobileDetailGame = effect.game
+                    dashboardViewModel.openMobileDetail(effect.game)
                 }
                 is DashboardEffect.ScanCompleted -> {
                     // Jogo escaneado já salvo e selecionado
@@ -61,13 +67,18 @@ fun AdaptiveMainScreen(
             onToggleUskAlerts = dashboardViewModel::toggleUskAlertsFilter,
             onGameSelected = dashboardViewModel::onGameSelected,
             onUpdateGameStatus = dashboardViewModel::updateGameStatus,
+            onUpdatePaidPrice = dashboardViewModel::updateGamePaidPrice,
+            onDeleteGame = dashboardViewModel::deleteGame,
+            onClearFilters = dashboardViewModel::clearFilters,
             onOpenScanDialog = dashboardViewModel::openScanDialog,
             onOpenSettings = dashboardViewModel::openSettings,
             onSendFollowUpMessage = dashboardViewModel::sendFollowUpMessage,
+            onOpenMobileDetail = dashboardViewModel::openMobileDetail,
+            onCloseMobileDetail = dashboardViewModel::closeMobileDetail,
             onSectionSelect = dashboardViewModel::onSectionSelect,
             onOpenImportDialog = wishlistViewModel::openImportDialog,
             onImportWishlistCsv = wishlistViewModel::importWishlistCsv,
-            onMoveToHunting = wishlistViewModel::moveToHunting,
+            onResetWishlistImportResult = wishlistViewModel::resetImportResult,
             onRetryEnrichment = wishlistViewModel::retryEnrichment,
             onDiscoveryGenreSelect = discoveryViewModel::onGenreSelect,
             onDiscoveryQueryChange = discoveryViewModel::onQueryChange,
@@ -93,22 +104,22 @@ fun AdaptiveMainScreen(
                 )
             } else {
                 // Ecrã estreito (Android Phone): Navegação com ecrã móvel
-                if (mobileDetailGame != null) {
-                    val activeGame = state.games.find { it.id == mobileDetailGame?.id } ?: mobileDetailGame!!
+                val activeGame = state.selectedGame
+                if (state.isMobileDetailOpen && activeGame != null) {
                     MobileGameDetailScreen(
                         game = activeGame,
                         chatMessages = state.activeChatMessages,
                         isAnalyzing = state.isAnalyzing,
+                        currency = state.settings.defaultCurrency.ifBlank { "CHF" },
                         similarGames = state.similarGamesForActiveGame,
                         isSimilarGamesLoading = state.isSimilarGamesLoading,
-                        onBack = { mobileDetailGame = null },
+                        onBack = dashboardViewModel::closeMobileDetail,
+                        onDeleteGame = dashboardViewModel::deleteGame,
                         onUpdateGameStatus = dashboardViewModel::updateGameStatus,
+                        onUpdatePaidPrice = dashboardViewModel::updateGamePaidPrice,
                         onSendFollowUpMessage = dashboardViewModel::sendFollowUpMessage,
                         onSelectSimilarGame = { sim ->
                             actions.onOpenDiscoveredDossier(sim)
-                            mobileDetailGame = state.games.find {
-                                it.title.equals(sim.title, ignoreCase = true) && it.platform == sim.platform
-                            } ?: sim.toGameItem()
                         },
                         onAddSimilarGameToWishlist = discoveryViewModel::addToWishlist
                     )
@@ -119,7 +130,7 @@ fun AdaptiveMainScreen(
                         wishlistState = wishlistState,
                         actions = actions,
                         onNavigateToDetail = { game ->
-                            mobileDetailGame = game
+                            dashboardViewModel.openMobileDetail(game)
                         }
                     )
                 }
@@ -130,6 +141,7 @@ fun AdaptiveMainScreen(
                 QuickScanDialog(
                     currency = state.settings.defaultCurrency.ifBlank { "CHF" },
                     isAnalyzing = state.isAnalyzing,
+                    statusMessage = state.scanErrorMessage,
                     onAnalyze = dashboardViewModel::analyzeNewGame,
                     onDismiss = dashboardViewModel::closeScanDialog
                 )
@@ -140,7 +152,8 @@ fun AdaptiveMainScreen(
                     settings = state.settings,
                     onSaveSettings = dashboardViewModel::saveSettings,
                     onDismiss = dashboardViewModel::closeSettings,
-                    onTestGeminiConnection = dashboardViewModel::testGeminiConnection
+                    onTestGeminiConnection = dashboardViewModel::testGeminiConnection,
+                    onTestFirestoreConnection = dashboardViewModel::testFirestoreConnection
                 )
             }
 
@@ -149,7 +162,8 @@ fun AdaptiveMainScreen(
                     importResult = wishlistState.importResult,
                     enrichmentProgress = wishlistState.enrichmentProgress,
                     onImport = wishlistViewModel::importWishlistCsv,
-                    onDismiss = wishlistViewModel::closeImportDialog
+                    onDismiss = wishlistViewModel::closeImportDialog,
+                    onResetImportResult = wishlistViewModel::resetImportResult
                 )
             }
         }

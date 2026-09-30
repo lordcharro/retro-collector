@@ -30,10 +30,16 @@ class DiscoveryViewModelTest {
         override fun upsertGame(game: GameItem) {
             _savedGames.value = _savedGames.value.filter { it.id != game.id } + game
         }
-        override fun deleteGame(id: String) {}
+        override fun deleteGame(id: String) {
+            // no-op
+        }
         override fun getChatMessagesForGame(gameId: String): List<ChatMessage> = emptyList()
-        override fun addChatMessage(message: ChatMessage) {}
-        override fun updateSettings(settings: AppSettings) {}
+        override fun addChatMessage(message: ChatMessage) {
+            // no-op
+        }
+        override fun updateSettings(settings: AppSettings) {
+            // no-op
+        }
         override suspend fun syncFromFirestore(): Result<Unit> = Result.success(Unit)
         override suspend fun testGeminiConnection(apiKey: String, model: String): Result<String> = Result.success("OK")
         override suspend fun inspectGameWithAi(

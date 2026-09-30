@@ -25,8 +25,11 @@ object TextKeys {
         const val EMPTY_CATALOG = "No games found matching your search criteria."
         const val CLEAR_FILTERS = "Clear filters"
         const val NO_GAME_SELECTED = "Select a game from the catalog to view its dossier and intelligence chat."
+        const val NO_GAME_SELECTED_TITLE = "No Game Selected"
         const val ACTION_QUICK_SCAN = "⚡ Quick Scan"
         const val ACTION_SETTINGS = "⚙️ Settings"
+        const val ACTION_DISCOVER = "🧭 Explore Discovery"
+        const val ACTION_IMPORT_WISHLIST = "📥 Import Wishlist"
     }
 
     object Navigation {
@@ -76,6 +79,13 @@ object TextKeys {
         const val CHAT_PLACEHOLDER = "Ask Gemini about revisions, uncut versions, or market prices..."
         const val CHAT_SEND = "Send"
         const val STATUS_CHANGE = "Status"
+        const val DELETE_GAME = "Delete Game"
+        const val DELETE_CONFIRM_TITLE = "Delete Game?"
+        const val DELETE_CONFIRM_MESSAGE = "Are you sure you want to delete this game from your collection? This action cannot be undone."
+        const val DELETE_CONFIRM_BUTTON = "Delete"
+        const val DELETE_CANCEL_BUTTON = "Cancel"
+        const val PAID_PRICE_LABEL = "Purchase Price"
+        const val PAID_PRICE_HINT = "Enter purchase price"
     }
 
     object Scanner {
@@ -113,6 +123,10 @@ object TextKeys {
         const val FIREBASE_PROJECT_ID_LABEL = "Firebase Project ID"
         const val FIREBASE_PROJECT_ID_HINT = "e.g. retro-collector-swiss"
         const val FIREBASE_TEST_BUTTON = "Test Firestore Connection"
+        const val FIREBASE_TESTING = "Connecting to Firestore..."
+        const val FIREBASE_STATUS_CONNECTED = "Firestore connected & synced successfully!"
+        const val FIREBASE_STATUS_FAILED = "Firestore connection failed. Check Project ID and permissions."
+        const val FIREBASE_STATUS_NO_PROJECT = "Enter a Firebase Project ID first."
         const val SAVE_BUTTON = "Save Settings"
         const val STATUS_CONNECTED = "Connection verified successfully!"
         const val STATUS_FAILED = "Connection test failed. Verify credentials."
@@ -157,6 +171,8 @@ object TextKeys {
         const val IMPORT_PREVIEW_DUPLICATE = "⚠️ Already in Wishlist"
         const val IMPORT_PREVIEW_INVALID = "❌ Invalid platform"
         const val IMPORT_BUTTON_LABEL = "Import Games"
+        const val IMPORT_RESET_BUTTON = "Clear / New Batch"
+        const val IMPORT_FINISH_BUTTON = "Done"
         const val IMPORT_PROGRESS = "Enriching games with AI..."
         const val MOVE_TO_HUNTING = "🎯 Move to Hunting"
         const val EMPTY_STATE = "Your wishlist is empty. Import a CSV or add games from Quick Scan."

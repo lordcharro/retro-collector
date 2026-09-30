@@ -145,12 +145,83 @@ class DashboardViewModelTest {
     }
 
     @Test
-    fun `updates game status and saves to repository`() = runTest {
-        viewModel.updateGameStatus(sampleGame, CollectionStatus.OWNED)
+    fun `updates game status and saves to repository defaulting paidPrice if owned`() = runTest {
+        val gameWithAskingPrice = sampleGame.copy(askingPriceChf = 42.0, paidPriceChf = null)
+        repository.upsertGame(gameWithAskingPrice)
+
+        viewModel.updateGameStatus(gameWithAskingPrice, CollectionStatus.OWNED)
 
         val updated = repository.getGameById(sampleGame.id)
         assertNotNull(updated)
         assertEquals(CollectionStatus.OWNED, updated?.collectionStatus)
+        assertEquals(42.0, updated?.paidPriceChf)
+    }
+
+    @Test
+    fun `updates game paid price directly`() = runTest {
+        viewModel.updateGamePaidPrice(sampleGame, 38.5)
+
+        val updated = repository.getGameById(sampleGame.id)
+        assertNotNull(updated)
+        assertEquals(38.5, updated?.paidPriceChf)
+    }
+
+    @Test
+    fun `clearFilters resets all filter state`() = runTest {
+        viewModel.onSearchQueryChange("Zelda")
+        viewModel.onPlatformSelect(ConsolePlatform.N64)
+        viewModel.onStatusSelect(CollectionStatus.OWNED)
+        viewModel.toggleEnglishOnlyFilter()
+        viewModel.toggleUskAlertsFilter()
+
+        viewModel.clearFilters()
+
+        val state = viewModel.uiState.value
+        assertEquals("", state.searchQuery)
+        assertNull(state.selectedPlatform)
+        assertNull(state.selectedStatus)
+        assertFalse(state.filterEnglishOnly)
+        assertFalse(state.filterUskAlertsOnly)
+    }
+
+    @Test
+    fun `openMobileDetail and closeMobileDetail update isMobileDetailOpen`() = runTest {
+        assertFalse(viewModel.uiState.value.isMobileDetailOpen)
+
+        viewModel.openMobileDetail(sampleGame)
+        assertTrue(viewModel.uiState.value.isMobileDetailOpen)
+        assertEquals(sampleGame.id, viewModel.uiState.value.selectedGame?.id)
+
+        viewModel.closeMobileDetail()
+        assertFalse(viewModel.uiState.value.isMobileDetailOpen)
+    }
+
+    @Test
+    fun `deleteGame removes game from repository and closes mobile detail if selected`() = runTest {
+        viewModel.openMobileDetail(sampleGame)
+        assertTrue(viewModel.uiState.value.isMobileDetailOpen)
+
+        viewModel.deleteGame(sampleGame.id)
+
+        assertNull(repository.getGameById(sampleGame.id))
+        assertFalse(viewModel.uiState.value.isMobileDetailOpen)
+    }
+
+    @Test
+    fun `testFirestoreConnection handles success and empty project ID`() = runTest {
+        var failureResult: Result<String>? = null
+        viewModel.testFirestoreConnection("") { result ->
+            failureResult = result
+        }
+        assertNotNull(failureResult)
+        assertTrue(failureResult!!.isFailure)
+
+        var successResult: Result<String>? = null
+        viewModel.testFirestoreConnection("test-proj") { result ->
+            successResult = result
+        }
+        assertNotNull(successResult)
+        assertTrue(successResult!!.isSuccess)
     }
 
     @Test

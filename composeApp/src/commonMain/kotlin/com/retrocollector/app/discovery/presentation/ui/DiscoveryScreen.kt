@@ -45,7 +45,8 @@ fun DiscoveryScreen(
     onPlatformSelect: (ConsolePlatform?) -> Unit,
     onOpenDossier: (DiscoveredGameItem) -> Unit,
     onAddToWishlist: (DiscoveredGameItem) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    currency: String = "CHF"
 ) {
     Column(
         modifier = modifier
@@ -352,7 +353,8 @@ fun DiscoveryScreen(
                     DiscoveredGameCard(
                         game = game,
                         onOpenDossier = onOpenDossier,
-                        onAddToWishlist = onAddToWishlist
+                        onAddToWishlist = onAddToWishlist,
+                        currency = currency
                     )
                 }
             }

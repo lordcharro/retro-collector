@@ -36,16 +36,13 @@ fun CollectionStatusSelector(
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         CollectionStatus.displayStatuses.forEach { status ->
-            @Suppress("DEPRECATION")
-            val isCurrent = currentStatus == status ||
-                (status == CollectionStatus.WISHLIST && currentStatus == CollectionStatus.HUNTING)
+            val isCurrent = currentStatus == status
 
             val bg = if (isCurrent) {
                 when (status) {
                     CollectionStatus.WISHLIST -> StatusEditionBg
                     CollectionStatus.OWNED -> StatusEnglishBg
                     CollectionStatus.PASS -> StatusRiskBg
-                    else -> StatusEditionBg
                 }
             } else Color.Transparent
 
@@ -81,7 +78,7 @@ fun CollectionStatusSelector(
 fun CollectionStatusSelectorPreview() {
     RetroTactileTheme {
         CollectionStatusSelector(
-            currentStatus = CollectionStatus.HUNTING,
+            currentStatus = CollectionStatus.WISHLIST,
             onStatusSelect = {},
             modifier = Modifier.padding(16.dp)
         )

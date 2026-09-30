@@ -72,6 +72,7 @@ fun CollectionScreen(
                     GameListItemRow(
                         game = game,
                         isSelected = state.selectedGame?.id == game.id,
+                        currency = currency,
                         onClick = {
                             actions.onGameSelected(game)
                             onNavigateToDetail(game)

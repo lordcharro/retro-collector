@@ -20,6 +20,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import com.retrocollector.app.core.presentation.text.TextKeys
 
 @Immutable
 data class DashboardUiState(
@@ -38,7 +39,11 @@ data class DashboardUiState(
     val activeSection: AppSection = AppSection.ACTIVITY,
     val collectionGames: List<GameItem> = emptyList(),
     val similarGamesForActiveGame: List<DiscoveredGameItem> = emptyList(),
-    val isSimilarGamesLoading: Boolean = false
+    val isSimilarGamesLoading: Boolean = false,
+    val isMobileDetailOpen: Boolean = false,
+    val scanErrorMessage: String? = null,
+    val firestoreTestStatusMessage: String? = null,
+    val isTestingFirestore: Boolean = false
 )
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
@@ -101,7 +106,8 @@ class DashboardViewModel(
                         games = filtered,
                         selectedGame = newSelected,
                         activeChatMessages = chats,
-                        collectionGames = collection
+                        collectionGames = collection,
+                        isMobileDetailOpen = if (newSelected == null) false else state.isMobileDetailOpen
                     )
                 }
             }
@@ -145,29 +151,124 @@ class DashboardViewModel(
         loadSimilarGamesForSelectedGame(game)
     }
 
+    fun clearFilters() {
+        _uiState.update {
+            it.copy(
+                searchQuery = "",
+                selectedPlatform = null,
+                selectedStatus = null,
+                filterEnglishOnly = false,
+                filterUskAlertsOnly = false
+            )
+        }
+    }
+
+    fun openMobileDetail(game: GameItem) {
+        onGameSelected(game)
+        _uiState.update { it.copy(isMobileDetailOpen = true) }
+    }
+
+    fun closeMobileDetail() {
+        _uiState.update { it.copy(isMobileDetailOpen = false) }
+    }
+
     fun updateGameStatus(game: GameItem, newStatus: CollectionStatus) {
-        val updated = game.copy(collectionStatus = newStatus)
+        val updatedPaid = if (newStatus == CollectionStatus.OWNED && game.paidPriceChf == null) {
+            game.askingPriceChf
+        } else {
+            game.paidPriceChf
+        }
+        val updated = game.copy(
+            collectionStatus = newStatus,
+            paidPriceChf = updatedPaid
+        )
+        saveGameUseCase(updated)
+    }
+
+    fun updateGamePaidPrice(game: GameItem, paidPrice: Double?) {
+        val updated = game.copy(paidPriceChf = paidPrice)
         saveGameUseCase(updated)
     }
 
     fun deleteGame(gameId: String) {
+        val wasSelected = _uiState.value.selectedGame?.id == gameId
         deleteGameUseCase(gameId)
+        _uiState.update { state ->
+            val shouldCloseDetail = (wasSelected || state.selectedGame?.id == gameId || state.selectedGame == null) && state.isMobileDetailOpen
+            state.copy(
+                isMobileDetailOpen = if (shouldCloseDetail) false else state.isMobileDetailOpen
+            )
+        }
+        scope.launch {
+            _effects.send(DashboardEffect.ShowToast("Jogo removido com sucesso."))
+        }
     }
 
     fun openScanDialog() {
-        _uiState.update { it.copy(isScanDialogOpen = true) }
+        _uiState.update { it.copy(isScanDialogOpen = true, scanErrorMessage = null) }
     }
 
     fun closeScanDialog() {
-        _uiState.update { it.copy(isScanDialogOpen = false) }
+        _uiState.update { it.copy(isScanDialogOpen = false, scanErrorMessage = null) }
     }
 
     fun openSettings() {
-        _uiState.update { it.copy(isSettingsOpen = true) }
+        _uiState.update { it.copy(isSettingsOpen = true, firestoreTestStatusMessage = null) }
     }
 
     fun closeSettings() {
         _uiState.update { it.copy(isSettingsOpen = false) }
+    }
+
+    fun testFirestoreConnection(projectId: String, onResult: (Result<String>) -> Unit) {
+        if (projectId.isBlank()) {
+            val err = IllegalArgumentException(TextKeys.Settings.FIREBASE_STATUS_NO_PROJECT)
+            _uiState.update { it.copy(firestoreTestStatusMessage = TextKeys.Settings.FIREBASE_STATUS_NO_PROJECT) }
+            onResult(Result.failure(err))
+            return
+        }
+        _uiState.update { it.copy(isTestingFirestore = true, firestoreTestStatusMessage = null) }
+        scope.launch {
+            try {
+                val current = repository.settings.value
+                if (current.firebaseProjectId != projectId) {
+                    repository.updateSettings(current.copy(firebaseProjectId = projectId))
+                }
+                val syncResult = repository.syncFromFirestore()
+                syncResult.fold(
+                    onSuccess = {
+                        _uiState.update {
+                            it.copy(
+                                isTestingFirestore = false,
+                                firestoreTestStatusMessage = TextKeys.Settings.FIREBASE_STATUS_CONNECTED
+                            )
+                        }
+                        onResult(Result.success(TextKeys.Settings.FIREBASE_STATUS_CONNECTED))
+                    },
+                    onFailure = { err ->
+                        val msg = err.message ?: TextKeys.Settings.FIREBASE_STATUS_FAILED
+                        _uiState.update {
+                            it.copy(
+                                isTestingFirestore = false,
+                                firestoreTestStatusMessage = msg
+                            )
+                        }
+                        onResult(Result.failure(err))
+                    }
+                )
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                val msg = e.message ?: TextKeys.Settings.FIREBASE_STATUS_FAILED
+                _uiState.update {
+                    it.copy(
+                        isTestingFirestore = false,
+                        firestoreTestStatusMessage = msg
+                    )
+                }
+                onResult(Result.failure(e))
+            }
+        }
     }
 
     fun saveSettings(newSettings: AppSettings) {
@@ -229,13 +330,14 @@ class DashboardViewModel(
 
     fun analyzeNewGame(query: String, imageBase64: String?, spottedLocation: String, askingPriceChf: Double?) {
         scope.launch {
-            _uiState.update { it.copy(isAnalyzing = true) }
+            _uiState.update { it.copy(isAnalyzing = true, scanErrorMessage = null) }
             val result = analyzeGameUseCase(query, imageBase64, spottedLocation, askingPriceChf)
             result.onSuccess { (_, gameItem) ->
                 _uiState.update {
                     it.copy(
                         isAnalyzing = false,
-                        isScanDialogOpen = false
+                        isScanDialogOpen = false,
+                        scanErrorMessage = null
                     )
                 }
                 if (gameItem != null) {
@@ -246,8 +348,9 @@ class DashboardViewModel(
                 }
                 _effects.send(DashboardEffect.ShowToast("Análise concluída com sucesso!"))
             }.onFailure { err ->
-                _uiState.update { it.copy(isAnalyzing = false) }
-                _effects.send(DashboardEffect.ShowToast("Erro na análise: ${err.message}", isError = true))
+                val msg = err.message ?: "Erro na análise"
+                _uiState.update { it.copy(isAnalyzing = false, scanErrorMessage = msg) }
+                _effects.send(DashboardEffect.ShowToast("Erro na análise: $msg", isError = true))
             }
         }
     }

@@ -32,7 +32,8 @@ fun DiscoveredGameCard(
     game: DiscoveredGameItem,
     onOpenDossier: (DiscoveredGameItem) -> Unit,
     onAddToWishlist: (DiscoveredGameItem) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    currency: String = "CHF"
 ) {
     Column(
         modifier = modifier
@@ -170,7 +171,7 @@ fun DiscoveredGameCard(
                     color = StatusUnverifiedFg
                 )
                 Text(
-                    text = PriceFormatter.format(game.estimatedPriceChf, "CHF"),
+                    text = PriceFormatter.format(game.estimatedPriceChf, currency),
                     style = CodePriceStyle.copy(fontSize = 13.sp),
                     color = TextPrimary
                 )

@@ -230,7 +230,7 @@ fun WishlistScreenPreview() {
                 platform = ConsolePlatform.N64,
                 releaseYear = "1998",
                 productCode = "NUS-CZLE-EUR",
-                collectionStatus = CollectionStatus.HUNTING,
+                collectionStatus = CollectionStatus.WISHLIST,
                 enrichmentStatus = EnrichmentStatus.COMPLETE
             ),
             GameItem(
@@ -240,7 +240,7 @@ fun WishlistScreenPreview() {
                 platform = ConsolePlatform.GAMECUBE,
                 releaseYear = "2002",
                 productCode = "DOL-GM8E-USA",
-                collectionStatus = CollectionStatus.HUNTING,
+                collectionStatus = CollectionStatus.WISHLIST,
                 enrichmentStatus = EnrichmentStatus.PENDING
             ),
             GameItem(
@@ -250,7 +250,7 @@ fun WishlistScreenPreview() {
                 platform = ConsolePlatform.PS3,
                 releaseYear = "2009",
                 productCode = "BLES-00932",
-                collectionStatus = CollectionStatus.HUNTING,
+                collectionStatus = CollectionStatus.WISHLIST,
                 enrichmentStatus = EnrichmentStatus.FAILED
             )
         )

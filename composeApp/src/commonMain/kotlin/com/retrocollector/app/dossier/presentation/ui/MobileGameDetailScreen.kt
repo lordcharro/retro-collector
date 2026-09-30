@@ -36,9 +36,12 @@ fun MobileGameDetailScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     isAnalyzing: Boolean = false,
+    currency: String = "CHF",
     similarGames: List<DiscoveredGameItem> = emptyList(),
     isSimilarGamesLoading: Boolean = false,
     onUpdateGameStatus: (GameItem, CollectionStatus) -> Unit = { _, _ -> },
+    onUpdatePaidPrice: (GameItem, Double?) -> Unit = { _, _ -> },
+    onDeleteGame: (String) -> Unit = {},
     onSendFollowUpMessage: (String) -> Unit = {},
     onSelectSimilarGame: (DiscoveredGameItem) -> Unit = {},
     onAddSimilarGameToWishlist: (DiscoveredGameItem) -> Unit = {}
@@ -65,13 +68,58 @@ fun MobileGameDetailScreen(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.weight(1f, fill = false).padding(horizontal = 6.dp)
                 ) {
-                    Text(text = game.title, style = HeadlineSm, color = TextPrimary, maxLines = 1)
+                    Text(
+                        text = game.title,
+                        style = HeadlineSm,
+                        color = TextPrimary,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
                     PlatformBadge(platform = game.platform)
                 }
 
-                Spacer(modifier = Modifier.width(20.dp))
+                var showDeleteConfirm by remember(game.id) { mutableStateOf(false) }
+
+                IconButton(
+                    onClick = { showDeleteConfirm = true }
+                ) {
+                    Text("🗑️", fontSize = 16.sp)
+                }
+
+                if (showDeleteConfirm) {
+                    AlertDialog(
+                        onDismissRequest = { showDeleteConfirm = false },
+                        title = { Text(TextKeys.Dossier.DELETE_CONFIRM_TITLE, style = HeadlineSm, color = TextPrimary) },
+                        text = { Text(TextKeys.Dossier.DELETE_CONFIRM_MESSAGE, style = BodyMd, color = TextSecondary) },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    showDeleteConfirm = false
+                                    onDeleteGame(game.id)
+                                    onBack()
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = StatusRiskFg),
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(TextKeys.Dossier.DELETE_CONFIRM_BUTTON, style = LabelFilterStyle, color = Color.White)
+                            }
+                        },
+                        dismissButton = {
+                            OutlinedButton(
+                                onClick = { showDeleteConfirm = false },
+                                border = BorderStroke(1.dp, BorderStrong),
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(TextKeys.Dossier.DELETE_CANCEL_BUTTON, style = LabelFilterStyle, color = TextPrimary)
+                            }
+                        },
+                        containerColor = SurfaceCard,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                }
             }
         }
     ) { paddingValues ->
@@ -87,13 +135,59 @@ fun MobileGameDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(vertical = 12.dp)
             ) {
-                // Estado da Coleção (Hunting, Owned, Avoid)
+                // Estado da Coleção (Wishlist, Owned, Pass)
                 item {
                     CollectionStatusSelector(
                         currentStatus = game.collectionStatus,
                         onStatusSelect = { onUpdateGameStatus(game, it) },
                         fillMaxWidth = true
                     )
+                }
+
+                // Campo de Preço de Aquisição (apenas quando Owned)
+                if (game.collectionStatus == CollectionStatus.OWNED) {
+                    item {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = SurfaceCard,
+                            border = BorderStroke(1.dp, BorderSubtle),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                                    Text(
+                                        text = TextKeys.Dossier.PAID_PRICE_LABEL,
+                                        style = LabelFilterStyle,
+                                        color = StatusEnglishFg
+                                    )
+                                    Text(
+                                        text = "Acquisition cost for collection ROI",
+                                        style = BodySm.copy(fontSize = 11.sp),
+                                        color = TextSecondary
+                                    )
+                                }
+                                var priceText by remember(game.id, game.paidPriceChf) {
+                                    mutableStateOf(game.paidPriceChf?.toString() ?: "")
+                                }
+                                TactileTextField(
+                                    value = priceText,
+                                    onValueChange = { newText ->
+                                        priceText = newText
+                                        val parsed = newText.toDoubleOrNull()
+                                        if (parsed != null || newText.isBlank()) {
+                                            onUpdatePaidPrice(game, parsed)
+                                        }
+                                    },
+                                    placeholder = "$currency 0.00",
+                                    modifier = Modifier.width(100.dp)
+                                )
+                            }
+                        }
+                    }
                 }
 
                 // Banner de Status de Idioma
@@ -106,7 +200,8 @@ fun MobileGameDetailScreen(
                     item {
                         SwissMarketRadarView(
                             radar = game.marketRadar,
-                            askingPriceChf = game.askingPriceChf
+                            askingPriceChf = game.askingPriceChf,
+                            currency = currency
                         )
                     }
                 }
@@ -200,6 +295,7 @@ fun MobileGameDetailScreen(
                     SimilarGamesShelf(
                         similarGames = similarGames,
                         isLoading = isSimilarGamesLoading,
+                        currency = currency,
                         onSelectGame = onSelectSimilarGame,
                         onAddToWishlist = onAddSimilarGameToWishlist
                     )

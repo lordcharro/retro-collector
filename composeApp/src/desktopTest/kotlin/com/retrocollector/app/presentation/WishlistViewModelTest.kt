@@ -2,7 +2,6 @@ package com.retrocollector.app.presentation
 
 import com.retrocollector.app.core.domain.model.*
 import com.retrocollector.app.core.domain.repository.IGameRepository
-import com.retrocollector.app.dashboard.domain.usecase.SaveGameUseCase
 import com.retrocollector.app.settings.domain.model.AppSettings
 import com.retrocollector.app.wishlist.domain.usecase.EnrichWishlistGameUseCase
 import com.retrocollector.app.wishlist.domain.usecase.ImportWishlistUseCase
@@ -33,8 +32,12 @@ class WishlistViewModelTest {
             _games.value = _games.value.filter { it.id != id }
         }
         override fun getChatMessagesForGame(gameId: String): List<ChatMessage> = emptyList()
-        override fun addChatMessage(message: ChatMessage) {}
-        override fun updateSettings(settings: AppSettings) {}
+        override fun addChatMessage(message: ChatMessage) {
+            // no-op
+        }
+        override fun updateSettings(settings: AppSettings) {
+            // no-op
+        }
         override suspend fun syncFromFirestore(): Result<Unit> = Result.success(Unit)
         override suspend fun testGeminiConnection(apiKey: String, model: String): Result<String> = Result.success("OK")
         override suspend fun inspectGameWithAi(
@@ -101,7 +104,6 @@ class WishlistViewModelTest {
             repository = repository,
             importWishlistUseCase = ImportWishlistUseCase(repository),
             enrichWishlistGameUseCase = EnrichWishlistGameUseCase(repository),
-            saveGameUseCase = SaveGameUseCase(repository),
             dispatcher = Dispatchers.Unconfined,
             scope = CoroutineScope(Dispatchers.Unconfined)
         )
@@ -135,5 +137,15 @@ class WishlistViewModelTest {
         assertNotNull(state.importResult)
         assertEquals(1, state.importResult?.added?.size)
         assertEquals(2, state.wishlistGames.size)
+    }
+
+    @Test
+    fun `resetImportResult clears importResult in state`() = runTest {
+        val csv = "Perfect Dark, N64"
+        viewModel.importWishlistCsv(csv)
+        assertNotNull(viewModel.uiState.value.importResult)
+
+        viewModel.resetImportResult()
+        assertNull(viewModel.uiState.value.importResult)
     }
 }
