@@ -42,3 +42,6 @@ ehthumbs.db
 # Logs & Dumps
 *.log
 *.hprof
+
+# Local development notes (not for public repo)
+progress.md
