@@ -75,6 +75,7 @@ Na app, clica no ícone de engrenagem **⚙️ Definições**:
    - Cria um projeto gratuito no [Firebase Console](https://console.firebase.google.com/).
    - Ativa o **Cloud Firestore** em modo de teste ou com regras de leitura/escrita.
    - Introduz o teu **Firebase Project ID** nas definições.
+   > ⚠️ **Nota de segurança:** O modo de teste abre a base de dados a leituras/escritas públicas. Para uso pessoal num ambiente controlado é aceitável, mas configura [Regras de Segurança Firestore](https://firebase.google.com/docs/firestore/security/get-started) adequadas antes de partilhares o teu Project ID com terceiros ou usares em produção.
 
 ---
 
@@ -86,3 +87,19 @@ A app tem um prompt de sistema rigoroso treinado nas peculiaridades do mercado P
 * **N64**: Mapeia cartuchos europeus `NUS-xxxx-EUR`.
 * **Switch**: Valida se o cartucho europeu inclui áudio em inglês.
 * **Conversa Contextual**: Cada jogo ou franquia tem o seu próprio histórico de chat guardado para que possas colocar perguntas de seguimento a qualquer momento.
+
+---
+
+## ⚖️ Aviso Legal / Legal Disclaimer
+
+A funcionalidade de leitura de anúncios desta aplicação acede a páginas públicas de Ricardo.ch, Tutti.ch, Anibis.ch e eBay para extrair informação de listagens partilhadas pelo utilizador. Esta funcionalidade é fornecida **para conveniência pessoal e uso educativo**. Os utilizadores são os **únicos responsáveis** pelo cumprimento dos Termos de Serviço de cada plataforma. O autor não incentiva nem apoia qualquer uso que viole os termos dessas plataformas.
+
+> The listing reader feature fetches publicly accessible pages from Ricardo.ch, Tutti.ch, Anibis.ch, and eBay. This is provided for **personal convenience and educational purposes only**. Users are **solely responsible** for complying with each platform's Terms of Service. The author does not encourage or endorse any use that violates those terms.
+
+---
+
+## 📜 Licença / License
+
+Este projeto está licenciado sob a **Licença MIT** — consulta o ficheiro [LICENSE](LICENSE) para mais detalhes.
+
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
