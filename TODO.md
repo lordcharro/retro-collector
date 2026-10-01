@@ -38,6 +38,15 @@
     - [ ] Conflict resolution strategy when the same game is edited on two devices
   - File: [`FirestoreService.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/firestore/FirestoreService.kt), [`GameRepositoryImpl.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/repository/GameRepositoryImpl.kt)
 
+- [ ] **Firestore: sync `chat_threads` collection**
+  - Chat history currently lives in memory only and is lost on app restart.
+  - The `chat_threads` collection is fully designed in `firestore.md` but `FirestoreService.kt` has no read/write methods for it.
+  - Missing:
+    - [ ] `saveMessage(projectId, message: ChatMessage)` in `FirestoreService`
+    - [ ] `getMessages(projectId, gameId)` to load history on dossier open
+    - [ ] Wire into the chat ViewModel so history survives across sessions and syncs between devices
+  - File: [`FirestoreService.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/firestore/FirestoreService.kt), [`firestore.md`](firestore.md)
+
 - [ ] **Internationalisation (i18n) — translate the app UI**
   - All strings are currently in Portuguese (`TextKeys.kt` constants).
   - The `TextKeys` object was designed with i18n in mind but no locale switching is implemented.
