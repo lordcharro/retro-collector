@@ -230,8 +230,7 @@ class GameRepositoryImpl(
         resolved: ResolvedScanInput,
         nowMs: Long
     ): GameItem {
-        val platform = ConsolePlatform.entries.find { it.name.equals(v.platform, ignoreCase = true) }
-            ?: ConsolePlatform.GAMECUBE
+        val platform = ConsolePlatform.fromPlatformString(v.platform) ?: ConsolePlatform.GAMECUBE
         val status = LanguageStatus.fromString(v.languageStatus)
         val radar = SwissMarketRadar(
             spottedPriceChf = resolved.price,

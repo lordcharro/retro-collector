@@ -39,7 +39,7 @@ Cada documento nesta coleção representa um jogo físico (quer esteja na coleç
 | `id` | `string` | Sim | Identificador único do jogo | `"game_gc_smash_melee"` |
 | `title` | `string` | Sim | Título oficial do jogo | `"Super Smash Bros. Melee"` |
 | `franchiseName` | `string` | Não | Franquia/Série associada | `"Super Smash Bros."` |
-| `platform` | `string` | Sim | Código da plataforma (`n64`, `gamecube`, `ps3`, `switch`) | `"gamecube"` |
+| `platform` | `string` | Sim | Código da plataforma (`nes`, `snes`, `n64`, `gamecube`, `wii`, `wii_u`, `switch`, `switch_2`, `game_boy`, `gba`, `nds`, `n3ds`, `ps1`, `ps2`, `ps3`, `ps4`, `ps5`, `psp`, `ps_vita`, `xbox_og`, `xbox_360`, `xbox_one`, `xbox_series`, `master_system`, `megadrive`, `sega_saturn`, `dreamcast`, `game_gear`, `retro_vintage`) | `"gamecube"` |
 | `releaseYear` | `string` | Não | Ano de lançamento europeu/regional | `"2002"` |
 | `coverImageUrl` | `string` | Não | URL da capa frontal | `"https://.../cover.jpg"` |
 | `spineImageUrl` | `string` | Não | URL da foto da lombada com o código serial | `"https://.../spine.jpg"` |
@@ -194,7 +194,14 @@ service cloud.firestore {
           && doc.title.size() > 0 
           && doc.title.size() <= 200
           && doc.platform is string 
-          && doc.platform in ['gamecube', 'ps3', 'n64', 'switch']
+          && doc.platform in [
+            'nes', 'snes', 'n64', 'gamecube', 'wii', 'wii_u', 'switch', 'switch_2',
+            'game_boy', 'gba', 'nds', 'n3ds',
+            'ps1', 'ps2', 'ps3', 'ps4', 'ps5', 'psp', 'ps_vita',
+            'xbox_og', 'xbox_360', 'xbox_one', 'xbox_series',
+            'master_system', 'megadrive', 'sega_saturn', 'dreamcast', 'game_gear',
+            'retro_vintage'
+          ]
           && doc.status is string 
           && doc.status in ['HUNTING', 'OWNED', 'PASS', 'WISHLIST']
           && doc.data is string 

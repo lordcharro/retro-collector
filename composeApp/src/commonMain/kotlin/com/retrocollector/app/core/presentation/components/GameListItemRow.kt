@@ -33,12 +33,7 @@ fun GameListItemRow(
     currency: String = "CHF",
     trailingContent: (@Composable () -> Unit)? = null
 ) {
-    val platformColor = when (game.platform) {
-        ConsolePlatform.N64 -> ConsoleN64
-        ConsolePlatform.GAMECUBE -> ConsoleGamecube
-        ConsolePlatform.PS3 -> ConsolePS3
-        ConsolePlatform.SWITCH -> ConsoleSwitch
-    }
+    val platformColor = androidx.compose.ui.graphics.Color(game.platform.brandColorHex)
 
     val rowBg = if (isSelected) SurfaceElevated else SurfaceCard
 

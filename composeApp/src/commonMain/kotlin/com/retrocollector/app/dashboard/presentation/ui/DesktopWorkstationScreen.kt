@@ -31,6 +31,7 @@ import com.retrocollector.app.wishlist.presentation.ui.WishlistScreen
 import com.retrocollector.app.wishlist.presentation.viewmodel.WishlistUiState
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DesktopWorkstationScreen(
     state: DashboardUiState,
@@ -40,6 +41,15 @@ fun DesktopWorkstationScreen(
     modifier: Modifier = Modifier
 ) {
     var followUpQuestion by remember { mutableStateOf("") }
+
+    val activePlatforms = remember(state.games, state.settings.pinnedPlatformIds) {
+        val fromGames = state.games.map { it.platform }.toSet()
+        val fromPinned = state.settings.pinnedPlatformIds.mapNotNull { ConsolePlatform.fromId(it) }.toSet()
+        val combined = (fromGames + fromPinned).ifEmpty {
+            setOf(ConsolePlatform.N64, ConsolePlatform.GAMECUBE, ConsolePlatform.PS3, ConsolePlatform.SWITCH)
+        }
+        ConsolePlatform.entries.filter { it in combined }
+    }
 
     Row(
         modifier = modifier
@@ -158,22 +168,32 @@ fun DesktopWorkstationScreen(
 
                 Spacer(modifier = Modifier.height(18.dp))
 
-                Text(
-                    text = "PLATFORM FILTER",
-                    style = LabelFilterStyle.copy(fontSize = 11.sp),
-                    color = StatusUnverifiedFg,
-                    modifier = Modifier.padding(vertical = 6.dp, horizontal = 6.dp)
-                )
 
-                val platforms = remember { ConsolePlatform.entries }
-                platforms.forEach { platform ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 6.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "PLATFORM FILTER",
+                        style = LabelFilterStyle.copy(fontSize = 11.sp),
+                        color = StatusUnverifiedFg
+                    )
+                    Text(
+                        text = "⚙️",
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .clickable { actions.onOpenSettings() }
+                            .padding(2.dp)
+                    )
+                }
+
+                activePlatforms.forEach { platform ->
                     val isSelected = state.selectedPlatform == platform
-                    val color = when (platform) {
-                        ConsolePlatform.N64 -> ConsoleN64
-                        ConsolePlatform.GAMECUBE -> ConsoleGamecube
-                        ConsolePlatform.PS3 -> ConsolePS3
-                        ConsolePlatform.SWITCH -> ConsoleSwitch
-                    }
+                    val color = Color(platform.brandColorHex)
+                    val count = state.games.count { it.platform == platform }
 
                     Row(
                         modifier = Modifier
@@ -186,10 +206,24 @@ fun DesktopWorkstationScreen(
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.weight(1f, fill = false)
                         ) {
                             Box(modifier = Modifier.size(8.dp).background(color, RoundedCornerShape(4.dp)))
-                            Text(text = platform.displayName, style = BodyMd, color = if (isSelected) TextPrimary else TextSecondary)
+                            Text(
+                                text = platform.shortName,
+                                style = BodyMd,
+                                color = if (isSelected) TextPrimary else TextSecondary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        if (count > 0) {
+                            Text(
+                                text = "$count",
+                                style = CodeSkuStyle.copy(fontSize = 10.sp),
+                                color = if (isSelected) StatusEnglishFg else StatusUnverifiedFg
+                            )
                         }
                     }
                 }
@@ -313,31 +347,68 @@ fun DesktopWorkstationScreen(
                                     .padding(10.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    items(ConsolePlatform.entries.toList(), key = { it.id }) { platform ->
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    val isAllSelected = state.selectedPlatform == null
+                                    Box(
+                                        modifier = Modifier
+                                            .background(if (isAllSelected) AccentBlue else SurfaceElevated, RoundedCornerShape(4.dp))
+                                            .border(1.dp, if (isAllSelected) AccentBlue else BorderSubtle, RoundedCornerShape(4.dp))
+                                            .clickable { actions.onPlatformSelect(null) }
+                                            .padding(horizontal = 8.dp, vertical = 5.dp)
+                                    ) {
+                                        Text(
+                                            text = "ALL",
+                                            style = LabelFilterStyle,
+                                            color = Color.White,
+                                            maxLines = 1,
+                                            softWrap = false
+                                        )
+                                    }
+
+                                    activePlatforms.forEach { platform ->
                                         val isSelected = state.selectedPlatform == platform
-                                        val color = when (platform) {
-                                            ConsolePlatform.N64 -> ConsoleN64
-                                            ConsolePlatform.GAMECUBE -> ConsoleGamecube
-                                            ConsolePlatform.PS3 -> ConsolePS3
-                                            ConsolePlatform.SWITCH -> ConsoleSwitch
-                                        }
-        
-                                        Row(
+                                        val color = Color(platform.brandColorHex)
+                                        val count = state.games.count { it.platform == platform }
+
+                                        Box(
                                             modifier = Modifier
                                                 .background(if (isSelected) color else SurfaceElevated, RoundedCornerShape(4.dp))
+                                                .border(1.dp, if (isSelected) color else BorderSubtle, RoundedCornerShape(4.dp))
                                                 .clickable { actions.onPlatformSelect(platform) }
-                                                .padding(horizontal = 8.dp, vertical = 5.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                                .padding(horizontal = 8.dp, vertical = 5.dp)
                                         ) {
-                                            Text(
-                                                text = platform.displayName,
-                                                style = LabelFilterStyle,
-                                                color = Color.White,
-                                                maxLines = 1,
-                                                softWrap = false
-                                            )
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                            ) {
+                                                if (!isSelected) {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(6.dp)
+                                                            .background(color, RoundedCornerShape(3.dp))
+                                                    )
+                                                }
+                                                Text(
+                                                    text = platform.shortName,
+                                                    style = LabelFilterStyle,
+                                                    color = Color.White,
+                                                    maxLines = 1,
+                                                    softWrap = false
+                                                )
+                                                if (count > 0) {
+                                                    Text(
+                                                        text = "$count",
+                                                        style = CodeSkuStyle.copy(fontSize = 10.sp),
+                                                        color = if (isSelected) Color.White.copy(alpha = 0.85f) else StatusUnverifiedFg,
+                                                        maxLines = 1,
+                                                        softWrap = false
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 }

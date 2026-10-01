@@ -21,12 +21,7 @@ fun PlatformBadge(
     platform: ConsolePlatform,
     modifier: Modifier = Modifier
 ) {
-    val bgColor = when (platform) {
-        ConsolePlatform.N64 -> ConsoleN64
-        ConsolePlatform.GAMECUBE -> ConsoleGamecube
-        ConsolePlatform.PS3 -> ConsolePS3
-        ConsolePlatform.SWITCH -> ConsoleSwitch
-    }
+    val bgColor = Color(platform.brandColorHex)
 
     Box(
         modifier = modifier
@@ -51,4 +46,3 @@ fun PlatformBadgePreview() {
         PlatformBadge(platform = ConsolePlatform.GAMECUBE)
     }
 }
-

@@ -8,7 +8,9 @@ data class ImportResult(
     val added: List<GameItem>,
     val duplicates: List<String>,
     val invalidLines: List<String>
-)
+) {
+    val totalProcessed: Int get() = added.size + duplicates.size + invalidLines.size
+}
 
 class ImportWishlistUseCase(
     private val repository: IGameRepository
@@ -80,23 +82,8 @@ class ImportWishlistUseCase(
 
         if (title.isBlank()) return null
 
-        val platform = resolvePlatform(platformStr) ?: return null
+        val platform = ConsolePlatform.fromPlatformString(platformStr) ?: return null
         return Pair(title, platform)
-    }
-
-    private fun resolvePlatform(input: String): ConsolePlatform? {
-        val normalized = input.lowercase().trim()
-        return when {
-            normalized in listOf("n64", "nintendo 64", "nintendo64") -> ConsolePlatform.N64
-            normalized in listOf("gc", "gamecube", "game cube", "nintendo gamecube", "gcn") -> ConsolePlatform.GAMECUBE
-            normalized in listOf("ps3", "playstation 3", "playstation3") -> ConsolePlatform.PS3
-            normalized in listOf("switch", "nintendo switch", "ns") -> ConsolePlatform.SWITCH
-            else -> ConsolePlatform.entries.find {
-                it.id.equals(normalized, ignoreCase = true) ||
-                    it.displayName.equals(input, ignoreCase = true) ||
-                    it.shortName.equals(input, ignoreCase = true)
-            }
-        }
     }
 
     private fun normalizeTitle(title: String): String {

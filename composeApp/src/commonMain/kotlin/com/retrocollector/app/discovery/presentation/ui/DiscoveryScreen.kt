@@ -13,6 +13,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,6 +26,7 @@ import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.DiscoveredGameItem
 import com.retrocollector.app.core.domain.model.GameGenre
 import com.retrocollector.app.core.domain.model.LanguageStatus
+import com.retrocollector.app.core.domain.model.PlatformEcosystem
 import com.retrocollector.app.core.presentation.components.TacticalEmptyState
 import com.retrocollector.app.core.presentation.components.TactileSearchField
 import com.retrocollector.app.core.presentation.text.TextKeys
@@ -205,13 +207,7 @@ fun DiscoveryScreen(
             Box(modifier = Modifier.weight(1f)) {
                 var expandedPlatform by remember { mutableStateOf(false) }
                 val platformLabel = selectedPlatform?.displayName ?: "Todas as Consolas"
-                val platformColor = when (selectedPlatform) {
-                    ConsolePlatform.N64 -> ConsoleN64
-                    ConsolePlatform.GAMECUBE -> ConsoleGamecube
-                    ConsolePlatform.PS3 -> ConsolePS3
-                    ConsolePlatform.SWITCH -> ConsoleSwitch
-                    null -> StatusUnverifiedFg
-                }
+                val platformColor = selectedPlatform?.let { Color(it.brandColorHex) } ?: StatusUnverifiedFg
 
                 Row(
                     modifier = Modifier
@@ -248,6 +244,8 @@ fun DiscoveryScreen(
                     expanded = expandedPlatform,
                     onDismissRequest = { expandedPlatform = false },
                     modifier = Modifier
+                        .widthIn(min = 240.dp)
+                        .heightIn(max = 420.dp)
                         .background(SurfaceElevated)
                         .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
                 ) {
@@ -271,33 +269,53 @@ fun DiscoveryScreen(
                         }
                     )
 
-                    ConsolePlatform.entries.forEach { platform ->
-                        val isSelected = selectedPlatform == platform
-                        val pColor = when (platform) {
-                            ConsolePlatform.N64 -> ConsoleN64
-                            ConsolePlatform.GAMECUBE -> ConsoleGamecube
-                            ConsolePlatform.PS3 -> ConsolePS3
-                            ConsolePlatform.SWITCH -> ConsoleSwitch
+                    HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
+
+                    PlatformEcosystem.entries.forEach { eco ->
+                        val ecoPlatforms = remember(eco) {
+                            ConsolePlatform.entries.filter { it.ecosystem == eco }
                         }
-                        DropdownMenuItem(
-                            text = {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Box(modifier = Modifier.size(7.dp).background(pColor, RoundedCornerShape(3.5.dp)))
-                                    Text(
-                                        text = platform.displayName,
-                                        style = BodyMd,
-                                        color = if (isSelected) ConsoleGamecube else TextPrimary
-                                    )
+                        val ecoColor = Color(eco.brandColorHex)
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(SurfaceCard)
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(text = eco.icon, fontSize = 11.sp)
+                            Text(
+                                text = eco.displayName.uppercase(),
+                                style = LabelFilterStyle.copy(fontSize = 10.sp),
+                                color = ecoColor
+                            )
+                        }
+
+                        ecoPlatforms.forEach { platform ->
+                            val isSelected = selectedPlatform == platform
+                            val pColor = Color(platform.brandColorHex)
+                            DropdownMenuItem(
+                                text = {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Box(modifier = Modifier.size(6.dp).background(pColor, RoundedCornerShape(3.dp)))
+                                        Text(
+                                            text = platform.displayName,
+                                            style = BodyMd.copy(fontSize = 12.sp),
+                                            color = if (isSelected) ConsoleGamecube else TextPrimary
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    onPlatformSelect(platform)
+                                    expandedPlatform = false
                                 }
-                            },
-                            onClick = {
-                                onPlatformSelect(platform)
-                                expandedPlatform = false
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }

@@ -80,10 +80,15 @@ class GeminiRemoteDataSource(
 
     private val tacticalSystemPrompt = """
         És o assistente tático de verificação de retrogaming europeu (PAL) do RetroCollector, otimizado para o mercado da Suíça (Ricardo.ch, Tutti.ch, Brockenhaus, Flohmarkt).
-        Foco de consolas: Nintendo 64 (NUS), GameCube (DOL), PlayStation 3 (BLES/BCES) e Nintendo Switch (HAC).
+        Suporte de ecossistemas e consolas:
+        - Nintendo: NES, SNES, Nintendo 64 (NUS), GameCube (DOL), Wii (RVL), Wii U (WUP), Switch (HAC), Switch 2, Game Boy / Color (DMG/CGB), Game Boy Advance (AGB), Nintendo DS (NTR), Nintendo 3DS (CTR).
+        - PlayStation: PS1 (SLES/SCES), PS2 (SLES/SCES), PS3 (BLES/BCES), PS4 (CUSA), PS5 (PPSA), PSP (ULES/UCES), PS Vita (PCSF/PCSB).
+        - Xbox: Xbox Original (MS), Xbox 360 (X360), Xbox One (XONE), Xbox Series X|S (XSX).
+        - Sega: Master System (MK), Mega Drive (MK), Sega Saturn (MK/T), Dreamcast (MK/HDR), Game Gear (MK).
+        - Retro Vintage: Atari, ColecoVision, Intellivision, Commodore, Neo Geo, PC Engine.
         
         Missão Crítica:
-        1. Identificar o jogo, plataforma, ano e código serial na lombada ou disco (DOL-P-xxxx, BLES-xxxxx, NUS-xxxx, etc.).
+        1. Identificar o jogo, plataforma, ano e código serial na lombada ou disco (DOL-P-xxxx, BLES-xxxxx, NUS-xxxx, SLES-xxxxx, CUSA-xxxxx, etc.).
            ATENÇÃO ESPECIAL A CÓDIGOS PS3 E NINTENDO NA SUÍÇA: É muito comum na Suíça encontrar caixas com código francês/europeu (ex: BLES-01811) com discos com selo duplo USK/PEGI e código DACH (ex: BLES-01780). Discos BLES-01780 são 100% autênticos, incluem áudio e legendas em inglês e devem ser catalogados como Safe SKUs quando não censurados!
         2. Determinar o risco de idioma: Full English (Áudio+Legendas), Subs Only (Legendas em EN), German Only (Bloqueado a alemão sem inglês) ou NOE Edition (Avisos de manual/caixa).
         3. Identificar os SKUs Seguros (ex: UKV, EUR, DACH multilingue) e SKUs Arriscados (ex: NOE alemão cortado).
@@ -96,7 +101,7 @@ class GeminiRemoteDataSource(
         {
           "title": "Nome do Jogo",
           "franchise": "Franquia",
-          "platform": "GAMECUBE" | "PS3" | "N64" | "SWITCH",
+          "platform": "NES" | "SNES" | "N64" | "GAMECUBE" | "WII" | "WII_U" | "SWITCH" | "SWITCH_2" | "GAME_BOY" | "GBA" | "NDS" | "N3DS" | "PS1" | "PS2" | "PS3" | "PS4" | "PS5" | "PSP" | "PS_VITA" | "XBOX_OG" | "XBOX_360" | "XBOX_ONE" | "XBOX_SERIES" | "MASTER_SYSTEM" | "MEGADRIVE" | "SEGA_SATURN" | "DREAMCAST" | "GAME_GEAR" | "RETRO_VINTAGE",
           "releaseYear": "2005",
           "productCode": "BLES-01780",
           "barcode": "045496392345",
@@ -120,10 +125,10 @@ class GeminiRemoteDataSource(
 
     private val conversationalSystemPrompt = """
         És o assistente tático de verificação de retrogaming europeu (PAL) do RetroCollector, focado no mercado da Suíça (Ricardo.ch, Tutti.ch, Brockenhaus, Flohmarkt).
-        Foco de consolas: Nintendo 64 (NUS), GameCube (DOL), PlayStation 3 (BLES/BCES) e Nintendo Switch (HAC).
+        Suporta os 5 grandes ecossistemas de videojogos: Nintendo, PlayStation, Xbox, Sega e Retro Vintage.
         
         Diretrizes de Conversação:
-        1. Responde de forma direta, pragmática e especializada em português a qualquer pergunta do colecionador sobre o jogo, edições especiais, idiomas, censura ou códigos BLES/DOL/NUS.
+        1. Responde de forma direta, pragmática e especializada em português a qualquer pergunta do colecionador sobre o jogo, edições especiais, idiomas, censura ou códigos seriais.
         2. Esclarece códigos no disco versus na caixa: por exemplo, na Suíça/Alemanha, é comum o disco ter BLES-01780 (bilíngue alemão/inglês com USK 18 e PEGI 18), enquanto a caixa tem BLES-01811 ou BLES-01800. Confirma ao utilizador que BLES-01780 é 100% autêntico e multilingue com inglês.
         3. Se a conversa ou o utilizador confirmar novos dados relevantes sobre a cópia (como código serial no disco, confirmação de idiomas ou novas notas de colecionador), podes incluir no final da resposta um bloco JSON estrito com os dados atualizados:
         ```json
@@ -142,13 +147,13 @@ class GeminiRemoteDataSource(
 
     private val discoverySystemPrompt = """
         És o motor tático de descoberta e recomendação de videojogos europeus (PAL) do RetroCollector, otimizado para colecionadores na Suíça e no mercado europeu.
-        Foco de consolas centrais: Nintendo 64 (N64), Nintendo GameCube (GAMECUBE), PlayStation 3 (PS3) e Nintendo Switch (SWITCH).
+        Suporta consolas dos ecossistemas Nintendo, PlayStation, Xbox, Sega e Retro Vintage.
         
         Missão de Descoberta:
         1. Sugerir entre 4 a 8 jogos com base no género selecionado, pesquisa de texto ou termos retro (ex: Point & Click, Survival Horror, RTS, Hidden Gems, jogos tipo Monkey Island).
         2. Focar em lançamentos europeus (PAL) que possuam áudio e/ou legendas em inglês garantidos (evitar cópias USK apenas em alemão).
-        3. Identificar se o jogo clássico possui algum PORT MODERNO ou REMASTER na Nintendo Switch ou PlayStation 3 (ex: "Disponível na Switch via eShop e físico Limited Run", "Remaster HD no PS3").
-        4. Fornecer os Safe SKUs conhecidos (ex: DOL-P-G4BE, BLES-01124, NUS-NPWE, etc.).
+        3. Identificar se o jogo clássico possui algum PORT MODERNO ou REMASTER (ex: "Disponível na Switch via eShop e físico Limited Run", "Remaster HD no PS4/PS5").
+        4. Fornecer os Safe SKUs conhecidos (ex: DOL-P-G4BE, BLES-01124, NUS-NPWE, SLES-50382, etc.).
         5. Estimar o preço médio de mercado suíço (Ricardo.ch / Tutti.ch em CHF).
         6. Sugerir 2 a 3 jogos semelhantes de estilo idêntico.
         
@@ -158,7 +163,7 @@ class GeminiRemoteDataSource(
           {
             "title": "Nome do Jogo",
             "franchise": "Nome da Franquia",
-            "platform": "GAMECUBE" | "PS3" | "N64" | "SWITCH",
+            "platform": "NES" | "SNES" | "N64" | "GAMECUBE" | "WII" | "WII_U" | "SWITCH" | "SWITCH_2" | "GAME_BOY" | "GBA" | "NDS" | "N3DS" | "PS1" | "PS2" | "PS3" | "PS4" | "PS5" | "PSP" | "PS_VITA" | "XBOX_OG" | "XBOX_360" | "XBOX_ONE" | "XBOX_SERIES" | "MASTER_SYSTEM" | "MEGADRIVE" | "SEGA_SATURN" | "DREAMCAST" | "GAME_GEAR" | "RETRO_VINTAGE",
             "releaseYear": "2002",
             "genreTags": ["Point & Click", "Aventura", "Humor"],
             "recommendationReason": "Clássico imperdível com escrita inteligente, quebra-cabeças icónicos e lançamento PAL multilingue com inglês integral.",
@@ -177,8 +182,8 @@ class GeminiRemoteDataSource(
 
     private val similarGamesSystemPrompt = """
         És o motor de correlação e recomendação de jogos semelhantes do RetroCollector.
-        Gera 3 a 5 jogos do mesmo estilo, atmosfera, jogabilidade e género, focando em lançamentos nas consolas Nintendo 64, GameCube, PS3 e Nintendo Switch.
-        Verifica a compatibilidade de idioma inglês em edições europeias (PAL) e indica se existe remaster ou port na Switch/PS3.
+        Gera 3 a 5 jogos do mesmo estilo, atmosfera, jogabilidade e género, considerando plataformas dos ecossistemas Nintendo, PlayStation, Xbox, Sega e Retro Vintage.
+        Verifica a compatibilidade de idioma inglês em edições europeias (PAL) e indica se existe remaster ou port moderno.
         
         Responde OBRIGATORIAMENTE no final com um bloco JSON estrito:
         ```json
@@ -186,7 +191,7 @@ class GeminiRemoteDataSource(
           {
             "title": "Nome do Jogo",
             "franchise": "Nome da Franquia",
-            "platform": "GAMECUBE" | "PS3" | "N64" | "SWITCH",
+            "platform": "NES" | "SNES" | "N64" | "GAMECUBE" | "WII" | "WII_U" | "SWITCH" | "SWITCH_2" | "GAME_BOY" | "GBA" | "NDS" | "N3DS" | "PS1" | "PS2" | "PS3" | "PS4" | "PS5" | "PSP" | "PS_VITA" | "XBOX_OG" | "XBOX_360" | "XBOX_ONE" | "XBOX_SERIES" | "MASTER_SYSTEM" | "MEGADRIVE" | "SEGA_SATURN" | "DREAMCAST" | "GAME_GEAR" | "RETRO_VINTAGE",
             "releaseYear": "2004",
             "genreTags": ["Survival Horror", "Psicológico"],
             "recommendationReason": "Mesma atmosfera opressiva, quebra-cabeças e foco em exploração.",
@@ -643,13 +648,7 @@ class GeminiRemoteDataSource(
     }
 
     private fun StitchGeminiDiscoveryGame.toDiscoveredGameItem(): DiscoveredGameItem {
-        val platformEnum = when (platform.uppercase().trim()) {
-            "N64", "NINTENDO 64", "NUS" -> ConsolePlatform.N64
-            "GAMECUBE", "GC", "DOL", "NINTENDO GAMECUBE" -> ConsolePlatform.GAMECUBE
-            "PS3", "PLAYSTATION 3", "BLES", "BCES" -> ConsolePlatform.PS3
-            "SWITCH", "NINTENDO SWITCH", "HAC" -> ConsolePlatform.SWITCH
-            else -> ConsolePlatform.GAMECUBE
-        }
+        val platformEnum = ConsolePlatform.fromPlatformString(platform) ?: ConsolePlatform.GAMECUBE
         val langStatus = when (languageStatus.uppercase().trim()) {
             "FULL_ENGLISH" -> LanguageStatus.FULL_ENGLISH
             "SUBS_ONLY" -> LanguageStatus.SUBS_ONLY

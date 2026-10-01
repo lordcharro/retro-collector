@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -36,6 +37,15 @@ fun MobileFieldDashboardScreen(
     onNavigateToDetail: (GameItem) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val activePlatforms = remember(state.games, state.settings.pinnedPlatformIds) {
+        val fromGames = state.games.map { it.platform }.toSet()
+        val fromPinned = state.settings.pinnedPlatformIds.mapNotNull { ConsolePlatform.fromId(it) }.toSet()
+        val combined = (fromGames + fromPinned).ifEmpty {
+            setOf(ConsolePlatform.N64, ConsolePlatform.GAMECUBE, ConsolePlatform.PS3, ConsolePlatform.SWITCH)
+        }
+        ConsolePlatform.entries.filter { it in combined }
+    }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = SurfaceBase,
@@ -180,45 +190,104 @@ fun MobileFieldDashboardScreen(
                     }
                 )
 
-                // Grelha de Consola
+                // Grelha de Consola (Adaptive Active Platforms)
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(
-                        text = "PLATFORM FILTER",
-                        style = LabelFilterStyle.copy(fontSize = 11.sp),
-                        color = TextSecondary
-                    )
-
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(SurfaceCard, RoundedCornerShape(8.dp))
-                            .border(1.dp, BorderSubtle, RoundedCornerShape(8.dp))
-                            .padding(4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        ConsolePlatform.entries.forEach { platform ->
-                            val isSelected = state.selectedPlatform == platform
-                            val color = when (platform) {
-                                ConsolePlatform.N64 -> ConsoleN64
-                                ConsolePlatform.GAMECUBE -> ConsoleGamecube
-                                ConsolePlatform.PS3 -> ConsolePS3
-                                ConsolePlatform.SWITCH -> ConsoleSwitch
-                            }
+                        Text(
+                            text = "PLATFORM FILTER",
+                            style = LabelFilterStyle.copy(fontSize = 11.sp),
+                            color = TextSecondary
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.clickable { actions.onOpenSettings() }
+                        ) {
+                            Text(
+                                text = "⚙️ PINS",
+                                style = CodeSkuStyle.copy(fontSize = 10.sp),
+                                color = StatusEnglishFg
+                            )
+                        }
+                    }
 
-                            val bg = if (isSelected) color else Color.Transparent
-
-                            Column(
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        item(key = "all_platforms_chip") {
+                            val isAllSelected = state.selectedPlatform == null
+                            Box(
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .background(bg, RoundedCornerShape(6.dp))
-                                    .clickable { actions.onPlatformSelect(platform) }
-                                    .padding(vertical = 8.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
+                                    .background(if (isAllSelected) AccentBlue else SurfaceCard, RoundedCornerShape(6.dp))
+                                    .border(1.dp, if (isAllSelected) AccentBlue else BorderSubtle, RoundedCornerShape(6.dp))
+                                    .clickable { actions.onPlatformSelect(null) }
+                                    .padding(horizontal = 10.dp, vertical = 7.dp)
                             ) {
                                 Text(
-                                    text = platform.shortName,
+                                    text = "ALL",
                                     style = LabelFilterStyle,
-                                    color = if (isSelected) Color.White else TextPrimary
+                                    color = if (isAllSelected) Color.White else TextPrimary
+                                )
+                            }
+                        }
+
+                        items(activePlatforms, key = { it.id }) { platform ->
+                            val isSelected = state.selectedPlatform == platform
+                            val color = Color(platform.brandColorHex)
+                            val bg = if (isSelected) color else SurfaceCard
+                            val count = state.games.count { it.platform == platform }
+
+                            Box(
+                                modifier = Modifier
+                                    .background(bg, RoundedCornerShape(6.dp))
+                                    .border(1.dp, if (isSelected) color else BorderSubtle, RoundedCornerShape(6.dp))
+                                    .clickable { actions.onPlatformSelect(platform) }
+                                    .padding(horizontal = 10.dp, vertical = 7.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    if (!isSelected) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(6.dp)
+                                                .background(color, RoundedCornerShape(3.dp))
+                                        )
+                                    }
+                                    Text(
+                                        text = platform.shortName,
+                                        style = LabelFilterStyle,
+                                        color = if (isSelected) Color.White else TextPrimary
+                                    )
+                                    if (count > 0) {
+                                        Text(
+                                            text = "($count)",
+                                            style = CodeSkuStyle.copy(fontSize = 10.sp),
+                                            color = if (isSelected) Color.White.copy(alpha = 0.85f) else StatusUnverifiedFg
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        item(key = "manage_pins_chip") {
+                            Box(
+                                modifier = Modifier
+                                    .background(SurfaceElevated, RoundedCornerShape(6.dp))
+                                    .border(1.dp, BorderSubtle, RoundedCornerShape(6.dp))
+                                    .clickable { actions.onOpenSettings() }
+                                    .padding(horizontal = 8.dp, vertical = 7.dp)
+                            ) {
+                                Text(
+                                    text = "➕ Manage",
+                                    style = LabelFilterStyle.copy(fontSize = 11.sp),
+                                    color = StatusEnglishFg
                                 )
                             }
                         }

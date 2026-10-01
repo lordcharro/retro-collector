@@ -19,14 +19,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.retrocollector.app.core.domain.model.ConsolePlatform
+import com.retrocollector.app.core.domain.model.PlatformEcosystem
 import com.retrocollector.app.core.presentation.components.TactileTextField
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.settings.domain.model.AppSettings
+import com.retrocollector.app.settings.domain.model.defaultPinnedPlatformIds
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SettingsDialog(
     settings: AppSettings,
@@ -42,6 +46,7 @@ fun SettingsDialog(
     var selectedCurrency by remember { mutableStateOf(settings.defaultCurrency.ifBlank { "CHF" }) }
     var isScraperEnabled by remember { mutableStateOf(settings.isScraperEnabled) }
     var ricardoCookie by remember { mutableStateOf(settings.ricardoSessionCookie) }
+    var pinnedPlatformIds by remember { mutableStateOf(settings.pinnedPlatformIds.toSet()) }
     var isKeyVisible by remember { mutableStateOf(false) }
     var testStatusMessage by remember { mutableStateOf<String?>(null) }
     var isTestingGemini by remember { mutableStateOf(false) }
@@ -636,6 +641,168 @@ fun SettingsDialog(
                     }
                 }
 
+                // SEÇÃO 4: Pinned Hardware Platforms
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = TextKeys.Settings.PLATFORMS_SECTION.uppercase(),
+                            style = LabelFilterStyle.copy(fontSize = 11.sp),
+                            color = StatusUnverifiedFg,
+                            maxLines = 1,
+                            softWrap = false,
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .background(SurfaceBase, RoundedCornerShape(4.dp))
+                                    .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
+                                    .clickable { pinnedPlatformIds = defaultPinnedPlatformIds.toSet() }
+                                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                            ) {
+                                Text(
+                                    text = TextKeys.Settings.PLATFORMS_SELECT_DEFAULTS,
+                                    style = CodeSkuStyle.copy(fontSize = 10.sp),
+                                    color = StatusEnglishFg,
+                                    softWrap = false,
+                                    maxLines = 1
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .background(SurfaceBase, RoundedCornerShape(4.dp))
+                                    .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
+                                    .clickable { pinnedPlatformIds = ConsolePlatform.entries.map { it.id }.toSet() }
+                                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                            ) {
+                                Text(
+                                    text = TextKeys.Settings.PLATFORMS_PIN_ALL,
+                                    style = CodeSkuStyle.copy(fontSize = 10.sp),
+                                    color = ConsoleGamecube,
+                                    softWrap = false,
+                                    maxLines = 1
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .background(SurfaceBase, RoundedCornerShape(4.dp))
+                                    .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
+                                    .clickable { pinnedPlatformIds = emptySet() }
+                                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                            ) {
+                                Text(
+                                    text = TextKeys.Settings.PLATFORMS_CLEAR_ALL,
+                                    style = CodeSkuStyle.copy(fontSize = 10.sp),
+                                    color = StatusRiskFg,
+                                    softWrap = false,
+                                    maxLines = 1
+                                )
+                            }
+                        }
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(SurfaceBase, RoundedCornerShape(6.dp))
+                            .border(1.dp, BorderSubtle, RoundedCornerShape(6.dp))
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = TextKeys.Settings.PLATFORMS_SUBTITLE,
+                            style = BodySm.copy(fontSize = 11.sp),
+                            color = TextSecondary
+                        )
+
+                        PlatformEcosystem.entries.forEach { eco ->
+                            val ecoPlatforms = remember(eco) {
+                                ConsolePlatform.entries.filter { it.ecosystem == eco }
+                            }
+                            val ecoColor = Color(eco.brandColorHex)
+
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(SurfaceCard, RoundedCornerShape(6.dp))
+                                    .border(1.dp, BorderSubtle, RoundedCornerShape(6.dp))
+                                    .padding(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(text = eco.icon, fontSize = 13.sp)
+                                    Text(
+                                        text = eco.displayName.uppercase(),
+                                        style = LabelFilterStyle.copy(fontSize = 11.sp),
+                                        color = ecoColor
+                                    )
+                                }
+
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    ecoPlatforms.forEach { platform ->
+                                        val isPinned = pinnedPlatformIds.contains(platform.id)
+                                        val pColor = Color(platform.brandColorHex)
+
+                                        Box(
+                                            modifier = Modifier
+                                                .background(
+                                                    if (isPinned) SurfaceElevated else SurfaceBase,
+                                                    RoundedCornerShape(4.dp)
+                                                )
+                                                .border(
+                                                    1.dp,
+                                                    if (isPinned) pColor else BorderSubtle,
+                                                    RoundedCornerShape(4.dp)
+                                                )
+                                                .clickable {
+                                                    pinnedPlatformIds = if (isPinned) {
+                                                        pinnedPlatformIds - platform.id
+                                                    } else {
+                                                        pinnedPlatformIds + platform.id
+                                                    }
+                                                }
+                                                .padding(horizontal = 8.dp, vertical = 5.dp)
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(6.dp)
+                                                        .background(if (isPinned) pColor else StatusUnverifiedFg, RoundedCornerShape(3.dp))
+                                                )
+                                                Text(
+                                                    text = platform.shortName,
+                                                    style = CodeSkuStyle.copy(fontSize = 11.sp),
+                                                    color = if (isPinned) TextPrimary else TextSecondary
+                                                )
+                                                if (isPinned) {
+                                                    Text(text = "📌", fontSize = 10.sp)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Botão de Gravação Principal
                 Button(
                     onClick = {
@@ -646,7 +813,8 @@ fun SettingsDialog(
                                 firebaseProjectId = firebaseProjectId.trim(),
                                 defaultCurrency = selectedCurrency,
                                 isScraperEnabled = isScraperEnabled,
-                                ricardoSessionCookie = ricardoCookie.trim()
+                                ricardoSessionCookie = ricardoCookie.trim(),
+                                pinnedPlatformIds = pinnedPlatformIds.toList()
                             )
                         )
                     },

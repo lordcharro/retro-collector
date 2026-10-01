@@ -31,7 +31,7 @@ object CuratedDiscoveryDataSource {
             if (matches.isNotEmpty()) return matches
         }
 
-        return filtered.ifEmpty { allCurated.take(6) }
+        return filtered.ifEmpty { allCurated.take(8) }
     }
 
     fun getSimilarGames(game: GameItem): List<DiscoveredGameItem> {
@@ -58,7 +58,10 @@ object CuratedDiscoveryDataSource {
     }
 
     fun getCuratedCatalog(): List<DiscoveredGameItem> {
-        return getPointAndClickGames() + getSurvivalAndStrategyGames() + getActionAndCultGames()
+        return getPointAndClickGames() +
+            getSurvivalAndStrategyGames() +
+            getActionAndCultGames() +
+            getMultiEcosystemCuratedGames()
     }
 
     private fun getPointAndClickGames(): List<DiscoveredGameItem> = listOf(
@@ -211,6 +214,111 @@ object CuratedDiscoveryDataSource {
             modernPortDetails = "Exclusivo físico PS3 - muito procurado por colecionadores",
             estimatedPriceChf = 55.0,
             similarTitles = listOf("NieR", "Demon's Souls", "Valkyria Chronicles")
+        )
+    )
+
+    private fun getMultiEcosystemCuratedGames(): List<DiscoveredGameItem> = listOf(
+        // SNES
+        DiscoveredGameItem(
+            id = "disc_super_metroid_snes",
+            title = "Super Metroid",
+            franchiseName = "Metroid",
+            platform = ConsolePlatform.SNES,
+            releaseYear = "1994",
+            genreDisplayName = "Ação / Exploração",
+            genreTags = listOf("Metroidvania", "Sci-Fi", "Cult"),
+            recommendationReason = "Uma das maiores obras-primas da era 16-bit com atmosfera inigualável.",
+            languageStatus = LanguageStatus.FULL_ENGLISH,
+            safeSkus = listOf(SkuInfo(code = "SNSP-RI-EUR", region = "EUR / UKV", editionNote = "Edição europeia em inglês", isSafe = true)),
+            hasModernPortOrRemaster = true,
+            modernPortDetails = "Disponível no Nintendo Switch Online",
+            estimatedPriceChf = 75.0,
+            similarTitles = listOf("Castlevania: Symphony of the Night", "Metroid Fusion")
+        ),
+        // PS1
+        DiscoveredGameItem(
+            id = "disc_castlevania_sotn_ps1",
+            title = "Castlevania: Symphony of the Night",
+            franchiseName = "Castlevania",
+            platform = ConsolePlatform.PS1,
+            releaseYear = "1997",
+            genreDisplayName = "Ação RPG",
+            genreTags = listOf("Metroidvania", "Gótico", "Cult"),
+            recommendationReason = "O jogo que definiu o género Metroidvania no PlayStation com trilha sonora lendária.",
+            languageStatus = LanguageStatus.FULL_ENGLISH,
+            safeSkus = listOf(SkuInfo(code = "SLES-00524", region = "EUR / UK", editionNote = "Edição PAL com áudio e texto em inglês", isSafe = true)),
+            hasModernPortOrRemaster = true,
+            modernPortDetails = "Disponível no Castlevania Requiem (PS4/PS5)",
+            estimatedPriceChf = 120.0,
+            similarTitles = listOf("Super Metroid", "Bloodstained")
+        ),
+        // PS2
+        DiscoveredGameItem(
+            id = "disc_silent_hill_2_ps2",
+            title = "Silent Hill 2",
+            franchiseName = "Silent Hill",
+            platform = ConsolePlatform.PS2,
+            releaseYear = "2001",
+            genreDisplayName = "Survival Horror",
+            genreTags = listOf("Survival Horror", "Psicológico", "Cult"),
+            recommendationReason = "Marco absoluto do terror psicológico nos videojogos com edição especial PAL de 2 discos.",
+            languageStatus = LanguageStatus.FULL_ENGLISH,
+            safeSkus = listOf(SkuInfo(code = "SLES-50382", region = "EUR / UK", editionNote = "Digipak PAL 2-Discos com áudio em inglês", isSafe = true)),
+            hasModernPortOrRemaster = true,
+            modernPortDetails = "Remake moderno disponível no PS5",
+            estimatedPriceChf = 60.0,
+            similarTitles = listOf("Silent Hill 3", "Resident Evil 2", "Forbidden Siren")
+        ),
+        // GBA
+        DiscoveredGameItem(
+            id = "disc_metroid_fusion_gba",
+            title = "Metroid Fusion",
+            franchiseName = "Metroid",
+            platform = ConsolePlatform.GBA,
+            releaseYear = "2002",
+            genreDisplayName = "Ação / Aventura",
+            genreTags = listOf("Metroidvania", "Sci-Fi", "Portátil"),
+            recommendationReason = "Aventura portátil intensa com Samus Aran a enfrentar o parasita X e a sua cópia SA-X.",
+            languageStatus = LanguageStatus.FULL_ENGLISH,
+            safeSkus = listOf(SkuInfo(code = "AGB-AMTE-EUR", region = "EUR", editionNote = "Multi-5 europeu com inglês", isSafe = true)),
+            hasModernPortOrRemaster = true,
+            modernPortDetails = "Disponível no Nintendo Switch Online GBA",
+            estimatedPriceChf = 50.0,
+            similarTitles = listOf("Metroid Zero Mission", "Castlevania: Aria of Sorrow")
+        ),
+        // Sega Dreamcast
+        DiscoveredGameItem(
+            id = "disc_shenmue_dc",
+            title = "Shenmue",
+            franchiseName = "Shenmue",
+            platform = ConsolePlatform.DREAMCAST,
+            releaseYear = "2000",
+            genreDisplayName = "Aventura / Mundo Aberto",
+            genreTags = listOf("Aventura", "Mundo Aberto", "Cult", "Artes Marciais"),
+            recommendationReason = "Obra revolucionária de Yu Suzuki com ciclo dia/noite e vida quotidiana em Yokosuka.",
+            languageStatus = LanguageStatus.FULL_ENGLISH,
+            safeSkus = listOf(SkuInfo(code = "MK-51057-50", region = "EUR", editionNote = "Edição 4 GD-ROMs com voz e legendas em inglês", isSafe = true)),
+            hasModernPortOrRemaster = true,
+            modernPortDetails = "Shenmue I & II Remaster no PS4 e Xbox One",
+            estimatedPriceChf = 55.0,
+            similarTitles = listOf("Shenmue II", "Yakuza", "Virtua Fighter")
+        ),
+        // Sega Mega Drive
+        DiscoveredGameItem(
+            id = "disc_sonic_2_md",
+            title = "Sonic the Hedgehog 2",
+            franchiseName = "Sonic",
+            platform = ConsolePlatform.MEGADRIVE,
+            releaseYear = "1992",
+            genreDisplayName = "Plataformas",
+            genreTags = listOf("Platformer", "Velocidade", "Retro"),
+            recommendationReason = "Clássico intemporal de plataformas 16-bit com introdução do Tails e Spin Dash.",
+            languageStatus = LanguageStatus.FULL_ENGLISH,
+            safeSkus = listOf(SkuInfo(code = "MK-1051-50", region = "EUR", editionNote = "Caixa clássica preta com inglês integral", isSafe = true)),
+            hasModernPortOrRemaster = true,
+            modernPortDetails = "Disponível em Sonic Origins (Switch/PS4/PS5/Xbox)",
+            estimatedPriceChf = 30.0,
+            similarTitles = listOf("Sonic the Hedgehog", "Sonic 3 & Knuckles")
         )
     )
 }
