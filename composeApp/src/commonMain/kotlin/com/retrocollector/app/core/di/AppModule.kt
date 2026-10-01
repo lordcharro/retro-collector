@@ -26,6 +26,9 @@ import org.koin.core.module.Module
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 
+// Set it false to launch the app without mock data (ideal for testing Firestore sync from a blank slate)
+const val LOAD_MOCK_DATA: Boolean = false
+
 val dataModule = module {
     single<SettingsLocalDataSource> { createSettingsLocalDataSource() }
     single { FirestoreService() }
@@ -36,7 +39,8 @@ val dataModule = module {
             firestoreService = get(),
             geminiDataSource = get(),
             listingScraper = get(),
-            settingsLocalDataSource = get()
+            settingsLocalDataSource = get(),
+            loadMockData = LOAD_MOCK_DATA
         )
     }
 }

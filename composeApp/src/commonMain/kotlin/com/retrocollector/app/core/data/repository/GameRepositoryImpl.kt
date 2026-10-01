@@ -25,7 +25,8 @@ class GameRepositoryImpl(
     private val geminiDataSource: GeminiRemoteDataSource = GeminiRemoteDataSource(),
     private val listingScraper: ListingScraper = ListingScraper(),
     private val settingsLocalDataSource: SettingsLocalDataSource = createSettingsLocalDataSource(),
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    loadMockData: Boolean = true
 ) : IGameRepository {
 
     private val scope = CoroutineScope(ioDispatcher)
@@ -33,10 +34,10 @@ class GameRepositoryImpl(
     private val _settings = MutableStateFlow(settingsLocalDataSource.getSettings())
     override val settings: StateFlow<AppSettings> = _settings.asStateFlow()
 
-    private val _games = MutableStateFlow<List<GameItem>>(getInitialMockGames())
+    private val _games = MutableStateFlow<List<GameItem>>(if (loadMockData) getInitialMockGames() else emptyList())
     override val games: StateFlow<List<GameItem>> = _games.asStateFlow()
 
-    private val _chatMessages = MutableStateFlow<List<ChatMessage>>(getInitialMockChats())
+    private val _chatMessages = MutableStateFlow<List<ChatMessage>>(if (loadMockData) getInitialMockChats() else emptyList())
     override val chatMessages: StateFlow<List<ChatMessage>> = _chatMessages.asStateFlow()
 
     private val discoveryCache = mutableMapOf<String, List<DiscoveredGameItem>>()
@@ -89,7 +90,22 @@ class GameRepositoryImpl(
     }
 
     override fun addChatMessage(message: ChatMessage) {
-        _chatMessages.value = _chatMessages.value + message
+        val current = _chatMessages.value.toMutableList()
+        val index = current.indexOfFirst { it.id == message.id }
+        if (index >= 0) {
+            current[index] = message
+        } else {
+            current.add(message)
+        }
+        _chatMessages.value = current
+
+        // Background synchronization with Firestore if project ID is configured
+        val projectId = _settings.value.firebaseProjectId.trim()
+        if (projectId.isNotBlank()) {
+            scope.launch {
+                firestoreService.saveChatMessage(projectId, message)
+            }
+        }
     }
 
     override fun updateSettings(settings: AppSettings) {
@@ -109,8 +125,8 @@ class GameRepositoryImpl(
         val projectId = _settings.value.firebaseProjectId.trim()
         if (projectId.isBlank()) return Result.success(Unit)
 
-        val result = firestoreService.getGames(projectId)
-        return result.map { remoteGames ->
+        val gamesResult = firestoreService.getGames(projectId)
+        gamesResult.onSuccess { remoteGames ->
             if (remoteGames.isNotEmpty()) {
                 val localMap = _games.value.associateBy { it.id }.toMutableMap()
                 remoteGames.forEach { remote ->
@@ -118,7 +134,23 @@ class GameRepositoryImpl(
                 }
                 _games.value = localMap.values.toList()
             }
-            Unit
+        }
+
+        val chatsResult = firestoreService.getChatMessages(projectId)
+        chatsResult.onSuccess { remoteChats ->
+            if (remoteChats.isNotEmpty()) {
+                val localMap = _chatMessages.value.associateBy { it.id }.toMutableMap()
+                remoteChats.forEach { remote ->
+                    localMap[remote.id] = remote
+                }
+                _chatMessages.value = localMap.values.sortedBy { it.timestamp }
+            }
+        }
+
+        return if (gamesResult.isSuccess || chatsResult.isSuccess) {
+            Result.success(Unit)
+        } else {
+            gamesResult.map { }
         }
     }
 

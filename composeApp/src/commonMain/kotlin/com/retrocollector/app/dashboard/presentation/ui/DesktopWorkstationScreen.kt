@@ -308,6 +308,42 @@ fun DesktopWorkstationScreen(
                         }
                     }
 
+                    // Cloud Sync Button
+                    Box(
+                        modifier = Modifier
+                            .height(32.dp)
+                            .background(if (state.isSyncing) SurfaceElevated else SurfaceBase, RoundedCornerShape(4.dp))
+                            .border(1.dp, if (state.isSyncing) StatusEnglishFg else BorderSubtle, RoundedCornerShape(4.dp))
+                            .clickable(enabled = !state.isSyncing) { actions.onSyncFromFirestore() }
+                            .padding(horizontal = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            if (state.isSyncing) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(12.dp),
+                                    strokeWidth = 1.5.dp,
+                                    color = StatusEnglishFg
+                                )
+                                Text(
+                                    text = "Syncing...",
+                                    style = LabelBadgeStyle.copy(fontSize = 11.sp),
+                                    color = StatusEnglishFg
+                                )
+                            } else {
+                                Text(text = "🔄", fontSize = 11.sp)
+                                Text(
+                                    text = "Sync",
+                                    style = LabelFilterStyle.copy(fontSize = 11.sp),
+                                    color = if (state.settings.firebaseProjectId.isNotBlank()) TextPrimary else TextSecondary
+                                )
+                            }
+                        }
+                    }
+
                     // Elegant Quick Scan button (32dp height aligned)
                     Button(
                         onClick = { actions.onOpenScanDialog() },

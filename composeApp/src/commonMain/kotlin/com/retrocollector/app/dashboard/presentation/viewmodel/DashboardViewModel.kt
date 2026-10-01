@@ -43,7 +43,8 @@ data class DashboardUiState(
     val isMobileDetailOpen: Boolean = false,
     val scanErrorMessage: String? = null,
     val firestoreTestStatusMessage: String? = null,
-    val isTestingFirestore: Boolean = false
+    val isTestingFirestore: Boolean = false,
+    val isSyncing: Boolean = false
 )
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
@@ -276,6 +277,30 @@ class DashboardViewModel(
         closeSettings()
     }
 
+    fun refreshFromFirestore() {
+        val projectId = repository.settings.value.firebaseProjectId.trim()
+        if (projectId.isBlank()) {
+            scope.launch {
+                _effects.send(DashboardEffect.ShowToast("Firebase Project ID not configured in Settings", isError = true))
+            }
+            return
+        }
+        _uiState.update { it.copy(isSyncing = true) }
+        scope.launch {
+            val result = repository.syncFromFirestore()
+            _uiState.update { it.copy(isSyncing = false) }
+            result.fold(
+                onSuccess = {
+                    _effects.send(DashboardEffect.ShowToast("Cloud sync completed!"))
+                },
+                onFailure = { err ->
+                    val msg = err.message ?: "Sync error"
+                    _effects.send(DashboardEffect.ShowToast("Sync error: $msg", isError = true))
+                }
+            )
+        }
+    }
+
     suspend fun testGeminiConnectionSuspend(apiKey: String, model: String = "gemini-3.7-flash"): Result<String> {
         return testGeminiConnectionUseCase(apiKey, model)
     }
@@ -363,9 +388,7 @@ class DashboardViewModel(
         val existing = _uiState.value.games.find {
             it.title.equals(discovered.title, ignoreCase = true) && it.platform == discovered.platform
         }
-        val targetGame = existing ?: discovered.toGameItem(status = CollectionStatus.WISHLIST).also {
-            saveGameUseCase(it)
-        }
+        val targetGame = existing ?: discovered.toGameItem(status = CollectionStatus.PASS)
         onGameSelected(targetGame)
     }
 

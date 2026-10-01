@@ -44,5 +44,6 @@ data class DashboardActions(
     val onDiscoveryPlatformSelect: (ConsolePlatform?) -> Unit = {},
     val onOpenDiscoveredDossier: (DiscoveredGameItem) -> Unit = {},
     val onAddDiscoveredToWishlist: (DiscoveredGameItem) -> Unit = {},
-    val onLoadSimilarGames: (GameItem) -> Unit = {}
+    val onLoadSimilarGames: (GameItem) -> Unit = {},
+    val onSyncFromFirestore: () -> Unit = {}
 )

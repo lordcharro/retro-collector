@@ -79,10 +79,35 @@ fun MobileFieldDashboardScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
+                    // Sync Button
+                    Box(
+                        modifier = Modifier
+                            .background(if (state.isSyncing) SurfaceElevated else SurfaceContainer, RoundedCornerShape(12.dp))
+                            .clickable(enabled = !state.isSyncing) { actions.onSyncFromFirestore() }
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            if (state.isSyncing) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(10.dp),
+                                    strokeWidth = 1.5.dp,
+                                    color = StatusEnglishFg
+                                )
+                                Text(text = "SYNCING", style = CodeSkuStyle.copy(fontSize = 10.sp), color = StatusEnglishFg)
+                            } else {
+                                Text(text = "🔄", fontSize = 10.sp)
+                                Text(text = "SYNC", style = CodeSkuStyle.copy(fontSize = 10.sp), color = TextSecondary)
+                            }
+                        }
+                    }
+
                     Box(
                         modifier = Modifier
                             .background(SurfaceContainer, RoundedCornerShape(12.dp))
-                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,

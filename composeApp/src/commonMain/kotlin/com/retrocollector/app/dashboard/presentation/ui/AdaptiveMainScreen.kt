@@ -92,7 +92,8 @@ fun AdaptiveMainScreen(
             onDiscoveryPlatformSelect = discoveryViewModel::onPlatformSelect,
             onOpenDiscoveredDossier = dashboardViewModel::onOpenDiscoveredDossier,
             onAddDiscoveredToWishlist = discoveryViewModel::addToWishlist,
-            onLoadSimilarGames = dashboardViewModel::loadSimilarGamesForSelectedGame
+            onLoadSimilarGames = dashboardViewModel::loadSimilarGamesForSelectedGame,
+            onSyncFromFirestore = dashboardViewModel::refreshFromFirestore
         )
     }
 
