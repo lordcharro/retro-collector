@@ -1,7 +1,7 @@
 # RetroCollector — TODO & Roadmap
 
 > Living document tracking what is missing, broken, or planned.
-> See also the [schema.md](schema.md) for the Firestore data model reference.
+> See also the [firestore.md](firestore.md) for the Firestore data model reference.
 
 ---
 
