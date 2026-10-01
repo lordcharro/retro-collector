@@ -1,8 +1,8 @@
 # RetroCollector — Game Language & Edition Tracker (CH / PAL) 🎮
 
-A multiplatform app built with **Kotlin Multiplatform (Compose Multiplatform)** for retro game collectors focused on **Nintendo 64, GameCube, PlayStation 3, and Nintendo Switch** who live in **Switzerland** or buy from the European (PAL) market.
+A multiplatform app built with **Kotlin Multiplatform (Compose Multiplatform)** for retro game collectors buying physical games in **Switzerland** or the broader European (PAL) market.
 
-It solves the classic second-hand regional release problem in the Swiss market (Ricardo.ch, Tutti.ch, flea markets) where many physical GameCube and PS3 copies are German USK editions locked to German-only audio, by identifying safe editions with **full English audio and text**.
+Covers **30 consoles across 5 ecosystems** — Nintendo, PlayStation, Xbox, Sega, and Retro Vintage — from the NES and Mega Drive all the way to Switch 2 and PS5. Solves the classic second-hand regional release problem in the Swiss market (Ricardo.ch, Tutti.ch, flea markets), where many physical GameCube and PS3 copies are German USK editions locked to German-only audio. The app identifies safe editions with **full English audio and text** by analysing the serial code on the spine or disc.
 
 ---
 
