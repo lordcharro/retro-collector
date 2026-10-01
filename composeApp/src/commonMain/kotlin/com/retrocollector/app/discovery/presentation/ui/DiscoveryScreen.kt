@@ -49,7 +49,8 @@ fun DiscoveryScreen(
     onOpenDossier: (DiscoveredGameItem) -> Unit,
     onAddToWishlist: (DiscoveredGameItem) -> Unit,
     modifier: Modifier = Modifier,
-    currency: String = "CHF"
+    currency: String = "CHF",
+    isAutoDiscoveryEnabled: Boolean = false
 ) {
     Column(
         modifier = modifier
@@ -74,10 +75,15 @@ fun DiscoveryScreen(
                     Text(text = TextKeys.Discovery.TITLE, style = HeadlineMd, color = TextPrimary)
                     Box(
                         modifier = Modifier
-                            .background(ConsoleGamecube, RoundedCornerShape(3.dp))
+                            .background(if (isAutoDiscoveryEnabled) ConsoleGamecube else SurfaceElevated, RoundedCornerShape(3.dp))
+                            .border(1.dp, if (isAutoDiscoveryEnabled) BorderStrong else BorderSubtle, RoundedCornerShape(3.dp))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
-                        Text(text = TextKeys.Discovery.BADGE_AI, style = LabelBadgeStyle.copy(fontSize = 10.sp), color = Color.White)
+                        Text(
+                            text = if (isAutoDiscoveryEnabled) TextKeys.Discovery.BADGE_AI else "MANUAL AI (RUN)",
+                            style = LabelBadgeStyle.copy(fontSize = 10.sp),
+                            color = if (isAutoDiscoveryEnabled) Color.White else StatusEnglishFg
+                        )
                     }
                 }
                 Text(

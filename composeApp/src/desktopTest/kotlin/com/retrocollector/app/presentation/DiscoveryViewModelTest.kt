@@ -111,46 +111,66 @@ class DiscoveryViewModelTest {
         viewModel = DiscoveryViewModel(
             discoverGamesUseCase = DiscoverGamesUseCase(repository),
             saveGameUseCase = SaveGameUseCase(repository),
+            repository = repository,
             dispatcher = Dispatchers.Unconfined,
             scope = CoroutineScope(Dispatchers.Unconfined)
         )
     }
 
     @Test
-    fun `loads discovered games on launch`() = runTest {
+    fun `loads local curated games on launch when auto discovery is disabled`() = runTest {
         val state = viewModel.uiState.value
-        assertEquals(2, state.discoveredGames.size)
+        assertTrue(state.discoveredGames.isNotEmpty())
         assertFalse(state.isDiscovering)
+        assertFalse(state.isAutoDiscoveryEnabled)
     }
 
     @Test
-    fun `filters discovered games by platform`() = runTest {
+    fun `filters local games by platform in manual mode`() = runTest {
         viewModel.onPlatformSelect(ConsolePlatform.N64)
 
         val state = viewModel.uiState.value
         assertEquals(ConsolePlatform.N64, state.selectedPlatform)
-        assertEquals(1, state.discoveredGames.size)
-        assertEquals("F-Zero X", state.discoveredGames.first().title)
+        assertTrue(state.discoveredGames.all { it.platform == ConsolePlatform.N64 })
     }
 
     @Test
-    fun `filters discovered games by genre`() = runTest {
+    fun `filters local games by genre in manual mode`() = runTest {
         viewModel.onGenreSelect(GameGenre.POINT_AND_CLICK)
 
         val state = viewModel.uiState.value
         assertEquals(GameGenre.POINT_AND_CLICK, state.selectedGenre)
-        assertEquals(1, state.discoveredGames.size)
-        assertEquals("Monkey Island 2", state.discoveredGames.first().title)
+        assertTrue(state.discoveredGames.isNotEmpty())
     }
 
     @Test
-    fun `updates query and performs search`() = runTest {
+    fun `updates query and performs search on submit`() = runTest {
         viewModel.onSearchSubmit("Monkey")
 
         val state = viewModel.uiState.value
         assertEquals("Monkey", state.searchQuery)
         assertEquals(1, state.discoveredGames.size)
         assertEquals("Monkey Island 2", state.discoveredGames.first().title)
+    }
+
+    @Test
+    fun `auto discovery enabled calls use case on filter change`() = runTest {
+        val autoRepo = object : FakeRepository(sampleDiscovered) {
+            override val settings: StateFlow<AppSettings> = MutableStateFlow(AppSettings(isAutoDiscoveryEnabled = true)).asStateFlow()
+        }
+        val autoVm = DiscoveryViewModel(
+            discoverGamesUseCase = DiscoverGamesUseCase(autoRepo),
+            saveGameUseCase = SaveGameUseCase(autoRepo),
+            repository = autoRepo,
+            dispatcher = Dispatchers.Unconfined,
+            scope = CoroutineScope(Dispatchers.Unconfined)
+        )
+
+        autoVm.onPlatformSelect(ConsolePlatform.N64)
+        val state = autoVm.uiState.value
+        assertEquals(ConsolePlatform.N64, state.selectedPlatform)
+        assertEquals(1, state.discoveredGames.size)
+        assertEquals("F-Zero X", state.discoveredGames.first().title)
     }
 
     @Test

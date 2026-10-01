@@ -517,6 +517,7 @@ fun DesktopWorkstationScreen(
                             onOpenDossier = actions.onOpenDiscoveredDossier,
                             onAddToWishlist = actions.onAddDiscoveredToWishlist,
                             currency = state.settings.defaultCurrency.ifBlank { "CHF" },
+                            isAutoDiscoveryEnabled = discoveryState.isAutoDiscoveryEnabled,
                             modifier = Modifier.fillMaxSize()
                         )
                     }

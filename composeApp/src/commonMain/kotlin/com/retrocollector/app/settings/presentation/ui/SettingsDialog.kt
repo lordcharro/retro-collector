@@ -47,6 +47,7 @@ fun SettingsDialog(
     var firebaseProjectId by remember { mutableStateOf(settings.firebaseProjectId) }
     var selectedCurrency by remember { mutableStateOf(settings.defaultCurrency.ifBlank { "CHF" }) }
     var isScraperEnabled by remember { mutableStateOf(settings.isScraperEnabled) }
+    var isAutoDiscoveryEnabled by remember { mutableStateOf(settings.isAutoDiscoveryEnabled) }
     var ricardoCookie by remember { mutableStateOf(settings.ricardoSessionCookie) }
     var pinnedPlatformIds by remember { mutableStateOf(settings.pinnedPlatformIds.toSet()) }
     var isKeyVisible by remember { mutableStateOf(false) }
@@ -58,10 +59,12 @@ fun SettingsDialog(
 
     val geminiModels = remember {
         listOf(
-            "gemini-3.7-flash" to "3.7 Flash (Stable)",
-            "gemini-3.6-flash" to "3.6 Flash (Fast)",
-            "gemini-3.5-flash" to "3.5 Flash (Base)",
-            "gemini-3.8-flash" to "3.8 Flash (Preview)"
+            "gemini-2.5-flash-lite" to "2.5 Flash-Lite",
+            "gemini-2.5-flash" to "2.5 Flash",
+            "gemini-3.7-flash" to "3.7 Flash",
+            "gemini-3.6-flash" to "3.6 Flash",
+            "gemini-3.5-flash" to "3.5 Flash",
+            "gemini-3.8-flash" to "3.8 Flash"
         )
     }
 
@@ -235,6 +238,7 @@ fun SettingsDialog(
                                                     firebaseProjectId = firebaseProjectId.trim(),
                                                     defaultCurrency = selectedCurrency,
                                                     isScraperEnabled = isScraperEnabled,
+                                                    isAutoDiscoveryEnabled = isAutoDiscoveryEnabled,
                                                     ricardoSessionCookie = ricardoCookie.trim(),
                                                     pinnedPlatformIds = pinnedPlatformIds.toList(),
                                                     themeMode = mode
@@ -468,6 +472,57 @@ fun SettingsDialog(
                                     modifier = Modifier.weight(1f, fill = false).padding(start = 8.dp)
                                 )
                             }
+                        }
+
+                        HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
+
+                        // Toggle Auto-Discovery / Quota Saver
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(1f).padding(end = 12.dp),
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(
+                                        text = TextKeys.Settings.AUTO_DISCOVERY_TITLE,
+                                        style = BodyMd.copy(fontSize = 13.sp),
+                                        color = TextPrimary
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .background(SurfaceElevated, RoundedCornerShape(2.dp))
+                                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                                    ) {
+                                        Text(
+                                            text = TextKeys.Settings.AUTO_DISCOVERY_BADGE,
+                                            style = CodeSkuStyle.copy(fontSize = 9.sp),
+                                            color = ConsoleGamecube
+                                        )
+                                    }
+                                }
+                                Text(
+                                    text = TextKeys.Settings.AUTO_DISCOVERY_SUBTITLE,
+                                    style = BodySm.copy(fontSize = 11.sp),
+                                    color = TextSecondary
+                                )
+                            }
+                            Switch(
+                                checked = isAutoDiscoveryEnabled,
+                                onCheckedChange = { isAutoDiscoveryEnabled = it },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = ConsoleGamecube,
+                                    uncheckedThumbColor = StatusUnverifiedFg,
+                                    uncheckedTrackColor = SurfaceElevated
+                                )
+                            )
                         }
                     }
                 }
@@ -923,6 +978,7 @@ fun SettingsDialog(
                                 firebaseProjectId = firebaseProjectId.trim(),
                                 defaultCurrency = selectedCurrency,
                                 isScraperEnabled = isScraperEnabled,
+                                isAutoDiscoveryEnabled = isAutoDiscoveryEnabled,
                                 ricardoSessionCookie = ricardoCookie.trim(),
                                 pinnedPlatformIds = pinnedPlatformIds.toList(),
                                 themeMode = selectedThemeMode

@@ -76,7 +76,8 @@ val presentationModule = module {
     factory {
         DiscoveryViewModel(
             discoverGamesUseCase = get(),
-            saveGameUseCase = get()
+            saveGameUseCase = get(),
+            repository = get()
         )
     }
     factory {

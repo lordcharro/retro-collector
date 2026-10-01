@@ -21,6 +21,7 @@ data class AppSettings(
     val firebaseApiKey: String = "",
     val defaultCurrency: String = "CHF",
     val isScraperEnabled: Boolean = true,
+    val isAutoDiscoveryEnabled: Boolean = false,
     val ricardoSessionCookie: String = "",
     val selectedPlatformFilter: ConsolePlatform? = null,
     val onlyEnglishFilter: Boolean = false,

@@ -11,5 +11,6 @@ data class DiscoveryUiState(
     val selectedGenre: GameGenre = GameGenre.ALL,
     val selectedPlatform: ConsolePlatform? = null,
     val searchQuery: String = "",
-    val isDiscovering: Boolean = false
+    val isDiscovering: Boolean = false,
+    val isAutoDiscoveryEnabled: Boolean = false
 )

@@ -160,6 +160,8 @@ fun MobileFieldDashboardScreen(
                     onNavigateToDetail(matchingGame)
                 },
                 onAddToWishlist = actions.onAddDiscoveredToWishlist,
+                currency = state.settings.defaultCurrency.ifBlank { "CHF" },
+                isAutoDiscoveryEnabled = discoveryState.isAutoDiscoveryEnabled,
                 modifier = Modifier.fillMaxSize().padding(paddingValues)
             )
         } else {
