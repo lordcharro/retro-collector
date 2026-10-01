@@ -287,17 +287,25 @@ class DashboardViewModel(
         }
         _uiState.update { it.copy(isSyncing = true) }
         scope.launch {
-            val result = repository.syncFromFirestore()
-            _uiState.update { it.copy(isSyncing = false) }
-            result.fold(
-                onSuccess = {
-                    _effects.send(DashboardEffect.ShowToast("Cloud sync completed!"))
-                },
-                onFailure = { err ->
-                    val msg = err.message ?: "Sync error"
-                    _effects.send(DashboardEffect.ShowToast("Sync error: $msg", isError = true))
-                }
-            )
+            try {
+                val result = repository.syncFromFirestore()
+                _uiState.update { it.copy(isSyncing = false) }
+                result.fold(
+                    onSuccess = {
+                        _effects.send(DashboardEffect.ShowToast("Cloud sync completed!"))
+                    },
+                    onFailure = { err ->
+                        val msg = err.message ?: "Sync error"
+                        _effects.send(DashboardEffect.ShowToast("Sync error: $msg", isError = true))
+                    }
+                )
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                _uiState.update { it.copy(isSyncing = false) }
+                val msg = e.message ?: "Sync error"
+                _effects.send(DashboardEffect.ShowToast("Sync error: $msg", isError = true))
+            }
         }
     }
 

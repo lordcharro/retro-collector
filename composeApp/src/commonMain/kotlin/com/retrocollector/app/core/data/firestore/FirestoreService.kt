@@ -53,16 +53,76 @@ class FirestoreService(
                         json.decodeFromString<GameItem>(jsonString)
                     } catch (e: Exception) {
                         println("Failed to decode GameItem JSON: ${e.message}")
-                        null
+                        parseGameFromDocFields(doc)
                     }
-                } else null
-            } ?: emptyList()
+                } else {
+                    parseGameFromDocFields(doc)
+                }
+            }.orEmpty()
 
             Result.success(games)
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    private fun parseGameFromDocFields(doc: FirestoreDocument): GameItem? {
+        return try {
+            val id = doc.fields["id"]?.get("stringValue")?.jsonPrimitive?.content
+                ?: doc.name?.substringAfterLast("/").orEmpty()
+            val title = doc.fields["title"]?.get("stringValue")?.jsonPrimitive?.content ?: return null
+            if (id.isBlank()) return null
+            val platformStr = doc.fields["platform"]?.get("stringValue")?.jsonPrimitive?.content
+            val platform = ConsolePlatform.fromPlatformString(platformStr) ?: ConsolePlatform.GAMECUBE
+            val statusStr = doc.fields["status"]?.get("stringValue")?.jsonPrimitive?.content
+                ?: doc.fields["collectionStatus"]?.get("stringValue")?.jsonPrimitive?.content
+            val status = CollectionStatus.fromString(statusStr)
+            val franchiseName = doc.fields["franchiseName"]?.get("stringValue")?.jsonPrimitive?.content.orEmpty()
+            val releaseYear = doc.fields["releaseYear"]?.get("stringValue")?.jsonPrimitive?.content.orEmpty()
+            val coverImageUrl = doc.fields["coverImageUrl"]?.get("stringValue")?.jsonPrimitive?.content
+            val spineImageUrl = doc.fields["spineImageUrl"]?.get("stringValue")?.jsonPrimitive?.content
+            val productCode = doc.fields["productCode"]?.get("stringValue")?.jsonPrimitive?.content
+            val barcode = doc.fields["barcode"]?.get("stringValue")?.jsonPrimitive?.content
+            val spottedLocation = doc.fields["spottedLocation"]?.get("stringValue")?.jsonPrimitive?.content.orEmpty()
+            val askingPriceChf = doc.fields["askingPriceChf"]?.get("doubleValue")?.jsonPrimitive?.content?.toDoubleOrNull()
+                ?: doc.fields["askingPriceChf"]?.get("integerValue")?.jsonPrimitive?.content?.toDoubleOrNull()
+            val targetPriceChf = doc.fields["targetPriceChf"]?.get("doubleValue")?.jsonPrimitive?.content?.toDoubleOrNull()
+                ?: doc.fields["targetPriceChf"]?.get("integerValue")?.jsonPrimitive?.content?.toDoubleOrNull()
+            val paidPriceChf = doc.fields["paidPriceChf"]?.get("doubleValue")?.jsonPrimitive?.content?.toDoubleOrNull()
+                ?: doc.fields["paidPriceChf"]?.get("integerValue")?.jsonPrimitive?.content?.toDoubleOrNull()
+            val languageStatusStr = doc.fields["languageStatus"]?.get("stringValue")?.jsonPrimitive?.content
+            val languageStatus = LanguageStatus.fromString(languageStatusStr)
+            val collectorVerdict = doc.fields["collectorVerdict"]?.get("stringValue")?.jsonPrimitive?.content.orEmpty()
+            val personalNotes = doc.fields["personalNotes"]?.get("stringValue")?.jsonPrimitive?.content.orEmpty()
+            val listingUrl = doc.fields["listingUrl"]?.get("stringValue")?.jsonPrimitive?.content
+            val updatedAt = doc.fields["updatedAt"]?.get("integerValue")?.jsonPrimitive?.content?.toLongOrNull() ?: 0L
+
+            GameItem(
+                id = id,
+                title = title,
+                franchiseName = franchiseName,
+                platform = platform,
+                releaseYear = releaseYear,
+                coverImageUrl = coverImageUrl,
+                spineImageUrl = spineImageUrl,
+                productCode = productCode,
+                barcode = barcode,
+                spottedLocation = spottedLocation,
+                askingPriceChf = askingPriceChf,
+                targetPriceChf = targetPriceChf,
+                paidPriceChf = paidPriceChf,
+                languageStatus = languageStatus,
+                collectorVerdict = collectorVerdict,
+                collectionStatus = status,
+                personalNotes = personalNotes,
+                listingUrl = listingUrl,
+                updatedAt = updatedAt
+            )
+        } catch (e: Exception) {
+            println("Failed to parse GameItem fields fallback: ${e.message}")
+            null
         }
     }
 

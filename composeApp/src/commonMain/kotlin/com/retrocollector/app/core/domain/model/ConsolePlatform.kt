@@ -1,8 +1,28 @@
 package com.retrocollector.app.core.domain.model
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-@Serializable
+object ConsolePlatformSerializer : KSerializer<ConsolePlatform> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("ConsolePlatform", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: ConsolePlatform) {
+        encoder.encodeString(value.name)
+    }
+
+    override fun deserialize(decoder: Decoder): ConsolePlatform {
+        val str = decoder.decodeString()
+        return ConsolePlatform.fromPlatformString(str) ?: ConsolePlatform.GAMECUBE
+    }
+}
+
+@Serializable(with = ConsolePlatformSerializer::class)
 enum class ConsolePlatform(
     val id: String,
     val displayName: String,

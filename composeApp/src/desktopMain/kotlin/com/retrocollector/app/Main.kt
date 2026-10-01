@@ -13,6 +13,10 @@ import java.awt.Taskbar
 import javax.imageio.ImageIO
 
 fun main() {
+    Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+        System.err.println("Uncaught exception on thread ${thread.name}: ${throwable.message}")
+        throwable.printStackTrace()
+    }
     System.setProperty("apple.awt.application.appearance", "system")
     setupMacDockIcon()
 
@@ -51,7 +55,7 @@ private fun setupMacDockIcon() {
 }
 
 private fun configureMacWindow(window: ComposeWindow) {
-    val osName = System.getProperty("os.name")?.lowercase() ?: ""
+    val osName = System.getProperty("os.name")?.lowercase().orEmpty()
     if (osName.contains("mac")) {
         window.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
         window.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
