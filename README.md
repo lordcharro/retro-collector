@@ -1,105 +1,110 @@
-# RetroCollector - Game Language & Edition Tracker (CH / PAL) 🎮
+# RetroCollector — Game Language & Edition Tracker (CH / PAL) 🎮
 
-Aplicação multi-plataforma construída em **Kotlin Multiplatform (Compose Multiplatform)** para colecionadores de consolas retro (**Nintendo 64, GameCube, PlayStation 3 e Nintendo Switch**) que vivem na **Suíça** ou compram no mercado europeu (PAL).
+A multiplatform app built with **Kotlin Multiplatform (Compose Multiplatform)** for retro game collectors focused on **Nintendo 64, GameCube, PlayStation 3, and Nintendo Switch** who live in **Switzerland** or buy from the European (PAL) market.
 
-Resolve o clássico problema dos lançamentos regionais em segunda mão no mercado suíço (Ricardo.ch, Tutti.ch, lojas e feiras da ladra), onde muitas cópias físicas da GameCube e PS3 são edições alemãs (USK) bloqueadas a alemão, identificando edições seguras com **áudio e texto em inglês**.
-
----
-
-## 🚀 Plataformas Suportadas (3-em-1 Partilhado)
-
-1. **📱 Android Nativo (`:androidApp`)**:
-   - APK de depuração já gerado em: `composeApp/build/outputs/apk/debug/composeApp-debug.apk`
-   - Integração com o menu de partilha do Android (`ACTION_SEND`): partilhe anúncios diretamente da app do Ricardo.ch para a app!
-2. **💻 Desktop macOS (`:desktopApp`)**:
-   - Executável UberJar gerado em: `composeApp/build/compose/jars/RetroCollector-macos-x64-1.0.0.jar`
-   - Execute com: `./gradlew :composeApp:run`
-3. **🌐 WebAssembly Wasm & Docker no Synology NAS (`:wasmJs`)**:
-   - Compilação Wasm de alto desempenho via Skiko / Canvas.
-   - Configuração pronta para Docker / Container Manager no Synology em `docker/docker-compose.yml` e `docker/nginx.conf`.
+It solves the classic second-hand regional release problem in the Swiss market (Ricardo.ch, Tutti.ch, flea markets) where many physical GameCube and PS3 copies are German USK editions locked to German-only audio, by identifying safe editions with **full English audio and text**.
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## 🚀 Supported Platforms (3-in-1 Shared Codebase)
 
-* **Kotlin 2.0 & Jetpack / Compose Multiplatform 1.6.11**
-* **Material 3 Adaptativo** (Dark Theme retro gaming, alto contraste)
-* **Google Gemini 2.0 / 1.5 Flash API** (com visão multimodal, OCR de códigos seriais na lombada e prompt especializado em lançamentos PAL)
-* **Firebase Cloud Firestore** (sincronização de jogos e chats em tempo real entre telemóvel e computador)
-* **Ktor Client 3.0** (chamadas REST e scraping multiplataforma de anúncios Ricardo.ch e Tutti.ch)
+1. **📱 Android (`:androidApp`)**
+   - Install the debug APK directly: `composeApp/build/outputs/apk/debug/composeApp-debug.apk`
+   - Integrated with the Android Share menu (`ACTION_SEND`): share a Ricardo.ch or Tutti.ch listing directly into the app.
+
+2. **💻 Desktop macOS (`:desktopApp`)**
+   - UberJar built at: `composeApp/build/compose/jars/RetroCollector-macos-x64-1.0.0.jar`
+   - Run with: `./gradlew :composeApp:run`
+
+3. **🌐 WebAssembly (Wasm) & Docker on Synology NAS (`:wasmJs`)**
+   - High-performance Wasm build via Skiko / Canvas.
+   - Ready-to-use Docker setup for Synology Container Manager in `docker/docker-compose.yml` and `docker/nginx.conf`.
+
+---
+
+## 🛠️ Tech Stack
+
+* **Kotlin 2.0 & Compose Multiplatform 1.6.11**
+* **Material 3 Adaptive** (dark retro gaming theme, high contrast)
+* **Google Gemini Flash API** (multimodal vision, spine serial OCR, PAL-specialised prompts)
+* **Firebase Cloud Firestore** (real-time game and chat sync across devices)
+* **Ktor Client 3.0** (multiplatform REST calls and listing scraping from Ricardo.ch / Tutti.ch)
 * **Kotlinx Serialization & Coroutines**
 
 ---
 
-## 📦 Como Executar e Utilizar
+## 📦 Getting Started
 
-### 1. No Mac (Desktop)
-Para abrir a aplicação nativa de janela no teu Mac:
+### 1. macOS Desktop
+
+Run the native window app:
 ```bash
 ./gradlew :composeApp:run
 ```
-Ou executar diretamente o JAR:
+Or run the JAR directly:
 ```bash
 java -jar "composeApp/build/compose/jars/RetroCollector-macos-x64-1.0.0.jar"
 ```
 
-### 2. No Telemóvel Android
-Instala o APK diretamente no teu telemóvel com adb:
+### 2. Android
+
+Install the debug APK via adb:
 ```bash
 adb install -r "composeApp/build/outputs/apk/debug/composeApp-debug.apk"
 ```
-Ou abre este projeto no **Android Studio** e seleciona o target `composeApp` para correr no teu dispositivo físico ou emulador.
+Or open this project in **Android Studio** and select the `composeApp` run target for your device or emulator.
 
-### 3. No Synology NAS (Docker Container)
-A pasta `docker/` contém tudo o que é necessário para servir a versão WebAssembly:
-1. No teu Mac, gera a distribuição:
+### 3. Synology NAS (Docker)
+
+The `docker/` folder contains everything needed to serve the WebAssembly build:
+
+1. Build the Wasm distribution on your Mac:
    ```bash
    ./gradlew :composeApp:wasmJsBrowserDistribution
    ```
-2. Copia a pasta `dist` resultante para o teu Synology.
-3. No **Container Manager** do Synology, inicia o `docker-compose.yml`:
+2. Copy the generated `dist` folder to your Synology.
+3. Start the container in **Synology Container Manager**:
    ```bash
    docker-compose up -d
    ```
-4. Acede ao teu tracker em `http://<IP_DO_SYNOLOGY>:8085`.
+4. Access the tracker at `http://<YOUR_SYNOLOGY_IP>:8085`.
 
 ---
 
-## 🔑 Configuração das Chaves (Gemini & Firebase)
+## 🔑 API Keys Setup (Gemini & Firebase)
 
-Na app, clica no ícone de engrenagem **⚙️ Definições**:
-1. **Gemini API Key**:
-   - Gera uma chave gratuita em [Google AI Studio](https://aistudio.google.com/).
-   - Cola no campo correspondente e clica em **Testar Chave Gemini**.
-2. **Firebase Firestore**:
-   - Cria um projeto gratuito no [Firebase Console](https://console.firebase.google.com/).
-   - Ativa o **Cloud Firestore** em modo de teste ou com regras de leitura/escrita.
-   - Introduz o teu **Firebase Project ID** nas definições.
-   > ⚠️ **Nota de segurança:** O modo de teste abre a base de dados a leituras/escritas públicas. Para uso pessoal num ambiente controlado é aceitável, mas configura [Regras de Segurança Firestore](https://firebase.google.com/docs/firestore/security/get-started) adequadas antes de partilhares o teu Project ID com terceiros ou usares em produção.
+In the app, tap the gear icon **⚙️ Settings**:
 
----
+1. **Gemini API Key**
+   - Generate a free key at [Google AI Studio](https://aistudio.google.com/).
+   - Paste it in the corresponding field and tap **Test Gemini Key**.
 
-## 🔍 Como Funciona a Deteção de Idioma
-
-A app tem um prompt de sistema rigoroso treinado nas peculiaridades do mercado PAL europeu:
-* **PS3**: Identifica códigos `BLES-xxxxx` na lombada. Emite alertas para códigos USK da região DACH (ex: *Fallout 3 BLES-00561* sem inglês) e sugere a versão britânica (*BLES-00344*).
-* **GameCube**: Distingue entre `DOL-P-xxxx-(NOE)` (muitas vezes apenas alemão) e `DOL-P-xxxx-(UKV/EUR)` (multi-5 ou inglês garantido).
-* **N64**: Mapeia cartuchos europeus `NUS-xxxx-EUR`.
-* **Switch**: Valida se o cartucho europeu inclui áudio em inglês.
-* **Conversa Contextual**: Cada jogo ou franquia tem o seu próprio histórico de chat guardado para que possas colocar perguntas de seguimento a qualquer momento.
+2. **Firebase Firestore**
+   - Create a free project at the [Firebase Console](https://console.firebase.google.com/).
+   - Enable **Cloud Firestore** in test mode or with read/write rules.
+   - Enter your **Firebase Project ID** in Settings.
+   > ⚠️ **Security note:** Test mode leaves the database publicly readable and writable. This is fine for personal use in a controlled environment, but configure proper [Firestore Security Rules](https://firebase.google.com/docs/firestore/security/get-started) before sharing your Project ID or using in production.
 
 ---
 
-## ⚖️ Aviso Legal / Legal Disclaimer
+## 🔍 How Language Detection Works
 
-A funcionalidade de leitura de anúncios desta aplicação acede a páginas públicas de Ricardo.ch, Tutti.ch, Anibis.ch e eBay para extrair informação de listagens partilhadas pelo utilizador. Esta funcionalidade é fornecida **para conveniência pessoal e uso educativo**. Os utilizadores são os **únicos responsáveis** pelo cumprimento dos Termos de Serviço de cada plataforma. O autor não incentiva nem apoia qualquer uso que viole os termos dessas plataformas.
+The app uses a system prompt specialised in European PAL market quirks:
 
-> The listing reader feature fetches publicly accessible pages from Ricardo.ch, Tutti.ch, Anibis.ch, and eBay. This is provided for **personal convenience and educational purposes only**. Users are **solely responsible** for complying with each platform's Terms of Service. The author does not encourage or endorse any use that violates those terms.
+* **PS3**: Identifies `BLES-xxxxx` codes on the spine. Flags USK/DACH region codes that lack English audio (e.g. *Fallout 3 BLES-00561*) and suggests the UK version (*BLES-00344*).
+* **GameCube**: Distinguishes between `DOL-P-xxxx-(NOE)` (often German-only) and `DOL-P-xxxx-(UKV/EUR)` (multi-5 or guaranteed English).
+* **N64**: Maps European `NUS-xxxx-EUR` cartridges.
+* **Switch**: Validates whether the European cartridge includes English audio.
+* **Contextual Chat**: Every game or franchise keeps its own conversation history so you can ask follow-up questions at any time.
 
 ---
 
-## 📜 Licença / License
+## ⚖️ Legal Disclaimer
 
-Este projeto está licenciado sob a **Licença MIT** — consulta o ficheiro [LICENSE](LICENSE) para mais detalhes.
+The listing reader feature fetches publicly accessible pages from Ricardo.ch, Tutti.ch, Anibis.ch, and eBay to extract metadata from links shared by the user. This is provided for **personal convenience and educational purposes only**. Users are **solely responsible** for complying with each platform's Terms of Service. The author does not encourage or endorse any use that violates those terms.
+
+---
+
+## 📜 License
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
