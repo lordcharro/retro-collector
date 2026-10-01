@@ -18,13 +18,13 @@ import org.junit.jupiter.api.Test
 
 class DiscoveryViewModelTest {
 
-    private class FakeRepository(
+    private open class FakeRepository(
         private val discoveredList: List<DiscoveredGameItem> = emptyList()
     ) : IGameRepository {
         private val _savedGames = MutableStateFlow<List<GameItem>>(emptyList())
         override val games: StateFlow<List<GameItem>> = _savedGames.asStateFlow()
         override val chatMessages: StateFlow<List<ChatMessage>> = MutableStateFlow<List<ChatMessage>>(emptyList()).asStateFlow()
-        override val settings: StateFlow<AppSettings> = MutableStateFlow(AppSettings()).asStateFlow()
+        override open val settings: StateFlow<AppSettings> = MutableStateFlow(AppSettings()).asStateFlow()
 
         override fun getGameById(id: String): GameItem? = _savedGames.value.find { it.id == id }
         override fun upsertGame(game: GameItem) {

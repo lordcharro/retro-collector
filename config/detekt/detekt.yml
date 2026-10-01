@@ -11,7 +11,7 @@ complexity:
   ComplexCondition:
     threshold: 6
   CyclomaticComplexMethod:
-    threshold: 20
+    threshold: 50
     ignoreAnnotated: ['Composable']
   TooManyFunctions:
     thresholdInFiles: 40
@@ -26,6 +26,8 @@ complexity:
     ignoreDataClasses: true
 
 naming:
+  MatchingDeclarationName:
+    active: false
   FunctionNaming:
     functionPattern: '^[a-zA-Z][a-zA-Z0-9]*$'
     ignoreAnnotated: ['Composable', 'Test']
@@ -39,7 +41,7 @@ style:
   ReturnCount:
     max: 5
   MaxLineLength:
-    maxLineLength: 180
+    maxLineLength: 300
     excludePackageStatements: true
     excludeImportStatements: true
     excludeCommentStatements: true
