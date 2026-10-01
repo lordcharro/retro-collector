@@ -42,6 +42,7 @@ jobs:
         with:
           name: detekt-report
           path: composeApp/build/reports/detekt/
+          if-no-files-found: ignore
 
   test:
     name: Unit & Architecture Tests
@@ -74,6 +75,7 @@ jobs:
         with:
           name: test-report
           path: composeApp/build/reports/tests/
+          if-no-files-found: ignore
 
   build-check:
     name: Compile (KMP — all targets)

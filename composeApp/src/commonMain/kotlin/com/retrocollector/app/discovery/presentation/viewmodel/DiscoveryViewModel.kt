@@ -1,6 +1,5 @@
 package com.retrocollector.app.discovery.presentation.viewmodel
 
-import com.retrocollector.app.core.data.datasource.CuratedDiscoveryDataSource
 import com.retrocollector.app.core.domain.model.CollectionStatus
 import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.DiscoveredGameItem
@@ -33,34 +32,18 @@ class DiscoveryViewModel(
                 _uiState.update { it.copy(isAutoDiscoveryEnabled = settings.isAutoDiscoveryEnabled) }
             }
         }
-        if (repository.settings.value.isAutoDiscoveryEnabled) {
-            fetchDiscoveryGames()
-        } else {
-            loadLocalCuratedGames()
-        }
-    }
-
-    private fun loadLocalCuratedGames() {
-        val currentGenre = _uiState.value.selectedGenre
-        val currentPlatform = _uiState.value.selectedPlatform
-        val currentQuery = _uiState.value.searchQuery
-        val local = CuratedDiscoveryDataSource.getFilteredCatalog(currentGenre, currentPlatform, currentQuery)
-        _uiState.update { it.copy(discoveredGames = local, isDiscovering = false) }
+        fetchDiscoveryGames(forceRefresh = false)
     }
 
     fun onGenreSelect(genre: GameGenre) {
         _uiState.update { it.copy(selectedGenre = genre) }
-        if (repository.settings.value.isAutoDiscoveryEnabled) {
-            fetchDiscoveryGames()
-        } else {
-            loadLocalCuratedGames()
-        }
+        fetchDiscoveryGames(forceRefresh = false)
     }
 
     fun onQueryChange(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
         if (!repository.settings.value.isAutoDiscoveryEnabled) {
-            loadLocalCuratedGames()
+            fetchDiscoveryGames(forceRefresh = false)
         }
     }
 
@@ -74,11 +57,7 @@ class DiscoveryViewModel(
             val newPlat = if (it.selectedPlatform == platform) null else platform
             it.copy(selectedPlatform = newPlat)
         }
-        if (repository.settings.value.isAutoDiscoveryEnabled) {
-            fetchDiscoveryGames()
-        } else {
-            loadLocalCuratedGames()
-        }
+        fetchDiscoveryGames(forceRefresh = false)
     }
 
     fun addToWishlist(discovered: DiscoveredGameItem, targetPriceChf: Double? = null) {

@@ -136,7 +136,7 @@ detekt {
             "src/commonMain/kotlin",
             "src/desktopMain/kotlin",
             "src/androidMain/kotlin",
-            "src/desktopTest/kotlin"
+            "src/wasmJsMain/kotlin"
         )
     )
 }
@@ -147,7 +147,7 @@ tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
             "src/commonMain/kotlin",
             "src/desktopMain/kotlin",
             "src/androidMain/kotlin",
-            "src/desktopTest/kotlin"
+            "src/wasmJsMain/kotlin"
         )
     )
     reports {
