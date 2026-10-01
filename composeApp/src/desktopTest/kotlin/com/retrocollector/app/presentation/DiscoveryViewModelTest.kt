@@ -76,6 +76,24 @@ class DiscoveryViewModelTest {
             return Result.success(result)
         }
 
+        override fun getCuratedGames(
+            genre: GameGenre?,
+            platform: ConsolePlatform?,
+            query: String?
+        ): List<DiscoveredGameItem> {
+            var result = discoveredList
+            if (genre != null && genre != GameGenre.ALL) {
+                result = result.filter { it.genreDisplayName.contains(genre.displayName, ignoreCase = true) || it.genreTags.contains(genre.displayName) }
+            }
+            if (platform != null) {
+                result = result.filter { it.platform == platform }
+            }
+            if (!query.isNullOrBlank()) {
+                result = result.filter { it.title.contains(query, ignoreCase = true) }
+            }
+            return result
+        }
+
         override suspend fun getSimilarGames(
             game: GameItem,
             forceRefresh: Boolean
@@ -109,7 +127,8 @@ class DiscoveryViewModelTest {
         repository = FakeRepository(sampleDiscovered)
 
         viewModel = DiscoveryViewModel(
-            discoverGamesUseCase = DiscoverGamesUseCase(repository),
+            discoverGamesUseCase = com.retrocollector.app.discovery.domain.usecase.DiscoverGamesUseCase(repository),
+            getCuratedGamesUseCase = com.retrocollector.app.discovery.domain.usecase.GetCuratedGamesUseCase(repository),
             saveGameUseCase = SaveGameUseCase(repository),
             repository = repository,
             dispatcher = Dispatchers.Unconfined,
@@ -159,7 +178,8 @@ class DiscoveryViewModelTest {
             override val settings: StateFlow<AppSettings> = MutableStateFlow(AppSettings(isAutoDiscoveryEnabled = true)).asStateFlow()
         }
         val autoVm = DiscoveryViewModel(
-            discoverGamesUseCase = DiscoverGamesUseCase(autoRepo),
+            discoverGamesUseCase = com.retrocollector.app.discovery.domain.usecase.DiscoverGamesUseCase(autoRepo),
+            getCuratedGamesUseCase = com.retrocollector.app.discovery.domain.usecase.GetCuratedGamesUseCase(autoRepo),
             saveGameUseCase = SaveGameUseCase(autoRepo),
             repository = autoRepo,
             dispatcher = Dispatchers.Unconfined,

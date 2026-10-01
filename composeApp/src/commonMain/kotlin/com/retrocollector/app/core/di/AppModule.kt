@@ -10,6 +10,7 @@ import com.retrocollector.app.dashboard.domain.usecase.GetDashboardGamesUseCase
 import com.retrocollector.app.dashboard.domain.usecase.SaveGameUseCase
 import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardViewModel
 import com.retrocollector.app.discovery.domain.usecase.DiscoverGamesUseCase
+import com.retrocollector.app.discovery.domain.usecase.GetCuratedGamesUseCase
 import com.retrocollector.app.discovery.domain.usecase.GetSimilarGamesUseCase
 import com.retrocollector.app.discovery.presentation.viewmodel.DiscoveryViewModel
 import com.retrocollector.app.dossier.domain.usecase.SendFollowUpChatUseCase
@@ -55,6 +56,7 @@ val domainModule = module {
     factory { TestGeminiConnectionUseCase(get()) }
     factory { GetSimilarGamesUseCase(get()) }
     factory { DiscoverGamesUseCase(get()) }
+    factory { GetCuratedGamesUseCase(get()) }
     factory { ImportWishlistUseCase(get()) }
     factory { EnrichWishlistGameUseCase(get()) }
 }
@@ -76,6 +78,7 @@ val presentationModule = module {
     factory {
         DiscoveryViewModel(
             discoverGamesUseCase = get(),
+            getCuratedGamesUseCase = get(),
             saveGameUseCase = get(),
             repository = get()
         )

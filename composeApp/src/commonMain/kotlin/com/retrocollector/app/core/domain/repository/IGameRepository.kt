@@ -45,4 +45,10 @@ interface IGameRepository {
         game: GameItem,
         forceRefresh: Boolean = false
     ): Result<List<com.retrocollector.app.core.domain.model.DiscoveredGameItem>>
+
+    fun getCuratedGames(
+        genre: com.retrocollector.app.core.domain.model.GameGenre? = null,
+        platform: com.retrocollector.app.core.domain.model.ConsolePlatform? = null,
+        query: String? = null
+    ): List<com.retrocollector.app.core.domain.model.DiscoveredGameItem> = emptyList()
 }

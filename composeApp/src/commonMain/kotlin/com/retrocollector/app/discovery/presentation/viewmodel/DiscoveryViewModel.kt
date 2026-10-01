@@ -7,6 +7,7 @@ import com.retrocollector.app.core.domain.model.GameGenre
 import com.retrocollector.app.core.domain.repository.IGameRepository
 import com.retrocollector.app.dashboard.domain.usecase.SaveGameUseCase
 import com.retrocollector.app.discovery.domain.usecase.DiscoverGamesUseCase
+import com.retrocollector.app.discovery.domain.usecase.GetCuratedGamesUseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 
 class DiscoveryViewModel(
     private val discoverGamesUseCase: DiscoverGamesUseCase,
+    private val getCuratedGamesUseCase: GetCuratedGamesUseCase,
     private val saveGameUseCase: SaveGameUseCase,
     private val repository: IGameRepository,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
@@ -32,18 +34,38 @@ class DiscoveryViewModel(
                 _uiState.update { it.copy(isAutoDiscoveryEnabled = settings.isAutoDiscoveryEnabled) }
             }
         }
-        fetchDiscoveryGames(forceRefresh = false)
+        if (repository.settings.value.isAutoDiscoveryEnabled) {
+            fetchDiscoveryGames(forceRefresh = false)
+        } else {
+            loadLocalCuratedGames()
+        }
+    }
+
+    private fun loadLocalCuratedGames() {
+        val currentGenre = _uiState.value.selectedGenre
+        val currentPlatform = _uiState.value.selectedPlatform
+        val currentQuery = _uiState.value.searchQuery
+        val local = getCuratedGamesUseCase(
+            genre = currentGenre,
+            platform = currentPlatform,
+            query = currentQuery
+        )
+        _uiState.update { it.copy(discoveredGames = local, isDiscovering = false) }
     }
 
     fun onGenreSelect(genre: GameGenre) {
         _uiState.update { it.copy(selectedGenre = genre) }
-        fetchDiscoveryGames(forceRefresh = false)
+        if (repository.settings.value.isAutoDiscoveryEnabled) {
+            fetchDiscoveryGames(forceRefresh = false)
+        } else {
+            loadLocalCuratedGames()
+        }
     }
 
     fun onQueryChange(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
         if (!repository.settings.value.isAutoDiscoveryEnabled) {
-            fetchDiscoveryGames(forceRefresh = false)
+            loadLocalCuratedGames()
         }
     }
 
@@ -57,7 +79,11 @@ class DiscoveryViewModel(
             val newPlat = if (it.selectedPlatform == platform) null else platform
             it.copy(selectedPlatform = newPlat)
         }
-        fetchDiscoveryGames(forceRefresh = false)
+        if (repository.settings.value.isAutoDiscoveryEnabled) {
+            fetchDiscoveryGames(forceRefresh = false)
+        } else {
+            loadLocalCuratedGames()
+        }
     }
 
     fun addToWishlist(discovered: DiscoveredGameItem, targetPriceChf: Double? = null) {

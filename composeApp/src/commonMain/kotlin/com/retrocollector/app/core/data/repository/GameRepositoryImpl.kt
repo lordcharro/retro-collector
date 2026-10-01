@@ -454,6 +454,15 @@ class GameRepositoryImpl(
         )
     }
 
+    override fun getCuratedGames(
+        genre: GameGenre?,
+        platform: ConsolePlatform?,
+        query: String?
+    ): List<DiscoveredGameItem> {
+        val list = CuratedDiscoveryDataSource.getFilteredCatalog(genre, platform, query)
+        return enrichWithUserCollection(list)
+    }
+
     private fun enrichWithUserCollection(items: List<DiscoveredGameItem>): List<DiscoveredGameItem> {
         val currentGames = _games.value
         return items.map { item ->
