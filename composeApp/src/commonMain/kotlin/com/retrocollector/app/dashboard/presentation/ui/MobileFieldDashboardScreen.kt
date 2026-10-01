@@ -107,36 +107,13 @@ fun MobileFieldDashboardScreen(
             }
         },
         bottomBar = {
-            NavigationBar(
-                containerColor = SurfaceCard,
-                tonalElevation = 8.dp
-            ) {
-                AppSection.entries.forEach { section ->
-                    NavigationBarItem(
-                        selected = state.activeSection == section,
-                        onClick = { actions.onSectionSelect(section) },
-                        icon = { Text(section.icon, fontSize = 18.sp) },
-                        label = { Text(section.label, style = LabelFilterStyle) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = AccentBlue,
-                            selectedTextColor = AccentBlue,
-                            indicatorColor = SurfaceElevated
-                        )
-                    )
-                }
-
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { actions.onOpenSettings() },
-                    icon = { Text("⚙️", fontSize = 18.sp) },
-                    label = { Text(TextKeys.Navigation.TAB_SETTINGS, style = LabelFilterStyle) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = AccentBlue,
-                        selectedTextColor = AccentBlue,
-                        indicatorColor = SurfaceElevated
-                    )
-                )
-            }
+            TactileBottomNavigation(
+                activeSection = state.activeSection,
+                wishlistCount = wishlistState.allWishlistCount,
+                collectionCount = state.collectionGames.size,
+                onSectionSelect = actions.onSectionSelect,
+                onOpenSettings = actions.onOpenSettings
+            )
         }
     ) { paddingValues ->
         if (state.activeSection == AppSection.DISCOVER) {
