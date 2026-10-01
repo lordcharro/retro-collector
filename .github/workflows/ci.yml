@@ -99,8 +99,5 @@ jobs:
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts', '**/libs.versions.toml') }}
           restore-keys: gradle-${{ runner.os }}-
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Compile all KMP targets
-        run: ./gradlew :composeApp:compileKotlinDesktop :composeApp:compileKotlinAndroid :composeApp:compileKotlinWasmJs --no-daemon
+        run: ./gradlew :composeApp:compileKotlinDesktop :composeApp:compileDebugKotlinAndroid :composeApp:compileKotlinWasmJs --no-daemon
