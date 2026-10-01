@@ -7,6 +7,13 @@ import kotlinx.serialization.Serializable
 val defaultPinnedPlatformIds = listOf("n64", "gamecube", "ps3", "switch")
 
 @Serializable
+enum class ThemeMode(val displayName: String, val icon: String) {
+    DARK("Dark", "🌙"),
+    LIGHT("Light", "☀️"),
+    SYSTEM("System", "🖥️")
+}
+
+@Serializable
 data class AppSettings(
     val geminiApiKey: String = "",
     val geminiModel: String = "gemini-3.7-flash",
@@ -18,7 +25,8 @@ data class AppSettings(
     val selectedPlatformFilter: ConsolePlatform? = null,
     val onlyEnglishFilter: Boolean = false,
     val statusFilter: CollectionStatus? = null,
-    val pinnedPlatformIds: List<String> = defaultPinnedPlatformIds
+    val pinnedPlatformIds: List<String> = defaultPinnedPlatformIds,
+    val themeMode: ThemeMode = ThemeMode.DARK
 ) {
     fun isPlatformPinned(platform: ConsolePlatform): Boolean =
         pinnedPlatformIds.any { it.equals(platform.id, ignoreCase = true) }

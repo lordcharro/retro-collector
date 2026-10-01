@@ -66,21 +66,6 @@ fun MobileGameDetailScreen(
                     Text("← " + TextKeys.Navigation.BACK, color = AccentBlue, style = LabelFilterStyle)
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.weight(1f, fill = false).padding(horizontal = 6.dp)
-                ) {
-                    Text(
-                        text = game.title,
-                        style = HeadlineSm,
-                        color = TextPrimary,
-                        maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                    )
-                    PlatformBadge(platform = game.platform)
-                }
-
                 var showDeleteConfirm by remember(game.id) { mutableStateOf(false) }
 
                 IconButton(
@@ -119,7 +104,46 @@ fun MobileGameDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(vertical = 12.dp)
             ) {
-                // Estado da Coleção (Wishlist, Owned, Pass)
+                // Game Title & Platform Header
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = game.title,
+                            style = HeadlineMd,
+                            color = TextPrimary,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            PlatformBadge(platform = game.platform)
+                            if (game.releaseYear.isNotBlank()) {
+                                Text(
+                                    text = "•  ${game.releaseYear}",
+                                    style = BodySm,
+                                    color = TextSecondary
+                                )
+                            }
+                            if (game.spottedLocation.isNotBlank()) {
+                                Text(
+                                    text = "•  ${game.spottedLocation}",
+                                    style = CodeSkuStyle.copy(fontSize = 11.sp),
+                                    color = StatusUnverifiedFg,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Collection Status (Wishlist, Owned, Pass)
                 item {
                     CollectionStatusSelector(
                         currentStatus = game.collectionStatus,
@@ -128,7 +152,7 @@ fun MobileGameDetailScreen(
                     )
                 }
 
-                // Campo de Preço de Aquisição (apenas quando Owned)
+                // Purchase Price Field (when Owned)
                 if (game.collectionStatus == CollectionStatus.OWNED) {
                     item {
                         Surface(
@@ -180,7 +204,7 @@ fun MobileGameDetailScreen(
                     }
                 }
 
-                // Matriz de SKUs Seguros vs de Risco
+                // Safe vs Risky SKU Matrix
                 item {
                     SafeSkuMatrixView(
                         safeSkus = game.safeSkus,
@@ -188,7 +212,7 @@ fun MobileGameDetailScreen(
                     )
                 }
 
-                // Ficha Técnica do Jogo
+                // Game Technical Details
                 item {
                     Surface(
                         shape = RoundedCornerShape(6.dp),
@@ -255,7 +279,7 @@ fun MobileGameDetailScreen(
                                         .padding(10.dp)
                                 ) {
                                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        Text(text = "VEREDICTO DE MERCADO", style = LabelFilterStyle, color = AccentBlue)
+                                        Text(text = "MARKET VERDICT", style = LabelFilterStyle, color = AccentBlue)
                                         Text(text = game.collectorVerdict, style = BodySm, color = TextPrimary)
                                     }
                                 }
@@ -264,7 +288,7 @@ fun MobileGameDetailScreen(
                     }
                 }
 
-                // Prateleira de Jogos Semelhantes
+                // Shelf of Similar Games
                 item {
                     SimilarGamesShelf(
                         similarGames = similarGames,
@@ -275,7 +299,7 @@ fun MobileGameDetailScreen(
                     )
                 }
 
-                // Chat com Gemini Flash
+                // Chat with Gemini Flash
                 item {
                     Text(text = "💬 " + TextKeys.Dossier.CHAT_TITLE, style = HeadlineSm, color = TextPrimary)
                 }
@@ -299,7 +323,7 @@ fun MobileGameDetailScreen(
                                 strokeWidth = 2.dp
                             )
                             Text(
-                                text = "Gemini a analisar verificação regional...",
+                                text = "Gemini is analyzing regional verification...",
                                 style = BodySm.copy(fontSize = 12.sp),
                                 color = StatusEnglishFg
                             )
@@ -308,7 +332,7 @@ fun MobileGameDetailScreen(
                 }
             }
 
-            // Input inferior de mensagem
+            // Bottom message input
             Surface(
                 color = SurfaceCard,
                 border = BorderStroke(1.dp, BorderSubtle),
@@ -393,20 +417,20 @@ fun MobileGameDetailScreenPreview() {
             riskySkus = listOf(
                 SkuInfo(code = "DOL-P-G4BD", region = "NOE", editionNote = "German text & subs only", isSafe = false)
             ),
-            collectorVerdict = "Edição UKV/EUR recomendada com legendas multilíngues completas. Evitar versão alemã com censura em modos bónus."
+            collectorVerdict = "UKV/EUR edition recommended with full multilingual subtitles. Avoid German version with censored bonus modes."
         )
         val sampleMessages = listOf(
             ChatMessage(
                 id = "msg_1",
                 contextId = "gc_re4",
                 sender = MessageSender.USER,
-                text = "Qual é o melhor SKU europeu para ter inglês completo?"
+                text = "Which European SKU is best for full English support?"
             ),
             ChatMessage(
                 id = "msg_2",
                 contextId = "gc_re4",
                 sender = MessageSender.GEMINI,
-                text = "O SKU DOL-P-G4BE (UKV) ou DOL-P-G4BP (EUR) contém o áudio original em inglês e texto multilíngue sem censura."
+                text = "SKU DOL-P-G4BE (UKV) or DOL-P-G4BP (EUR) contains original English voiceover and uncut multilingual text."
             )
         )
         MobileGameDetailScreen(

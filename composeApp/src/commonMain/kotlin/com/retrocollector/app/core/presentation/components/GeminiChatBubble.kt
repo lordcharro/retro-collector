@@ -25,7 +25,7 @@ fun GeminiChatBubble(
     modifier: Modifier = Modifier
 ) {
     if (message.sender == MessageSender.USER) {
-        // Balão de Mensagem do Utilizador
+        // User Message Bubble
         Box(
             modifier = modifier
                 .fillMaxWidth()
@@ -55,13 +55,13 @@ fun GeminiChatBubble(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(text = "📷", fontSize = 12.sp)
-                        Text(text = "Foto de Lombada Anexada", style = CodeSkuStyle.copy(fontSize = 11.sp), color = TextSecondary)
+                        Text(text = "Attached Spine Photo", style = CodeSkuStyle.copy(fontSize = 11.sp), color = TextSecondary)
                     }
                 }
             }
         }
     } else {
-        // Cartão de Resposta do Gemini
+        // Gemini Response Card
         Box(
             modifier = modifier
                 .fillMaxWidth()
@@ -74,7 +74,7 @@ fun GeminiChatBubble(
                     .background(SurfaceCard, RoundedCornerShape(8.dp))
                     .border(1.dp, BorderSubtle, RoundedCornerShape(8.dp))
             ) {
-                // Barra de Topo do Gemini
+                // Gemini Top Bar
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -110,7 +110,7 @@ fun GeminiChatBubble(
                     modifier = Modifier.padding(14.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    // Caixa de Alerta de Censura / Risco se existir
+                    // Censorship / Risk Alert Box if present
                     message.suggestedGameUpdate?.censorshipWarning?.let { warning ->
                         if (warning.isNotBlank()) {
                             Column(
@@ -121,7 +121,7 @@ fun GeminiChatBubble(
                                     .padding(10.dp)
                             ) {
                                 Text(
-                                    text = "⚠️ Alerta de Censura ou Bloqueio Regional",
+                                    text = "⚠️ Censorship or Regional Lock Warning",
                                     style = HeadlineSm,
                                     color = StatusRiskFg
                                 )
@@ -135,7 +135,7 @@ fun GeminiChatBubble(
                         }
                     }
 
-                    // Veredito de Colecionador em Destaque
+                    // Featured Collector Verdict
                     message.suggestedGameUpdate?.collectorVerdict?.let { verdict ->
                         if (verdict.isNotBlank()) {
                             Column(
@@ -160,7 +160,7 @@ fun GeminiChatBubble(
                         }
                     }
 
-                    // Texto da Resposta
+                    // Response Text
                     Text(
                         text = message.text,
                         style = BodyMd,
@@ -185,7 +185,7 @@ fun GeminiChatBubblePreview() {
                     id = "1",
                     contextId = "gc_re4",
                     sender = MessageSender.USER,
-                    text = "Existe alguma diferença entre as edições UK e NOE deste jogo?",
+                    text = "Is there any difference between UK and NOE editions for this game?",
                     imageBase64 = "mock_base64_data"
                 )
             )
@@ -194,13 +194,13 @@ fun GeminiChatBubblePreview() {
                     id = "2",
                     contextId = "gc_re4",
                     sender = MessageSender.GEMINI,
-                    text = "A edição UK possui o SKU DOL-P-G4BE com áudio e texto em inglês completo. A edição NOE possui texto exclusivamente em alemão.",
+                    text = "The UK edition has SKU DOL-P-G4BE with full English audio and text. The NOE edition is German language only.",
                     suggestedGameUpdate = GameItem(
                         id = "gc_re4",
                         title = "Resident Evil 4",
                         platform = ConsolePlatform.GAMECUBE,
-                        collectorVerdict = "Edição UKV/EUR recomendada com legendas multilíngues completas. Evitar versão alemã (NOE) com censura nos modos bónus.",
-                        censorshipWarning = "A versão alemã (NOE) removeu o Assignment Ada e The Mercenaries."
+                        collectorVerdict = "UKV/EUR edition recommended with full multilingual subtitles. Avoid German (NOE) version with censored bonus modes.",
+                        censorshipWarning = "The German (NOE) release removed Assignment Ada and The Mercenaries."
                     )
                 )
             )

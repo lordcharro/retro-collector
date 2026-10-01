@@ -31,7 +31,7 @@ fun TactileConfirmDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    dismissLabel: String = "Cancelar",
+    dismissLabel: String = "Cancel",
     isDestructive: Boolean = false
 ) {
     AlertDialog(
@@ -89,9 +89,9 @@ fun TactileConfirmDialog(
 fun TactileConfirmDialogPreview() {
     RetroTactileTheme {
         TactileConfirmDialog(
-            title = "Eliminar Jogo",
-            message = "Tem a certeza de que deseja remover este jogo?",
-            confirmLabel = "Eliminar",
+            title = "Delete Game",
+            message = "Are you sure you want to remove this game?",
+            confirmLabel = "Delete",
             isDestructive = true,
             onConfirm = {},
             onDismiss = {}

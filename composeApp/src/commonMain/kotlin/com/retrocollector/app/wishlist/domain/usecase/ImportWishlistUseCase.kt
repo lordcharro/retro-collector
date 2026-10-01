@@ -34,7 +34,7 @@ class ImportWishlistUseCase(
                 val (title, platform) = parsed
                 val normalizedTitle = normalizeTitle(title)
 
-                // Verificar duplicados por título normalizado + plataforma
+                // Verify duplicates by normalized title + platform
                 val isDuplicate = existingGames.any { game ->
                     normalizeTitle(game.title) == normalizedTitle &&
                         game.platform == platform
@@ -68,7 +68,7 @@ class ImportWishlistUseCase(
     }
 
     private fun parseLine(line: String): Pair<String, ConsolePlatform>? {
-        // Suporta formatos: "titulo, plataforma" ou "titulo - plataforma"
+        // Supports formats: "title, platform" or "title - platform"
         val parts = when {
             line.contains(',') -> line.split(',', limit = 2)
             line.contains(" - ") -> line.split(" - ", limit = 2)

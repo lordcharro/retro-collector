@@ -20,9 +20,9 @@ import com.retrocollector.app.wishlist.domain.usecase.ImportResult
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
- * Dialog modal para importação de jogos na Wishlist via CSV.
- * Suporta input multilinha, preview dos jogos parseados,
- * e mostra progresso de enriquecimento com IA.
+ * Modal Dialog for importing games into the Wishlist via CSV.
+ * Supports multi-line input, preview of parsed games,
+ * and displays AI enrichment progress.
  */
 @Composable
 fun ImportWishlistDialog(
@@ -48,21 +48,21 @@ fun ImportWishlistDialog(
                 modifier = Modifier.padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Título
+                // Title
                 Text(
                     text = TextKeys.Wishlist.IMPORT_DIALOG_TITLE,
                     style = HeadlineMd,
                     color = TextPrimary
                 )
 
-                // Dica de formato
+                // Format Hint
                 Text(
                     text = TextKeys.Wishlist.IMPORT_FORMAT_HINT,
                     style = BodySm.copy(fontSize = 12.sp),
                     color = StatusUnverifiedFg
                 )
 
-                // Exemplo
+                // Example
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -77,7 +77,7 @@ fun ImportWishlistDialog(
                     )
                 }
 
-                // Campo de texto multilinha para CSV
+                // Multiline text field for CSV
                 TactileTextField(
                     value = csvText,
                     onValueChange = { csvText = it },
@@ -89,7 +89,7 @@ fun ImportWishlistDialog(
                         .height(140.dp)
                 )
 
-                // Resultado da importação (se existir)
+                // Import Result (if present)
                 if (importResult != null) {
                     Column(
                         modifier = Modifier
@@ -136,7 +136,7 @@ fun ImportWishlistDialog(
                     }
                 }
 
-                // Progresso de enriquecimento
+                // Enrichment Progress
                 if (enrichmentProgress != null) {
                     val (completed, total) = enrichmentProgress
                     Column(
@@ -167,7 +167,7 @@ fun ImportWishlistDialog(
                     }
                 }
 
-                // Botões de ação
+                // Action Buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)

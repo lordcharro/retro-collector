@@ -14,14 +14,18 @@ import com.retrocollector.app.wishlist.presentation.viewmodel.WishlistViewModel
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+
 @Composable
 fun App() {
     KoinApplication(application = { modules(appModules) }) {
         val dashboardViewModel = koinInject<DashboardViewModel>()
         val discoveryViewModel = koinInject<DiscoveryViewModel>()
         val wishlistViewModel = koinInject<WishlistViewModel>()
+        val dashboardState by dashboardViewModel.uiState.collectAsState()
 
-        RetroTactileTheme {
+        RetroTactileTheme(themeMode = dashboardState.settings.themeMode) {
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = SurfaceBase

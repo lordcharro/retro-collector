@@ -19,8 +19,8 @@ import com.retrocollector.app.core.presentation.util.PriceFormatter
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
- * Barra de estatísticas da coleção pessoal.
- * Mostra contagem de jogos e valor total em CHF.
+ * Personal collection statistics bar.
+ * Displays game count and total collection value in active currency.
  */
 @Composable
 fun CollectionStatsBar(
@@ -44,7 +44,7 @@ fun CollectionStatsBar(
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Contagem de jogos
+        // Game count
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -57,7 +57,7 @@ fun CollectionStatsBar(
             )
         }
 
-        // Valor total
+        // Total value
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)

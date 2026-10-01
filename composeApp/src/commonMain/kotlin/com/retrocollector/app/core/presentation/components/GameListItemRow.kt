@@ -44,16 +44,16 @@ fun GameListItemRow(
             .background(rowBg)
             .semantics(mergeDescendants = true) {
                 role = Role.Button
-                contentDescription = "${game.title}, Plataforma ${game.platform.displayName}, ${game.languageStatus.label}"
-                stateDescription = if (isSelected) "Selecionado" else "Não selecionado"
-                onClick(label = "Abrir dossiê de ${game.title}") {
+                contentDescription = "${game.title}, Platform ${game.platform.displayName}, ${game.languageStatus.label}"
+                stateDescription = if (isSelected) "Selected" else "Not selected"
+                onClick(label = "Open dossier for ${game.title}") {
                     onClick()
                     true
                 }
             }
             .clickable(onClick = onClick)
     ) {
-        // Indicador lateral de seleção ativa
+        // Lateral active selection indicator
         if (isSelected) {
             Box(
                 modifier = Modifier
@@ -71,7 +71,7 @@ fun GameListItemRow(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Coluna Esquerda: Título, SKU e Localização
+            // Left Column: Title, SKU, and Location
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -139,7 +139,7 @@ fun GameListItemRow(
                 }
             }
 
-            // Coluna Direita: Conteúdo customizado (slot) ou Preço padrão e Badge de Risco de Língua
+            // Right Column: Custom slot content or standard price and Language Risk Badge
             if (trailingContent != null) {
                 trailingContent()
             } else {

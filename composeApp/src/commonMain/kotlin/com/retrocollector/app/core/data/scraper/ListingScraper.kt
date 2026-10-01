@@ -65,13 +65,13 @@ class ListingScraper(
             val title = if (!parsedTitle.isNullOrBlank() && !isCaptchaPage(parsedTitle)) {
                 cleanText(parsedTitle)
             } else {
-                urlFallbackTitle ?: "Anúncio $source"
+                urlFallbackTitle ?: "$source Listing"
             }
 
             val parsedDesc = if (!isBlocked) {
                 extractMetaTag(html, "og:description") ?: extractMetaTag(html, "description") ?: ""
             } else {
-                "Artigo identificado pelo link ($url). A página apresentou desafio temporário de verificação anti-bot."
+                "Item identified via link ($url). The page presented a temporary anti-bot verification challenge."
             }
 
             val imageUrl = if (!isBlocked) extractMetaTag(html, "og:image") else null
@@ -95,12 +95,12 @@ class ListingScraper(
             throw e
         } catch (e: Exception) {
             println("Scraping fallback triggered for $url: ${e.message}")
-            val fallbackTitle = extractTitleFromUrl(url) ?: "Link $source"
+            val fallbackTitle = extractTitleFromUrl(url) ?: "$source Link"
             Result.success(
                 ScrapedListing(
                     url = url,
                     title = fallbackTitle,
-                    description = "Anúncio partilhado: $url",
+                    description = "Shared listing: $url",
                     sourcePlatform = source
                 )
             )
@@ -122,7 +122,7 @@ class ListingScraper(
         return lower.contains("challenge-running") ||
             lower.contains("cf-turnstile") ||
             lower.contains("datadome") ||
-            lower.contains("bloqueio ricardo captcha") ||
+            lower.contains("ricardo captcha block") ||
             lower.contains("attention required") ||
             lower.contains("just a moment...") ||
             lower.contains("security check") ||

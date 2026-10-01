@@ -75,7 +75,7 @@ fun DesktopWorkstationScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Espaço para os botões nativos do macOS (Fechar, Minimizar, Expandir)
+                // Space for macOS native traffic light buttons (Close, Minimize, Expand)
                 Spacer(modifier = Modifier.width(68.dp))
 
                 Text(
@@ -92,7 +92,7 @@ fun DesktopWorkstationScreen(
 
             HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
 
-            // Secção de Menus de Biblioteca
+            // Library Navigation Section
             Column(
                 modifier = Modifier
                     .padding(12.dp)
@@ -229,7 +229,7 @@ fun DesktopWorkstationScreen(
                 }
             }
 
-            // Rodapé da Sidebar
+            // Sidebar Footer
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -254,10 +254,10 @@ fun DesktopWorkstationScreen(
         }
 
         // -------------------------------------------------------------
-        // CONTEÚDO PRINCIPAL (SPLIT-VIEW: 5 colunas Lista + 7 colunas Dossiê)
+        // MAIN CONTENT (SPLIT-VIEW: List Panel + Dossier Panel)
         // -------------------------------------------------------------
         Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-            // Barra de Topo da Workstation
+            // Workstation Top Bar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -268,7 +268,7 @@ fun DesktopWorkstationScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Caixa de Pesquisa rápida (altura 32dp alinhada)
+                // Quick Search Field (32dp height aligned)
                 TactileSearchField(
                     query = state.searchQuery,
                     onQueryChange = { actions.onSearchQueryChange(it) },
@@ -281,7 +281,7 @@ fun DesktopWorkstationScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // INDEX: CHF / Currency Badge (clicável para abrir Settings)
+                    // INDEX: Currency Badge (clickable to open Settings)
                     Box(
                         modifier = Modifier
                             .height(32.dp)
@@ -308,7 +308,7 @@ fun DesktopWorkstationScreen(
                         }
                     }
 
-                    // Botão Quick Scan elegante (altura 32dp alinhada)
+                    // Elegant Quick Scan button (32dp height aligned)
                     Button(
                         onClick = { actions.onOpenScanDialog() },
                         colors = ButtonDefaults.buttonColors(containerColor = ConsoleGamecube),
@@ -325,9 +325,9 @@ fun DesktopWorkstationScreen(
                 }
             }
 
-            // Split 2 Colunas: Painel da Secção Ativa (42%) e Dossier/Chat de IA (58%)
+            // Split 2 Columns: Active Section Panel (42%) and Dossier/AI Chat (58%)
             Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                // COLUNA ESQUERDA: PAINEL DA SECÇÃO ATIVA (~42%)
+                // LEFT COLUMN: ACTIVE SECTION PANEL (~42%)
                 Box(
                     modifier = Modifier
                         .weight(0.42f)
@@ -338,7 +338,7 @@ fun DesktopWorkstationScreen(
                     when (state.activeSection) {
                         AppSection.ACTIVITY -> {
                             Column(modifier = Modifier.fillMaxSize()) {
-                            // Seletor de Consolas e Toggles Rápidos
+                            // Console Platform Selector and Quick Filters
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -363,7 +363,7 @@ fun DesktopWorkstationScreen(
                                         Text(
                                             text = "ALL",
                                             style = LabelFilterStyle,
-                                            color = Color.White,
+                                            color = if (isAllSelected) Color.White else TextPrimary,
                                             maxLines = 1,
                                             softWrap = false
                                         )
@@ -395,7 +395,7 @@ fun DesktopWorkstationScreen(
                                                 Text(
                                                     text = platform.shortName,
                                                     style = LabelFilterStyle,
-                                                    color = Color.White,
+                                                    color = if (isSelected) Color.White else TextPrimary,
                                                     maxLines = 1,
                                                     softWrap = false
                                                 )
@@ -440,7 +440,7 @@ fun DesktopWorkstationScreen(
                                 }
                             }
         
-                            // Feed com as linhas de jogos ou Empty State
+                            // Game rows feed or Empty State
                             if (state.games.isEmpty()) {
                                 TacticalEmptyState(
                                     icon = "🔍",
@@ -510,7 +510,7 @@ fun DesktopWorkstationScreen(
                     }
                 }
 
-                // COLUNA DIREITA: GAME INTELLIGENCE & GEMINI CHAT PANE (~58%)
+                // RIGHT COLUMN: GAME INTELLIGENCE & GEMINI CHAT PANE (~58%)
                 val game = state.selectedGame
                 if (game != null) {
                     Column(
@@ -519,7 +519,7 @@ fun DesktopWorkstationScreen(
                             .fillMaxHeight()
                             .background(SurfaceBase)
                     ) {
-                                // Header do Dossiê do Jogo Selecionado
+                                // Selected Game Dossier Header
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -533,49 +533,46 @@ fun DesktopWorkstationScreen(
                                     Column(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .padding(end = 12.dp)
+                                            .padding(end = 12.dp),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
+                                        Text(
+                                            text = game.title,
+                                            style = HeadlineMd,
+                                            color = TextPrimary,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
-                                            Text(
-                                                text = game.title,
-                                                style = HeadlineMd,
-                                                color = TextPrimary,
-                                                maxLines = 2,
-                                                overflow = TextOverflow.Ellipsis,
-                                                modifier = Modifier.weight(1f, fill = false)
-                                            )
                                             PlatformBadge(platform = game.platform)
-                                        }
-                                        if (game.spottedLocation.isNotBlank()) {
-                                            Text(
-                                                text = "${TextKeys.Dossier.SPOTTED_LOCATION}: ${game.spottedLocation}",
-                                                style = CodeSkuStyle.copy(fontSize = 11.sp),
-                                                color = StatusUnverifiedFg,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
+                                            if (game.releaseYear.isNotBlank()) {
+                                                Text(
+                                                    text = "•  ${game.releaseYear}",
+                                                    style = BodySm,
+                                                    color = TextSecondary
+                                                )
+                                            }
+                                            if (game.spottedLocation.isNotBlank()) {
+                                                Text(
+                                                    text = "•  ${TextKeys.Dossier.SPOTTED_LOCATION}: ${game.spottedLocation}",
+                                                    style = CodeSkuStyle.copy(fontSize = 11.sp),
+                                                    color = StatusUnverifiedFg,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis
+                                                )
+                                            }
                                         }
                                     }
         
-                                    // Ações de Estado de Coleção, Preço Pago e Remoção
+                                    // Collection Status and Delete Actions
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        if (game.collectionStatus == CollectionStatus.OWNED) {
-                                            PaidPriceInput(
-                                                paidPrice = game.paidPriceChf,
-                                                currency = state.settings.defaultCurrency,
-                                                label = "${TextKeys.Dossier.PAID_PRICE_LABEL}:",
-                                                onPriceSubmitted = { parsed ->
-                                                    actions.onUpdatePaidPrice(game, parsed)
-                                                }
-                                            )
-                                        }
-
                                         CollectionStatusSelector(
                                             currentStatus = game.collectionStatus,
                                             onStatusSelect = { actions.onUpdateGameStatus(game, it) }
@@ -606,7 +603,7 @@ fun DesktopWorkstationScreen(
                                     }
                                 }
 
-                                // Faixa de Dossiê Tático: Matriz de SKUs e Radar de Preço
+                                // Tactical Dossier Section: SKU Matrix and Market Radar
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -633,8 +630,31 @@ fun DesktopWorkstationScreen(
                                                     SwissMarketRadarView(
                                                         radar = radar,
                                                         currency = currentCurrency,
+                                                        askingPriceChf = game.askingPriceChf,
+                                                        paidPriceChf = game.paidPriceChf,
+                                                        isOwned = game.collectionStatus == CollectionStatus.OWNED,
+                                                        onPriceSubmitted = { parsed ->
+                                                            actions.onUpdatePaidPrice(game, parsed)
+                                                        },
                                                         modifier = Modifier.weight(1f)
                                                     )
+                                                }
+
+                                                if (game.marketRadar == null && game.collectionStatus == CollectionStatus.OWNED) {
+                                                    Row(
+                                                        modifier = Modifier.weight(1f),
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        horizontalArrangement = Arrangement.End
+                                                    ) {
+                                                        PaidPriceInput(
+                                                            paidPrice = game.paidPriceChf,
+                                                            currency = currentCurrency,
+                                                            label = "${TextKeys.Dossier.PAID_PRICE_LABEL}:",
+                                                            onPriceSubmitted = { parsed ->
+                                                                actions.onUpdatePaidPrice(game, parsed)
+                                                            }
+                                                        )
+                                                    }
                                                 }
                                             }
                                         } else {
@@ -652,7 +672,24 @@ fun DesktopWorkstationScreen(
                                                     SwissMarketRadarView(
                                                         radar = radar,
                                                         currency = currentCurrency,
+                                                        askingPriceChf = game.askingPriceChf,
+                                                        paidPriceChf = game.paidPriceChf,
+                                                        isOwned = game.collectionStatus == CollectionStatus.OWNED,
+                                                        onPriceSubmitted = { parsed ->
+                                                            actions.onUpdatePaidPrice(game, parsed)
+                                                        },
                                                         modifier = Modifier.fillMaxWidth()
+                                                    )
+                                                }
+
+                                                if (game.marketRadar == null && game.collectionStatus == CollectionStatus.OWNED) {
+                                                    PaidPriceInput(
+                                                        paidPrice = game.paidPriceChf,
+                                                        currency = currentCurrency,
+                                                        label = "${TextKeys.Dossier.PAID_PRICE_LABEL}:",
+                                                        onPriceSubmitted = { parsed ->
+                                                            actions.onUpdatePaidPrice(game, parsed)
+                                                        }
                                                     )
                                                 }
                                             }
@@ -660,7 +697,7 @@ fun DesktopWorkstationScreen(
                                     }
                                 }
 
-                                // Prateleira de Jogos Semelhantes / Mesmo Género
+                                // Shelf of Similar Games / Same Genre
                                 Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                                     SimilarGamesShelf(
                                         similarGames = state.similarGamesForActiveGame,
@@ -671,7 +708,7 @@ fun DesktopWorkstationScreen(
                                     )
                                 }
 
-                                // Lista de Conversa Contextual com o Gemini
+                                // Contextual Gemini Conversation List
                                 LazyColumn(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -698,7 +735,7 @@ fun DesktopWorkstationScreen(
                                                     strokeWidth = 2.dp
                                                 )
                                                 Text(
-                                                    text = "Gemini a analisar verificação regional...",
+                                                    text = "Gemini is analyzing regional verification...",
                                                     style = BodySm.copy(fontSize = 12.sp),
                                                     color = StatusEnglishFg
                                                 )
@@ -707,7 +744,7 @@ fun DesktopWorkstationScreen(
                                     }
                                 }
         
-                                // Caixa de Entrada de Pergunta com Contexto Fixo no Rodapé
+                                // Question Input Field with Fixed Bottom Context Bar
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -848,7 +885,7 @@ fun DesktopWorkstationScreenPreview() {
             safeSkus = listOf(
                 SkuInfo(code = "DOL-P-G4BE", region = "UKV", editionNote = "EN audio + EN/FR/DE/ES/IT subs", isSafe = true)
             ),
-            collectorVerdict = "Edição UKV/EUR recomendada com legendas multilíngues completas."
+            collectorVerdict = "UKV/EUR edition recommended with full multilingual subtitles."
         )
         val sampleGames = listOf(
             sampleGame,

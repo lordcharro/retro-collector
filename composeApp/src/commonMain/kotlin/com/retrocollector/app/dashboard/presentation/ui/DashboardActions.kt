@@ -9,8 +9,8 @@ import com.retrocollector.app.core.domain.model.GameGenre
 import com.retrocollector.app.core.domain.model.GameItem
 
 /**
- * Encapsula as ações de UI do Dashboard para desacoplar ecrãs e componentes
- * do ViewModel, garantindo conformidade com os padrões de State Hoisting.
+ * Encapsulates Dashboard UI actions to decouple screens and components
+ * from ViewModel, ensuring compliance with State Hoisting standards.
  */
 @Immutable
 data class DashboardActions(
@@ -30,7 +30,7 @@ data class DashboardActions(
     // Mobile Navigation
     val onOpenMobileDetail: (GameItem) -> Unit = {},
     val onCloseMobileDetail: () -> Unit = {},
-    // Navegação entre secções
+    // Section Navigation
     val onSectionSelect: (AppSection) -> Unit = {},
     // Wishlist
     val onOpenImportDialog: () -> Unit = {},

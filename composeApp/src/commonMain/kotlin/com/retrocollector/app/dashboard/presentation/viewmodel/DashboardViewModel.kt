@@ -67,14 +67,14 @@ class DashboardViewModel(
     val effects: Flow<DashboardEffect> = _effects.receiveAsFlow()
 
     init {
-        // Observar settings do repositório
+        // Observe settings from repository
         scope.launch {
             repository.settings.collect { set ->
                 _uiState.update { it.copy(settings = set) }
             }
         }
 
-        // Observar jogos com os filtros aplicados via GetDashboardGamesUseCase
+        // Observe games with applied filters via GetDashboardGamesUseCase
         scope.launch {
             val filterFlow = _uiState.map {
                 DashboardFilterCriteria(
@@ -200,7 +200,7 @@ class DashboardViewModel(
             )
         }
         scope.launch {
-            _effects.send(DashboardEffect.ShowToast("Jogo removido com sucesso."))
+            _effects.send(DashboardEffect.ShowToast("Game removed successfully."))
         }
     }
 
@@ -346,11 +346,11 @@ class DashboardViewModel(
                     _effects.send(DashboardEffect.ScanCompleted(gameItem))
                     _effects.send(DashboardEffect.NavigateToGameDetail(gameItem))
                 }
-                _effects.send(DashboardEffect.ShowToast("Análise concluída com sucesso!"))
+                _effects.send(DashboardEffect.ShowToast("Analysis completed successfully!"))
             }.onFailure { err ->
-                val msg = err.message ?: "Erro na análise"
+                val msg = err.message ?: "Analysis error"
                 _uiState.update { it.copy(isAnalyzing = false, scanErrorMessage = msg) }
-                _effects.send(DashboardEffect.ShowToast("Erro na análise: $msg", isError = true))
+                _effects.send(DashboardEffect.ShowToast("Analysis error: $msg", isError = true))
             }
         }
     }

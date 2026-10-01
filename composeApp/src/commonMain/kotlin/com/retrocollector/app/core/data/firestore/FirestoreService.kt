@@ -40,7 +40,7 @@ class FirestoreService(
 
     suspend fun getGames(projectId: String): Result<List<GameItem>> {
         if (projectId.isBlank()) {
-            return Result.failure(IllegalArgumentException("Firebase Project ID não configurado"))
+            return Result.failure(IllegalArgumentException("Firebase Project ID is not configured"))
         }
 
         return try {
@@ -68,7 +68,7 @@ class FirestoreService(
 
     suspend fun saveGame(projectId: String, game: GameItem): Result<Boolean> {
         if (projectId.isBlank()) {
-            return Result.failure(IllegalArgumentException("Firebase Project ID não configurado"))
+            return Result.failure(IllegalArgumentException("Firebase Project ID is not configured"))
         }
 
         return try {
@@ -111,7 +111,7 @@ class FirestoreService(
 
     suspend fun deleteGame(projectId: String, gameId: String): Result<Boolean> {
         if (projectId.isBlank()) {
-            return Result.failure(IllegalArgumentException("Firebase Project ID não configurado"))
+            return Result.failure(IllegalArgumentException("Firebase Project ID is not configured"))
         }
 
         return try {

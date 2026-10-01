@@ -26,8 +26,8 @@ import com.retrocollector.app.wishlist.presentation.viewmodel.WishlistUiState
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
- * Ecrã da Wishlist — lista tática de jogos desejados com suporte
- * a importação CSV e enriquecimento por IA em background.
+ * Wishlist Screen — tactical list of desired games with support
+ * for CSV import and background AI enrichment.
  */
 @Composable
 fun WishlistScreen(
@@ -46,7 +46,7 @@ fun WishlistScreen(
             .fillMaxSize()
             .background(SurfaceBase)
     ) {
-        // Barra de Ações da Wishlist: Contagem, Progresso de Enriquecimento e Botão Import
+        // Wishlist Actions Bar: Item Count, Enrichment Progress, and Import Button
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -71,7 +71,7 @@ fun WishlistScreen(
                     color = StatusUnverifiedFg
                 )
 
-                // Progresso de enriquecimento global
+                // Global enrichment progress
                 state.enrichmentProgress?.let { (completed, total) ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -91,7 +91,7 @@ fun WishlistScreen(
                 }
             }
 
-            // Botão Import CSV
+            // CSV Import Button
             Button(
                 onClick = onOpenImportDialog,
                 colors = ButtonDefaults.buttonColors(containerColor = ConsoleGamecube),
@@ -107,7 +107,7 @@ fun WishlistScreen(
             }
         }
 
-        // Lista de jogos da Wishlist
+        // Wishlist Games List
         if (state.allWishlistCount == 0) {
             TacticalEmptyState(
                 icon = "💝",

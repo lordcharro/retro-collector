@@ -20,8 +20,8 @@ import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 
 private enum class QuickScanTab(val label: String, val icon: String) {
-    AUCTION_URL("Link de Leilão", "🔗"),
-    MANUAL_SEARCH("Pesquisa Manual / SKU", "🔍")
+    AUCTION_URL("Auction Link", "🔗"),
+    MANUAL_SEARCH("Manual Search / SKU", "🔍")
 }
 
 @Composable
@@ -35,12 +35,12 @@ fun QuickScanDialog(
 ) {
     var selectedTab by remember { mutableStateOf(QuickScanTab.AUCTION_URL) }
 
-    // Estado da Aba URL
+    // Auction URL Tab State
     var urlInput by remember { mutableStateOf("") }
     var urlLocation by remember { mutableStateOf("Ricardo.ch") }
     var urlPriceStr by remember { mutableStateOf("") }
 
-    // Estado da Aba Manual
+    // Manual Search Tab State
     var manualQuery by remember { mutableStateOf("") }
     var manualLocation by remember { mutableStateOf("Ricardo.ch") }
     var manualPriceStr by remember { mutableStateOf("") }
@@ -145,10 +145,10 @@ fun QuickScanDialog(
 
                 when (selectedTab) {
                     QuickScanTab.AUCTION_URL -> {
-                        // --- ABA LINK DE LEILÃO ---
+                        // --- AUCTION URL TAB ---
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text(
-                                text = "LINK DO ANÚNCIO (RICARDO.CH OU TUTTI.CH)",
+                                text = "AUCTION LISTING LINK (RICARDO.CH OR TUTTI.CH)",
                                 style = LabelFilterStyle,
                                 color = TextPrimary
                             )
@@ -162,11 +162,11 @@ fun QuickScanDialog(
                                         urlLocation = "Tutti.ch"
                                     }
                                 },
-                                placeholder = "https://www.ricardo.ch/de/a/... ou Tutti.ch",
+                                placeholder = "https://www.ricardo.ch/de/a/... or Tutti.ch",
                                 modifier = Modifier.fillMaxWidth()
                             )
 
-                            // Feedback informativo sobre o link
+                            // Informational feedback
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -177,16 +177,16 @@ fun QuickScanDialog(
                             ) {
                                 Text(text = "🌐", fontSize = 12.sp)
                                 Text(
-                                    text = "O RetroCollector extrai automaticamente o título, descrição, fotos do anúncio e preço em CHF.",
+                                    text = "RetroCollector automatically extracts title, description, listing photos, and asking price in CHF.",
                                     style = BodySm.copy(fontSize = 11.sp),
                                     color = StatusEnglishFg
                                 )
                             }
                         }
 
-                        // Plataforma detetada
+                        // Platform / Source
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(text = "PLATAFORMA / ORIGEM", style = LabelFilterStyle, color = TextPrimary)
+                            Text(text = "PLATFORM / SOURCE", style = LabelFilterStyle, color = TextPrimary)
                             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                 listOf("Ricardo.ch", "Tutti.ch", "Anibis.ch").forEach { loc ->
                                     val isLocSelected = urlLocation == loc
@@ -207,13 +207,13 @@ fun QuickScanDialog(
                             }
                         }
 
-                        // Preço Opcional para sobrescrever
+                        // Optional Price Override
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(text = "PREÇO ESTIMADO ($curr) (OPCIONAL)", style = LabelFilterStyle, color = TextPrimary)
+                            Text(text = "ESTIMATED ASKING PRICE ($curr) (OPTIONAL)", style = LabelFilterStyle, color = TextPrimary)
                             TactileTextField(
                                 value = urlPriceStr,
                                 onValueChange = { urlPriceStr = it },
-                                placeholder = "Deixar vazio para extrair automaticamente do anúncio",
+                                placeholder = "Leave empty to extract automatically from listing",
                                 textStyle = CodePriceStyle.copy(color = TextPrimary),
                                 modifier = Modifier.fillMaxWidth()
                             )
@@ -223,7 +223,7 @@ fun QuickScanDialog(
                             Text(text = statusMessage, style = BodySm, color = StatusEditionFg)
                         }
 
-                        // Botão de Extração & Análise
+                        // Extract & Analyze Button
                         Button(
                             onClick = {
                                 val q = urlInput.trim()
@@ -241,17 +241,17 @@ fun QuickScanDialog(
                             if (isAnalyzing) {
                                 CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(text = "A extrair e analisar anúncio...", style = LabelFilterStyle)
+                                Text(text = "Extracting & analyzing listing...", style = LabelFilterStyle)
                             } else {
-                                Text(text = "Extrair & Analisar Anúncio", style = LabelFilterStyle, color = Color.White)
+                                Text(text = "Extract & Analyze Listing", style = LabelFilterStyle, color = Color.White)
                             }
                         }
                     }
 
                     QuickScanTab.MANUAL_SEARCH -> {
-                        // --- ABA PESQUISA MANUAL / SKU ---
+                        // --- MANUAL SEARCH / SKU TAB ---
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(text = "TÍTULO DO JOGO, CÓDIGO SERIAL OU CÓDIGO DE BARRAS", style = LabelFilterStyle, color = TextPrimary)
+                            Text(text = "GAME TITLE, SERIAL CODE OR BARCODE", style = LabelFilterStyle, color = TextPrimary)
                             TactileTextField(
                                 value = manualQuery,
                                 onValueChange = {
@@ -262,7 +262,7 @@ fun QuickScanDialog(
                                         manualLocation = "Tutti.ch"
                                     }
                                 },
-                                placeholder = "ex: Tomb Raider PS3, BLES-01780 ou 0045496351052",
+                                placeholder = "e.g. Tomb Raider PS3, BLES-01780 or 0045496351052",
                                 modifier = Modifier.fillMaxWidth()
                             )
 
@@ -277,7 +277,7 @@ fun QuickScanDialog(
                                 ) {
                                     Text(text = "🌐", fontSize = 12.sp)
                                     Text(
-                                        text = "Link detetado. O RetroCollector descarregará a foto e detalhes do anúncio.",
+                                        text = "Listing link detected. RetroCollector will download photos and listing details.",
                                         style = BodySm.copy(fontSize = 11.sp),
                                         color = StatusEnglishFg
                                     )
@@ -285,7 +285,7 @@ fun QuickScanDialog(
                             }
                         }
 
-                        // Localização
+                        // Spotted Location
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(text = TextKeys.Dossier.SPOTTED_LOCATION, style = LabelFilterStyle, color = TextPrimary)
                             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -308,20 +308,20 @@ fun QuickScanDialog(
                             }
                         }
 
-                        // Foto Opcional
+                        // Optional Photo
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(text = "FOTO DO DISCO OU LOMBADA (OPCIONAL)", style = LabelFilterStyle, color = TextPrimary)
+                            Text(text = "DISC OR SPINE PHOTO (OPTIONAL)", style = LabelFilterStyle, color = TextPrimary)
                             TactileTextField(
                                 value = imageInput,
                                 onValueChange = { imageInput = it },
-                                placeholder = "URL da foto do disco (https://...) ou imagem Base64",
+                                placeholder = "Disc photo URL (https://...) or Base64 image",
                                 textStyle = BodySm.copy(color = TextPrimary),
                                 focusedBorderColor = if (isApiKeyInImage) StatusEditionFg else AccentBlue,
                                 unfocusedBorderColor = if (isApiKeyInImage) StatusEditionFg else BorderSubtle,
                                 modifier = Modifier.fillMaxWidth()
                             )
 
-                            // Alertas de validação inteligente
+                            // Intelligent validation feedback
                             if (isApiKeyInImage) {
                                 Row(
                                     modifier = Modifier
@@ -333,7 +333,7 @@ fun QuickScanDialog(
                                 ) {
                                     Text(text = "⚠️", fontSize = 12.sp)
                                     Text(
-                                        text = "Parece ter colado a sua chave de API aqui. Este campo é exclusivo para fotos do disco.",
+                                        text = "It looks like you pasted an API key here. This field is for disc/spine photos.",
                                         style = BodySm.copy(fontSize = 11.sp),
                                         color = StatusEditionFg
                                     )
@@ -349,7 +349,7 @@ fun QuickScanDialog(
                                 ) {
                                     Text(text = "💡", fontSize = 12.sp)
                                     Text(
-                                        text = "Isto é o link do anúncio. Mude para a aba 'Link de Leilão' para extrair fotos e dados completos.",
+                                        text = "This is a listing URL. Switch to the 'Auction Link' tab to extract photos and full details.",
                                         style = BodySm.copy(fontSize = 11.sp),
                                         color = AccentBlue
                                     )
@@ -357,7 +357,7 @@ fun QuickScanDialog(
                             }
                         }
 
-                        // Preço Pedido
+                        // Asking Price
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(text = "${TextKeys.Radar.ASKING_PRICE} ($curr)", style = LabelFilterStyle, color = TextPrimary)
                             TactileTextField(
@@ -374,13 +374,12 @@ fun QuickScanDialog(
                             Text(text = statusMessage, style = BodySm, color = StatusEditionFg)
                         }
 
-                        // Botão de Execução Manual
+                        // Manual Run Button
                         Button(
                             onClick = {
                                 val q = manualQuery.trim()
                                 if (q.isNotEmpty()) {
                                     val price = manualPriceStr.toDoubleOrNull()
-                                    // Se for uma chave de API colada por engano, não a envia como imagem
                                     val img = if (isApiKeyInImage) null else imageInput.trim().ifBlank { null }
                                     onAnalyze(q, img, manualLocation, price)
                                 }

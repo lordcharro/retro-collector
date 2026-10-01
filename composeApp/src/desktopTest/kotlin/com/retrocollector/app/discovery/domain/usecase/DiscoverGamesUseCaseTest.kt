@@ -46,7 +46,7 @@ class DiscoverGamesUseCaseTest {
                     platform = ConsolePlatform.PS3,
                     genreDisplayName = "Point & Click",
                     genreTags = listOf("Point & Click", "Adventure"),
-                    recommendationReason = "Clássico Point & Click",
+                    recommendationReason = "Classic Point & Click",
                     languageStatus = LanguageStatus.FULL_ENGLISH,
                     hasModernPortOrRemaster = true,
                     modernPortDetails = "Switch Remaster",
@@ -68,7 +68,7 @@ class DiscoverGamesUseCaseTest {
                     platform = ConsolePlatform.SWITCH,
                     genreDisplayName = "Point & Click",
                     genreTags = listOf("Point & Click"),
-                    recommendationReason = "Aventura clássica de culto",
+                    recommendationReason = "Cult classic adventure",
                     languageStatus = LanguageStatus.FULL_ENGLISH,
                     estimatedPriceChf = 35.0
                 )
@@ -121,12 +121,12 @@ class DiscoverGamesUseCaseTest {
             releaseYear = "2018",
             estimatedPriceChf = 40.0,
             hasModernPortOrRemaster = true,
-            modernPortDetails = "Físico iam8bit"
+            modernPortDetails = "Physical iam8bit"
         )
         val gameItem = discovered.toGameItem(status = CollectionStatus.WISHLIST)
         assertEquals("Grim Fandango Remastered", gameItem.title)
         assertEquals(ConsolePlatform.SWITCH, gameItem.platform)
         assertEquals(CollectionStatus.WISHLIST, gameItem.collectionStatus)
-        assertTrue(gameItem.personalNotes.contains("Port/Remaster: Físico iam8bit"))
+        assertTrue(gameItem.personalNotes.contains("Port/Remaster: Physical iam8bit"))
     }
 }

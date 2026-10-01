@@ -90,9 +90,9 @@ fun TacticalEmptyStatePreview() {
     RetroTactileTheme {
         TacticalEmptyState(
             icon = "🔍",
-            title = "Nenhum jogo encontrado",
-            subtitle = "Tente ajustar os filtros ou a pesquisa.",
-            actionLabel = "Limpar Filtros",
+            title = "No games found",
+            subtitle = "Try adjusting your filters or search query.",
+            actionLabel = "Clear Filters",
             onActionClick = {}
         )
     }

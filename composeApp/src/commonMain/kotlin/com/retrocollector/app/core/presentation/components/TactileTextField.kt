@@ -98,7 +98,7 @@ fun TactileTextFieldPreview() {
         TactileTextField(
             value = "Resident Evil 4",
             onValueChange = {},
-            placeholder = "Nome do jogo...",
+            placeholder = "Game title...",
             modifier = Modifier.padding(16.dp)
         )
     }

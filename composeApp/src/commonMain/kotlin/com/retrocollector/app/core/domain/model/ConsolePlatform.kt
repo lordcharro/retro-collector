@@ -21,7 +21,7 @@ enum class ConsolePlatform(
         shortName = "NES",
         ecosystem = PlatformEcosystem.NINTENDO,
         codePrefixes = listOf("NES-"),
-        regionalAdvice = "Cartuchos PAL europeus (NES-xx-FRA, NES-xx-NOE, NES-xx-UKV). Versões UKV e Scandinavian têm inglês integral. Edições alemãs NOE de jogos de texto (como RPGs) podem ter apenas alemão.",
+        regionalAdvice = "European PAL cartridges (NES-xx-FRA, NES-xx-NOE, NES-xx-UKV). UKV and Scandinavian versions feature full English. German NOE editions of text-heavy games (like RPGs) may be German-only.",
         brandColorHex = 0xFFDC2626
     ),
     SNES(
@@ -30,7 +30,7 @@ enum class ConsolePlatform(
         shortName = "SNES",
         ecosystem = PlatformEcosystem.NINTENDO,
         codePrefixes = listOf("SNSP-", "SNES-"),
-        regionalAdvice = "Cartuchos PAL Super Nintendo (SNSP-xxxx-UKV/NOE/FRG). Jogos de aventura e RPG da Nintendo (Zelda, Secret of Mana) na Suíça/Alemanha têm código NOE e vêm 100% em alemão. Procure edições UKV ou EUR com inglês.",
+        regionalAdvice = "Super Nintendo PAL cartridges (SNSP-xxxx-UKV/NOE/FRG). Nintendo adventure and RPG titles (Zelda, Secret of Mana) in Switzerland/Germany carry NOE code and are 100% in German. Look for UKV or EUR editions for English.",
         brandColorHex = 0xFF7C3AED
     ),
     N64(
@@ -39,7 +39,7 @@ enum class ConsolePlatform(
         shortName = "N64",
         ecosystem = PlatformEcosystem.NINTENDO,
         codePrefixes = listOf("NUS-"),
-        regionalAdvice = "Na Europa quase todos os cartuchos PAL têm inglês. Evite apenas cartuchos com código NUS-xxx-NOE se o jogo tiver texto e for versão exclusivamente alemã.",
+        regionalAdvice = "In Europe almost all PAL cartridges include English. Only avoid NUS-xxx-NOE cartridges if the title is text-heavy and exclusively a German release.",
         brandColorHex = 0xFFDC2626
     ),
     GAMECUBE(
@@ -48,7 +48,7 @@ enum class ConsolePlatform(
         shortName = "GameCube",
         ecosystem = PlatformEcosystem.NINTENDO,
         codePrefixes = listOf("DOL-P-", "DOL-"),
-        regionalAdvice = "Atenção máxima na Suíça: Muitas edições vendidas cá têm código DOL-P-xxxx-(NOE/FRG) e podem ter apenas alemão! Procure edições com código terminando em UKV, EUR ou DOL-P-xxxx-(EUR) com logo Multi-5.",
+        regionalAdvice = "High attention in Switzerland: Many local editions carry DOL-P-xxxx-(NOE/FRG) and may be German-only! Look for codes ending in UKV, EUR, or DOL-P-xxxx-(EUR) with the Multi-5 badge.",
         brandColorHex = 0xFF6366F1
     ),
     WII(
@@ -57,7 +57,7 @@ enum class ConsolePlatform(
         shortName = "Wii",
         ecosystem = PlatformEcosystem.NINTENDO,
         codePrefixes = listOf("RVL-P-", "RVL-"),
-        regionalAdvice = "Discos PAL Wii (RVL-P-xxxx). A maioria dos títulos ocidentais inclui Multi-5 (inglês, alemão, francês, espanhol, italiano). Verifique se o verso da caixa indica idioma inglês se o jogo tiver classificação USK.",
+        regionalAdvice = "Wii PAL discs (RVL-P-xxxx). Most Western releases feature Multi-5 (English, German, French, Spanish, Italian). Check the back of the case for English language support if marked with USK rating.",
         brandColorHex = 0xFF0EA5E9
     ),
     WII_U(
@@ -66,7 +66,7 @@ enum class ConsolePlatform(
         shortName = "Wii U",
         ecosystem = PlatformEcosystem.NINTENDO,
         codePrefixes = listOf("WUP-P-", "WUP-"),
-        regionalAdvice = "Discos PAL Wii U (WUP-P-xxxx). A grande maioria dos lançamentos europeus inclui inglês independentemente da capa regional.",
+        regionalAdvice = "Wii U PAL discs (WUP-P-xxxx). The vast majority of European releases include English regardless of the regional cover artwork.",
         brandColorHex = 0xFF0284C7
     ),
     SWITCH(
@@ -75,7 +75,7 @@ enum class ConsolePlatform(
         shortName = "Switch",
         ecosystem = PlatformEcosystem.NINTENDO,
         codePrefixes = listOf("HAC-P-", "HAC-"),
-        regionalAdvice = "A esmagadora maioria dos cartuchos físicos europeus (EUR) inclui inglês mesmo que a capa frontal esteja em alemão. Atenção apenas a edições raras regionais sem patch inglês.",
+        regionalAdvice = "The vast majority of European physical cartridges (EUR) include English even if the front cover is in German. Watch out only for rare regional releases without English language support.",
         brandColorHex = 0xFFEF4444
     ),
     SWITCH_2(
@@ -84,7 +84,7 @@ enum class ConsolePlatform(
         shortName = "Switch 2",
         ecosystem = PlatformEcosystem.NINTENDO,
         codePrefixes = listOf("NSW2-", "HAC2-"),
-        regionalAdvice = "Próxima geração da Nintendo. Padrão europeu multilingue com suporte nativo de inglês.",
+        regionalAdvice = "Next-generation Nintendo platform. European multilingual standard with native English support.",
         brandColorHex = 0xFFBE123C
     ),
     GAME_BOY(
@@ -93,7 +93,7 @@ enum class ConsolePlatform(
         shortName = "GB/GBC",
         ecosystem = PlatformEcosystem.NINTENDO,
         codePrefixes = listOf("DMG-", "CGB-"),
-        regionalAdvice = "Cartuchos Game Boy clássicos e Game Boy Color. Cartuchos são region-free. Cuidado com edições alemãs NOE de RPGs como Pokémon ou Zelda que estão bloqueados em alemão.",
+        regionalAdvice = "Classic Game Boy and Game Boy Color cartridges. Cartridges are region-free. Beware of German NOE editions of RPGs like Pokémon or Zelda that are locked to German.",
         brandColorHex = 0xFF84CC16
     ),
     GBA(
@@ -102,7 +102,7 @@ enum class ConsolePlatform(
         shortName = "GBA",
         ecosystem = PlatformEcosystem.NINTENDO,
         codePrefixes = listOf("AGB-"),
-        regionalAdvice = "Cartuchos Game Boy Advance (AGB-xxxx-EUR/NOE/UKV). Cuidado com caixas de cartão e cartuchos alemães NOE em RPGs. AGB é region-free.",
+        regionalAdvice = "Game Boy Advance cartridges (AGB-xxxx-EUR/NOE/UKV). Beware of cardboard boxes and German NOE cartridges for RPGs. GBA is region-free.",
         brandColorHex = 0xFF8B5CF6
     ),
     NDS(
@@ -111,7 +111,7 @@ enum class ConsolePlatform(
         shortName = "DS",
         ecosystem = PlatformEcosystem.NINTENDO,
         codePrefixes = listOf("NTR-", "TWL-"),
-        regionalAdvice = "Cartões Nintendo DS (NTR-xxxx-EUR). Consola e cartões normais são region-free. 95%+ dos títulos europeus incluem inglês selecionável nas opções ou idioma do sistema.",
+        regionalAdvice = "Nintendo DS game cards (NTR-xxxx-EUR). Standard console and game cards are region-free. 95%+ of European releases include English selectable in-game or via system language.",
         brandColorHex = 0xFF06B6D4
     ),
     N3DS(
@@ -120,7 +120,7 @@ enum class ConsolePlatform(
         shortName = "3DS",
         ecosystem = PlatformEcosystem.NINTENDO,
         codePrefixes = listOf("CTR-"),
-        regionalAdvice = "Cartões Nintendo 3DS (CTR-xxxx-EUR). ATENÇÃO: O Nintendo 3DS possui bloqueio regional (Region Locked PAL)! Cartuchos NTSC não correm em consolas europeias.",
+        regionalAdvice = "Nintendo 3DS game cards (CTR-xxxx-EUR). NOTE: Nintendo 3DS is Region Locked (PAL)! NTSC cartridges will not boot on European consoles.",
         brandColorHex = 0xFFF43F5E
     ),
 
@@ -133,7 +133,7 @@ enum class ConsolePlatform(
         shortName = "PS1",
         ecosystem = PlatformEcosystem.SONY,
         codePrefixes = listOf("SLES-", "SCES-"),
-        regionalAdvice = "Discos PAL PS1 em caixas grossas originais. Edições alemãs (SLES-xxxxx com textos alemães) frequentemente têm dobragem apenas em alemão. Procure SCES/SLES edições UK ou Multi-Idioma.",
+        regionalAdvice = "PS1 PAL discs in original thick double jewel cases. German releases (SLES-xxxxx with German text) frequently feature German-only voiceovers. Look for SCES/SLES UK or Multi-Language editions.",
         brandColorHex = 0xFF475569
     ),
     PS2(
@@ -142,7 +142,7 @@ enum class ConsolePlatform(
         shortName = "PS2",
         ecosystem = PlatformEcosystem.SONY,
         codePrefixes = listOf("SLES-", "SCES-"),
-        regionalAdvice = "Discos PAL PS2. Atenção a edições com selo USK exclusivo da Alemanha que podem conter apenas áudio/texto em alemão. Edições UKV / Multi-5 contêm inglês integral.",
+        regionalAdvice = "PS2 PAL discs. Watch out for exclusive Germany USK releases that may only contain German audio and text. UKV / Multi-5 editions contain full English.",
         brandColorHex = 0xFF1E40AF
     ),
     PS3(
@@ -151,7 +151,7 @@ enum class ConsolePlatform(
         shortName = "PS3",
         ecosystem = PlatformEcosystem.SONY,
         codePrefixes = listOf("BLES-", "BCES-"),
-        regionalAdvice = "Muitos jogos PS3 da região DACH (BLES exclusivo com logotipo USK) vêm SEM inglês (ex: Fallout, Skyrim, Bioshock, Ratchet). Verifique o código BLES na lombada e no disco: na Suíça discos BLES-01780 são multilingues e seguros.",
+        regionalAdvice = "Many DACH region PS3 games (exclusive BLES with USK rating logo) come WITHOUT English (e.g. Fallout, Skyrim, Bioshock, Ratchet). Check the BLES code on the spine and disc: in Switzerland BLES-01780 discs are multilingual and safe.",
         brandColorHex = 0xFF0284C7
     ),
     PS4(
@@ -160,7 +160,7 @@ enum class ConsolePlatform(
         shortName = "PS4",
         ecosystem = PlatformEcosystem.SONY,
         codePrefixes = listOf("CUSA-"),
-        regionalAdvice = "Discos Blu-ray PS4 (CUSA-xxxxx). A grande maioria dos lançamentos europeus inclui áudio e texto em inglês, adaptando-se ao idioma configurado na consola.",
+        regionalAdvice = "PS4 Blu-ray discs (CUSA-xxxxx). The vast majority of European releases include English audio and text, matching the console language setting.",
         brandColorHex = 0xFF2563EB
     ),
     PS5(
@@ -169,7 +169,7 @@ enum class ConsolePlatform(
         shortName = "PS5",
         ecosystem = PlatformEcosystem.SONY,
         codePrefixes = listOf("PPSA-"),
-        regionalAdvice = "Discos Ultra HD Blu-ray PS5 (PPSA-xxxxx). Praticamente 100% dos lançamentos físicos europeus incluem inglês integral.",
+        regionalAdvice = "PS5 Ultra HD Blu-ray discs (PPSA-xxxxx). Virtually 100% of European physical releases include full English.",
         brandColorHex = 0xFF3B82F6
     ),
     PSP(
@@ -178,7 +178,7 @@ enum class ConsolePlatform(
         shortName = "PSP",
         ecosystem = PlatformEcosystem.SONY,
         codePrefixes = listOf("ULES-", "UCES-"),
-        regionalAdvice = "Discos UMD PAL (ULES-xxxxx, UCES-xxxxx). A consola PSP é region-free para jogos. A maioria dos UMDs europeus inclui inglês.",
+        regionalAdvice = "PSP PAL UMD discs (ULES-xxxxx, UCES-xxxxx). The PSP console is region-free for games. Most European UMDs include English.",
         brandColorHex = 0xFF059669
     ),
     PS_VITA(
@@ -187,7 +187,7 @@ enum class ConsolePlatform(
         shortName = "PS Vita",
         ecosystem = PlatformEcosystem.SONY,
         codePrefixes = listOf("PCSF-", "PCSB-"),
-        regionalAdvice = "Cartões PS Vita (PCSF-xxxxx, PCSB-xxxxx). Totalmente region-free. Quase todos os lançamentos físicos europeus e asiáticos em inglês contêm suporte integral de inglês.",
+        regionalAdvice = "PS Vita game cards (PCSF-xxxxx, PCSB-xxxxx). Completely region-free. Almost all European and Asian English physical releases contain full English support.",
         brandColorHex = 0xFF0D9488
     ),
 
@@ -200,7 +200,7 @@ enum class ConsolePlatform(
         shortName = "Xbox",
         ecosystem = PlatformEcosystem.MICROSOFT,
         codePrefixes = listOf("MS-", "XBOX-"),
-        regionalAdvice = "Discos PAL Xbox clássica (caixas verdes translúcidas). Títulos europeus geralmente trazem inglês, mas certifique-se de que edições alemãs USK não foram censuradas.",
+        regionalAdvice = "Xbox Original PAL discs (translucent green cases). European titles generally include English, but verify that German USK releases were not censored.",
         brandColorHex = 0xFF15803D
     ),
     XBOX_360(
@@ -209,7 +209,7 @@ enum class ConsolePlatform(
         shortName = "Xbox 360",
         ecosystem = PlatformEcosystem.MICROSOFT,
         codePrefixes = listOf("X360-", "MS-"),
-        regionalAdvice = "Discos DVD PAL Xbox 360. Alguns jogos na Alemanha/Suíça foram lançados com áudio exclusivo em alemão (ex: Halo 3 alemão só tem alemão). Verifique o código e edição UK.",
+        regionalAdvice = "Xbox 360 PAL DVD discs. Some titles in Germany/Switzerland were released with German-only audio (e.g. German Halo 3 only has German). Check code and look for UK editions.",
         brandColorHex = 0xFF16A34A
     ),
     XBOX_ONE(
@@ -218,7 +218,7 @@ enum class ConsolePlatform(
         shortName = "Xbox One",
         ecosystem = PlatformEcosystem.MICROSOFT,
         codePrefixes = listOf("XONE-"),
-        regionalAdvice = "Discos Blu-ray Xbox One. Sem bloqueio regional para discos de jogo e suporte multilingue com download de pacote de idiomas automático.",
+        regionalAdvice = "Xbox One Blu-ray discs. Region-free for game discs with multilingual support via automatic language pack downloads.",
         brandColorHex = 0xFF22C55E
     ),
     XBOX_SERIES(
@@ -227,7 +227,7 @@ enum class ConsolePlatform(
         shortName = "Series X|S",
         ecosystem = PlatformEcosystem.MICROSOFT,
         codePrefixes = listOf("XSX-"),
-        regionalAdvice = "Discos físicos Smart Delivery / Series X. Suporte integral multilingue europeu.",
+        regionalAdvice = "Physical Smart Delivery / Series X discs. Full European multilingual support.",
         brandColorHex = 0xFF4ADE80
     ),
 
@@ -240,7 +240,7 @@ enum class ConsolePlatform(
         shortName = "Master System",
         ecosystem = PlatformEcosystem.SEGA,
         codePrefixes = listOf("MK-"),
-        regionalAdvice = "Cartuchos PAL Sega Master System em caixas plásticas clássicas com grelha. Lançamentos europeus têm texto em inglês ou são jogos arcade sem barreira linguística.",
+        regionalAdvice = "Sega Master System PAL cartridges in classic grid plastic clamshell cases. European releases feature English text or are arcade titles with no language barrier.",
         brandColorHex = 0xFF1D4ED8
     ),
     MEGADRIVE(
@@ -249,7 +249,7 @@ enum class ConsolePlatform(
         shortName = "Mega Drive",
         ecosystem = PlatformEcosystem.SEGA,
         codePrefixes = listOf("MK-", "1", "670-"),
-        regionalAdvice = "Cartuchos PAL Mega Drive (caixas pretas com grelha ou azuis). Cartuchos europeus vêm 100% em inglês. Na Suíça, manuais são frequentemente multilingues (DE/FR/EN).",
+        regionalAdvice = "Mega Drive PAL cartridges (black grid or blue clamshell cases). European cartridges are 100% in English. In Switzerland, manuals are frequently multilingual (DE/FR/EN).",
         brandColorHex = 0xFF1E3A8A
     ),
     SEGA_SATURN(
@@ -258,7 +258,7 @@ enum class ConsolePlatform(
         shortName = "Saturn",
         ecosystem = PlatformEcosystem.SEGA,
         codePrefixes = listOf("MK-", "T-"),
-        regionalAdvice = "Caixas grandes de cartão/plástico PAL Saturn. Atenção às dobradiças frágeis das caixas europeias. Todos os jogos PAL europeus têm inglês integral.",
+        regionalAdvice = "Large PAL Saturn cardboard/plastic cases. Beware of fragile European case hinges. All PAL European releases feature full English.",
         brandColorHex = 0xFF3730A3
     ),
     DREAMCAST(
@@ -267,7 +267,7 @@ enum class ConsolePlatform(
         shortName = "Dreamcast",
         ecosystem = PlatformEcosystem.SEGA,
         codePrefixes = listOf("MK-", "HDR-", "T-"),
-        regionalAdvice = "Discos GD-ROM PAL Dreamcast em caixas azuis duplas. Caixas são notoriamente frágeis (dentes partem com facilidade). Todos os jogos PAL têm inglês e seletor 50Hz/60Hz.",
+        regionalAdvice = "PAL Dreamcast GD-ROM discs in double blue jewel cases. Cases are notoriously fragile (teeth snap easily). All PAL games feature English and 50Hz/60Hz selector.",
         brandColorHex = 0xFFEA580C
     ),
     GAME_GEAR(
@@ -276,7 +276,7 @@ enum class ConsolePlatform(
         shortName = "Game Gear",
         ecosystem = PlatformEcosystem.SEGA,
         codePrefixes = listOf("MK-", "670-"),
-        regionalAdvice = "Cartuchos portáteis Sega Game Gear. Region-free mundialmente. Jogos europeus e americanos em inglês correm em qualquer consola.",
+        regionalAdvice = "Sega Game Gear handheld cartridges. Worldwide region-free. European and US English games run on any hardware.",
         brandColorHex = 0xFF0284C7
     ),
 
@@ -289,7 +289,7 @@ enum class ConsolePlatform(
         shortName = "Retro Vintage",
         ecosystem = PlatformEcosystem.RETRO_VINTAGE,
         codePrefixes = listOf("AT-", "CV-", "INT-", "NG-", "PCE-", "C64-"),
-        regionalAdvice = "Abrange sistemas clássicos e pré-NES: Atari 2600/7800, ColecoVision, Intellivision, Commodore 64/Amiga, PC Engine, Neo Geo e MSX. Jogos em cartucho e disquete de época.",
+        regionalAdvice = "Covers vintage and pre-NES systems: Atari 2600/7800, ColecoVision, Intellivision, Commodore 64/Amiga, PC Engine, Neo Geo, and MSX. Period cartridge and floppy media.",
         brandColorHex = 0xFFB45309
     );
 

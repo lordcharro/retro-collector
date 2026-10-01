@@ -25,6 +25,7 @@ import com.retrocollector.app.core.presentation.components.TactileTextField
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.settings.domain.model.AppSettings
+import com.retrocollector.app.settings.domain.model.ThemeMode
 import com.retrocollector.app.settings.domain.model.defaultPinnedPlatformIds
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.launch
@@ -40,6 +41,7 @@ fun SettingsDialog(
     onTestFirestoreConnection: ((String, (Result<String>) -> Unit) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    var selectedThemeMode by remember { mutableStateOf(settings.themeMode) }
     var geminiKey by remember { mutableStateOf(settings.geminiApiKey) }
     var selectedModel by remember { mutableStateOf(settings.geminiModel.ifBlank { "gemini-3.7-flash" }) }
     var firebaseProjectId by remember { mutableStateOf(settings.firebaseProjectId) }
@@ -56,8 +58,8 @@ fun SettingsDialog(
 
     val geminiModels = remember {
         listOf(
-            "gemini-3.7-flash" to "3.7 Flash (Estável)",
-            "gemini-3.6-flash" to "3.6 Flash (Rápido)",
+            "gemini-3.7-flash" to "3.7 Flash (Stable)",
+            "gemini-3.6-flash" to "3.6 Flash (Fast)",
             "gemini-3.5-flash" to "3.5 Flash (Base)",
             "gemini-3.8-flash" to "3.8 Flash (Preview)"
         )
@@ -93,7 +95,7 @@ fun SettingsDialog(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
-                // Header Tático
+                // Tactical Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -124,7 +126,7 @@ fun SettingsDialog(
                     )
                 }
 
-                // Banner de Prontidão Tática (Tactical Field Readiness)
+                // Tactical Field Readiness Banner
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -157,7 +159,116 @@ fun SettingsDialog(
                     }
                 }
 
-                // SEÇÃO 1: Vision Intelligence Engine (Google Gemini AI)
+                // SECTION 0: Interface Theme Mode
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(text = "🎨", fontSize = 14.sp)
+                            Text(
+                                text = "INTERFACE THEME",
+                                style = LabelFilterStyle.copy(fontSize = 11.sp),
+                                color = StatusUnverifiedFg
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .background(if (selectedThemeMode == ThemeMode.LIGHT) StatusEditionBg else SurfaceBase, RoundedCornerShape(3.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = if (selectedThemeMode == ThemeMode.LIGHT) "TACTICAL LIGHT" else "TACTICAL DARK",
+                                style = CodeSkuStyle.copy(fontSize = 10.sp),
+                                color = if (selectedThemeMode == ThemeMode.LIGHT) StatusEditionFg else StatusEnglishFg
+                            )
+                        }
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(SurfaceBase, RoundedCornerShape(6.dp))
+                            .border(1.dp, BorderSubtle, RoundedCornerShape(6.dp))
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = "High-contrast Swiss field display mode for bright direct sunlight Brockenhaus scouting.",
+                            style = BodySm.copy(fontSize = 12.sp),
+                            color = TextSecondary
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(SurfaceCard, RoundedCornerShape(6.dp))
+                                .border(1.dp, BorderSubtle, RoundedCornerShape(6.dp))
+                                .padding(4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            ThemeMode.entries.forEach { mode ->
+                                val isSelected = selectedThemeMode == mode
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .background(
+                                            if (isSelected) SurfaceElevated else Color.Transparent,
+                                            RoundedCornerShape(4.dp)
+                                        )
+                                        .border(
+                                            1.dp,
+                                            if (isSelected) BorderStrong else Color.Transparent,
+                                            RoundedCornerShape(4.dp)
+                                        )
+                                        .clickable {
+                                            selectedThemeMode = mode
+                                            onSaveSettings(
+                                                settings.copy(
+                                                    geminiApiKey = geminiKey.trim(),
+                                                    geminiModel = selectedModel,
+                                                    firebaseProjectId = firebaseProjectId.trim(),
+                                                    defaultCurrency = selectedCurrency,
+                                                    isScraperEnabled = isScraperEnabled,
+                                                    ricardoSessionCookie = ricardoCookie.trim(),
+                                                    pinnedPlatformIds = pinnedPlatformIds.toList(),
+                                                    themeMode = mode
+                                                )
+                                            )
+                                        }
+                                        .padding(vertical = 8.dp, horizontal = 4.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text(text = mode.icon, fontSize = 13.sp)
+                                        Text(
+                                            text = mode.displayName,
+                                            style = LabelFilterStyle.copy(fontSize = 12.sp),
+                                            color = if (isSelected) TextPrimary else TextSecondary
+                                        )
+                                        if (isSelected) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(5.dp)
+                                                    .background(ConsoleGamecube, RoundedCornerShape(2.5.dp))
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // SECTION 1: Vision Intelligence Engine (Google Gemini AI)
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -302,7 +413,7 @@ fun SettingsDialog(
                                         if (onTestGeminiConnection != null) {
                                             coroutineScope.launch {
                                                 isTestingGemini = true
-                                                testStatusMessage = "A testar ligação..."
+                                                testStatusMessage = "Testing connection..."
                                                 try {
                                                     withTimeoutOrNull(12_000) {
                                                         onTestGeminiConnection(trimmedKey, selectedModel) { result ->
@@ -314,7 +425,7 @@ fun SettingsDialog(
                                                             )
                                                         }
                                                     } ?: run {
-                                                        testStatusMessage = "Tempo limite esgotado (12s). Verifica a ligação."
+                                                        testStatusMessage = "Connection timed out (12s). Check network connectivity."
                                                     }
                                                 } catch (e: Exception) {
                                                     testStatusMessage = e.message ?: TextKeys.Settings.STATUS_FAILED
@@ -326,7 +437,7 @@ fun SettingsDialog(
                                             testStatusMessage = TextKeys.Settings.STATUS_CONNECTED
                                         }
                                     } else {
-                                        testStatusMessage = "Por favor, introduz uma chave de API válida."
+                                        testStatusMessage = "Please enter a valid API key."
                                     }
                                 },
                                 enabled = !isTestingGemini,
@@ -335,16 +446,15 @@ fun SettingsDialog(
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                             ) {
                                 Text(
-                                    text = if (isTestingGemini) "⏳ A testar..." else "⚡ " + TextKeys.Settings.GEMINI_TEST_BUTTON,
+                                    text = if (isTestingGemini) "⏳ Testing..." else "⚡ " + TextKeys.Settings.GEMINI_TEST_BUTTON,
                                     style = LabelFilterStyle,
                                     color = TextPrimary
                                 )
                             }
 
                             testStatusMessage?.let { msg ->
-                                val isTesting = isTestingGemini || msg.startsWith("A testar")
+                                val isTesting = isTestingGemini || msg.startsWith("Testing")
                                 val isSuccess = msg == TextKeys.Settings.STATUS_CONNECTED ||
-                                    msg.startsWith("Ligação") ||
                                     msg.startsWith("Connection")
                                 val textColor = when {
                                     isTesting -> StatusEditionFg
@@ -362,7 +472,7 @@ fun SettingsDialog(
                     }
                 }
 
-                // SEÇÃO 2: Regional Pricing & Market Feeds (Currency Selector & Parser)
+                // SECTION 2: Regional Pricing & Market Feeds (Currency Selector & Parser)
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = TextKeys.Settings.CURRENCY_SECTION.uppercase(),
@@ -378,7 +488,7 @@ fun SettingsDialog(
                             .padding(12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Linha de Cabeçalho do Seletor de Moeda
+                        // Currency Selector Header Row
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -487,7 +597,7 @@ fun SettingsDialog(
 
                         HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
 
-                        // Cookie de Sessão Ricardo.ch (Opcional anti-captcha)
+                        // Ricardo.ch Session Cookie (Optional anti-captcha)
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -495,7 +605,7 @@ fun SettingsDialog(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "COOKIE DE SESSÃO RICARDO.CH (OPCIONAL)",
+                                    text = "RICARDO.CH SESSION COOKIE (OPTIONAL)",
                                     style = LabelFilterStyle,
                                     color = TextPrimary
                                 )
@@ -508,14 +618,14 @@ fun SettingsDialog(
                             TactileTextField(
                                 value = ricardoCookie,
                                 onValueChange = { ricardoCookie = it },
-                                placeholder = "Ex: ricardo_session=... ou token da tua conta",
+                                placeholder = "e.g. ricardo_session=... or account token",
                                 textStyle = CodeSkuStyle.copy(color = TextPrimary, fontSize = 11.sp),
                                 placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg, fontSize = 11.sp),
                                 backgroundColor = SurfaceCard,
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Text(
-                                text = "Permite autenticar os pedidos ao Ricardo.ch com a tua conta para evitar desafios de Captcha.",
+                                text = "Allows authenticating requests to Ricardo.ch with your account to bypass Captcha challenges.",
                                 style = BodySm.copy(fontSize = 10.sp),
                                 color = TextSecondary
                             )
@@ -523,7 +633,7 @@ fun SettingsDialog(
                     }
                 }
 
-                // SEÇÃO 3: Cloud Database Sync & Offline Engine (Firebase)
+                // SECTION 3: Cloud Database Sync & Offline Engine (Firebase)
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -593,7 +703,7 @@ fun SettingsDialog(
                                                             )
                                                         }
                                                     } ?: run {
-                                                        firestoreStatusMessage = "Tempo limite esgotado (12s). Verifica o Project ID."
+                                                        firestoreStatusMessage = "Connection timed out (12s). Check Project ID."
                                                     }
                                                 } catch (e: Exception) {
                                                     firestoreStatusMessage = e.message ?: TextKeys.Settings.FIREBASE_STATUS_FAILED
@@ -624,7 +734,7 @@ fun SettingsDialog(
                                 val isTesting = isTestingFirestore || msg == TextKeys.Settings.FIREBASE_TESTING
                                 val isSuccess = msg == TextKeys.Settings.FIREBASE_STATUS_CONNECTED ||
                                     msg.startsWith("Firestore connected") ||
-                                    msg.startsWith("Ligação")
+                                    msg.startsWith("Connection")
                                 val textColor = when {
                                     isTesting -> StatusEditionFg
                                     isSuccess -> StatusEnglishFg
@@ -641,7 +751,7 @@ fun SettingsDialog(
                     }
                 }
 
-                // SEÇÃO 4: Pinned Hardware Platforms
+                // SECTION 4: Pinned Hardware Platforms
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -803,7 +913,7 @@ fun SettingsDialog(
                     }
                 }
 
-                // Botão de Gravação Principal
+                // Main Save Button
                 Button(
                     onClick = {
                         onSaveSettings(
@@ -814,7 +924,8 @@ fun SettingsDialog(
                                 defaultCurrency = selectedCurrency,
                                 isScraperEnabled = isScraperEnabled,
                                 ricardoSessionCookie = ricardoCookie.trim(),
-                                pinnedPlatformIds = pinnedPlatformIds.toList()
+                                pinnedPlatformIds = pinnedPlatformIds.toList(),
+                                themeMode = selectedThemeMode
                             )
                         )
                     },

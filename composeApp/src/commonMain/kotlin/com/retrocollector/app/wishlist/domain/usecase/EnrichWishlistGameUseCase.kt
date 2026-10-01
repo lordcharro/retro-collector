@@ -10,18 +10,18 @@ class EnrichWishlistGameUseCase(
     private val repository: IGameRepository
 ) {
     /**
-     * Enriquece um único jogo da wishlist com dados do Gemini.
-     * Atualiza o enrichmentStatus progressivamente: PENDING → ENRICHING → COMPLETE/FAILED.
+     * Enriches a single wishlist game with Gemini AI data.
+     * Progressively updates enrichmentStatus: PENDING → ENRICHING → COMPLETE/FAILED.
      */
     suspend operator fun invoke(gameId: String): Result<GameItem> {
         val game = repository.getGameById(gameId)
             ?: return Result.failure(IllegalArgumentException("Game not found: $gameId"))
 
-        // Marcar como ENRICHING
+        // Mark as ENRICHING
         repository.upsertGame(game.copy(enrichmentStatus = EnrichmentStatus.ENRICHING))
 
         return try {
-            // Usar o inspectGameWithAi com o título como query (sem imagem, sem preço)
+            // Use inspectGameWithAi with the game title as query (without image, without price)
             val result = repository.inspectGameWithAi(
                 query = "${game.title} ${game.platform.displayName} PAL European edition",
                 imageBase64 = null,
@@ -33,7 +33,7 @@ class EnrichWishlistGameUseCase(
                 onSuccess = { (_, enrichedGame) ->
                     val nowMs = Clock.System.now().toEpochMilliseconds()
                     val finalGame = if (enrichedGame != null) {
-                        // Preservar dados da wishlist e enriquecer com dados do Gemini
+                        // Preserve existing wishlist data and enrich with Gemini data
                         game.copy(
                             franchiseName = enrichedGame.franchiseName.ifBlank { game.franchiseName },
                             releaseYear = enrichedGame.releaseYear.ifBlank { game.releaseYear },

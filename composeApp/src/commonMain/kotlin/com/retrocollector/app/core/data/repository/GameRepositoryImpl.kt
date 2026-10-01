@@ -65,7 +65,7 @@ class GameRepositoryImpl(
         }
         _games.value = current
 
-        // Sincronização em background com Firestore se project ID estiver configurado
+        // Background synchronization with Firestore if project ID is configured
         val projectId = _settings.value.firebaseProjectId.trim()
         if (projectId.isNotBlank()) {
             scope.launch {
@@ -177,7 +177,7 @@ class GameRepositoryImpl(
         val sessionCookie = _settings.value.ricardoSessionCookie.ifBlank { null }
         listingScraper.fetchListing(listingUrl, sessionCookie).onSuccess { listing ->
             if (query == listingUrl || query.isBlank()) {
-                query = "Anúncio ${listing.sourcePlatform}: ${listing.title}. Descrição: ${listing.description.take(250)}"
+                query = "Listing ${listing.sourcePlatform}: ${listing.title}. Description: ${listing.description.take(250)}"
             }
             if (location.isBlank() || location == "Ricardo.ch") {
                 location = listing.sourcePlatform
@@ -241,13 +241,13 @@ class GameRepositoryImpl(
         )
         return GameItem(
             id = "game_${v.title.filter { it.isLetterOrDigit() }.lowercase()}_${platform.id}",
-            title = v.title.ifBlank { "Jogo Analisado" },
+            title = v.title.ifBlank { "Analyzed Game" },
             franchiseName = v.franchise,
             platform = platform,
             releaseYear = v.releaseYear,
             productCode = v.productCode,
             barcode = v.barcode,
-            spottedLocation = resolved.location.ifBlank { "Campo / Online" },
+            spottedLocation = resolved.location.ifBlank { "Field / Online" },
             askingPriceChf = resolved.price,
             targetPriceChf = v.swissMarketMedianChf,
             languageStatus = status,
@@ -340,7 +340,7 @@ class GameRepositoryImpl(
                     id = "ai_err_${Clock.System.now().toEpochMilliseconds()}",
                     contextId = contextId,
                     sender = MessageSender.GEMINI,
-                    text = "⚠️ Não foi possível obter resposta do Gemini: ${err.message ?: "Erro de ligação"}. Verifica a tua chave da API nas Definições."
+                    text = "⚠️ Could not retrieve answer from Gemini: ${err.message ?: "Connection error"}. Check your API key in Settings."
                 )
                 addChatMessage(errorMsg)
                 Result.failure(err)
@@ -468,8 +468,8 @@ class GameRepositoryImpl(
                     historicalMaxChf = 36.0,
                     trend = "Stable"
                 ),
-                censorshipWarning = "Esta prensagem NOE (DOL-P-G4BP) foi fortemente censurada na Alemanha: " +
-                    "os modos 'Assignment Ada' e 'The Mercenaries' foram removidos do disco!",
+                censorshipWarning = "This NOE pressing (DOL-P-G4BP) was heavily censored in Germany: " +
+                    "the 'Assignment Ada' and 'The Mercenaries' modes were removed from the disc!",
                 collectorVerdict = "Skip this copy at CHF 35.00. Wait and hunt specifically for DOL-P-G4BE (UK PAL) " +
                     "which features 100% uncut English content and all unlockable modes.",
                 collectionStatus = CollectionStatus.WISHLIST
@@ -496,7 +496,7 @@ class GameRepositoryImpl(
                     historicalMaxChf = 50.0,
                     trend = "Stable"
                 ),
-                collectorVerdict = "Excelente compra. O jogo seleciona o inglês automaticamente se a BIOS da consola estiver em inglês.",
+                collectorVerdict = "Excellent buy. The game selects English automatically if the console BIOS is set to English.",
                 collectionStatus = CollectionStatus.OWNED,
                 paidPriceChf = 45.0
             )
@@ -578,8 +578,8 @@ class GameRepositoryImpl(
                     historicalMaxChf = 70.0,
                     trend = "Rising"
                 ),
-                censorshipWarning = "Cópia vendida na Suíça/Alemanha com áudio forçado em alemão sem opção de inglês!",
-                collectorVerdict = "Rejeitar esta cópia por 65 CHF. Procurar especificamente a versão UK DOL-P-GEDE.",
+                censorshipWarning = "Copy sold in Switzerland/Germany with forced German audio and no English option!",
+                collectorVerdict = "Reject this copy for CHF 65. Look specifically for UK version DOL-P-GEDE.",
                 collectionStatus = CollectionStatus.PASS
             )
         )
@@ -599,10 +599,10 @@ class GameRepositoryImpl(
                 targetPriceChf = 15.0,
                 languageStatus = LanguageStatus.GERMAN_ONLY,
                 riskySkus = listOf(
-                    SkuInfo(code = "BLES-00561", region = "USK / DACH", editionNote = "Alemão exclusivo (Sem ficheiros de inglês no disco)", isSafe = false)
+                    SkuInfo(code = "BLES-00561", region = "USK / DACH", editionNote = "German exclusive (No English files on disc)", isSafe = false)
                 ),
                 safeSkus = listOf(
-                    SkuInfo(code = "BLES-00344", region = "UK", editionNote = "Edição Britânica em Inglês integral", isSafe = true),
+                    SkuInfo(code = "BLES-00344", region = "UK", editionNote = "British Edition in full English", isSafe = true),
                     SkuInfo(code = "BLES-00778", region = "GOTY UK", editionNote = "Game of the Year Edition UK", isSafe = true)
                 ),
                 marketRadar = SwissMarketRadar(
@@ -612,8 +612,8 @@ class GameRepositoryImpl(
                     historicalMaxChf = 18.0,
                     trend = "Stable"
                 ),
-                censorshipWarning = "90% das cópias no Ricardo.ch são o BLES-00561 (USK) que NÃO tem inglês!",
-                collectorVerdict = "Não comprar a versão BLES-00561. Procurar BLES-00344.",
+                censorshipWarning = "90% of copies on Ricardo.ch are BLES-00561 (USK) which DOES NOT have English!",
+                collectorVerdict = "Do not buy version BLES-00561. Look for BLES-00344.",
                 collectionStatus = CollectionStatus.PASS
             ),
             GameItem(
@@ -629,7 +629,7 @@ class GameRepositoryImpl(
                 paidPriceChf = 12.0,
                 languageStatus = LanguageStatus.FULL_ENGLISH,
                 safeSkus = listOf(
-                    SkuInfo(code = "BLES-00246", region = "EUR", editionNote = "Voz original David Hayter em inglês + legendas multi-idioma", isSafe = true)
+                    SkuInfo(code = "BLES-00246", region = "EUR", editionNote = "Original voice David Hayter in English + multi-language subtitles", isSafe = true)
                 ),
                 marketRadar = SwissMarketRadar(
                     spottedPriceChf = 12.0,
@@ -682,13 +682,13 @@ class GameRepositoryImpl(
                 text = """
                     ⚠️ **Censored German Release (BPjM Cut)**
                     
-                    Esta prensagem NOE (`DOL-P-G4BP`) foi fortemente censurada para cumprir a legislação alemã da época:
+                    This NOE pressing (`DOL-P-G4BP`) was heavily censored to comply with German regulations at the time:
                     
-                    • **Áudio & Texto**: As vozes em inglês estão no disco, mas os menus e legendas ficam bloqueados a alemão numa BIOS PAL padrão.
-                    • **Conteúdo Removido**: A Capcom cortou completamente os mini-jogos **Assignment Ada** e **The Mercenaries** nesta versão binária! As decapitações também foram atenuadas.
+                    • **Audio & Text**: English voice acting is on disc, but menus and subtitles are locked to German on standard PAL BIOS.
+                    • **Removed Content**: Capcom completely removed mini-games **Assignment Ada** and **The Mercenaries** in this version! Decapitations were also toned down.
                     
-                    **Veredito de Colecionador**:
-                    Ignora esta cópia por **CHF 35.00**. Procura antes pela edição `DOL-P-G4BE` (UK PAL) que é 100% sem cortes e em inglês integral.
+                    **Collector Verdict**:
+                    Skip this copy at **CHF 35.00**. Hunt instead for edition `DOL-P-G4BE` (UK PAL) which is 100% uncut and in full English.
                 """.trimIndent()
             )
         )

@@ -121,7 +121,7 @@ class WishlistViewModel(
                 } catch (e: kotlinx.coroutines.CancellationException) {
                     throw e
                 } catch (_: Exception) {
-                    // Falha individual não bloqueia os restantes
+                    // Individual failure does not block remaining items
                 }
                 completed++
                 _uiState.update { it.copy(enrichmentProgress = Pair(completed, total)) }
@@ -137,7 +137,7 @@ class WishlistViewModel(
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (_: Exception) {
-                // Erro tratado internamente pelo use case
+                // Error handled internally by the use case
             }
         }
     }

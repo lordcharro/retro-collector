@@ -15,8 +15,8 @@ import com.retrocollector.app.core.presentation.theme.*
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
- * Badge visual para o estado de enriquecimento de um jogo da Wishlist.
- * Mostra ícone e label com cor correspondente ao estado.
+ * Visual badge for Wishlist game enrichment state.
+ * Displays icon and label with appropriate state colors.
  */
 @Composable
 fun EnrichmentBadge(

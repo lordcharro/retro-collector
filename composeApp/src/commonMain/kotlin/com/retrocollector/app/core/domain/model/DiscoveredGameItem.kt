@@ -44,7 +44,7 @@ data class DiscoveredGameItem(
                     append("Port/Remaster: $modernPortDetails\n")
                 }
                 if (genreTags.isNotEmpty()) {
-                    append("Géneros: ${genreTags.joinToString(", ")}\n")
+                    append("Genres: ${genreTags.joinToString(", ")}\n")
                 }
             }.trim(),
             updatedAt = Clock.System.now().toEpochMilliseconds()

@@ -5,15 +5,15 @@ import com.retrocollector.app.core.domain.model.GameItem
 import com.retrocollector.app.core.domain.repository.IGameRepository
 
 /**
- * Procura jogos duplicados na coleção por título fuzzy + plataforma.
- * Usado na importação de wishlist e no Quick Scan para detetar jogos existentes.
+ * Searches for duplicate games in the library by normalized title + platform.
+ * Used in wishlist import and Quick Scan to detect already existing games.
  */
 class FindDuplicateGameUseCase(
     private val repository: IGameRepository
 ) {
     /**
-     * Procura jogos com título semelhante e mesma plataforma.
-     * @return Lista de jogos correspondentes (pode ser vazia).
+     * Searches for games with matching normalized title and platform.
+     * @return List of matching games (can be empty).
      */
     operator fun invoke(title: String, platform: ConsolePlatform): List<GameItem> {
         val normalizedInput = normalizeTitle(title)

@@ -10,8 +10,8 @@ import com.lemonappdev.konsist.api.verify.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * Testes de integridade de Clean Architecture inspirados no repositório oficial
- * da Confederação Suíça (swiyu-admin-ch/eidch-android-wallet).
+ * Clean Architecture integrity tests inspired by the Swiss Confederation
+ * official reference architecture (swiyu-admin-ch/eidch-android-wallet).
  */
 class CleanArchitectureKonsistTest {
 

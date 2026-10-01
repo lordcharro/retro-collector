@@ -44,7 +44,7 @@ fun DiscoveredGameCard(
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Linha 1: Consola, Ano e Badges de Idioma / Coleção
+        // Row 1: Console, Year, and Language / Collection Badges
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -97,7 +97,7 @@ fun DiscoveredGameCard(
             }
         }
 
-        // Linha 2: Título do Jogo
+        // Row 2: Game Title
         Column {
             Text(
                 text = game.title,
@@ -115,7 +115,7 @@ fun DiscoveredGameCard(
             }
         }
 
-        // Linha 3: Tag de Modern Port / Remaster
+        // Row 3: Modern Port / Remaster Tag
         if (game.hasModernPortOrRemaster || !game.modernPortDetails.isNullOrBlank()) {
             Box(
                 modifier = Modifier
@@ -130,7 +130,7 @@ fun DiscoveredGameCard(
                 ) {
                     Text(text = "✨", fontSize = 11.sp)
                     Text(
-                        text = game.modernPortDetails ?: "Port / Remaster Moderno Disponível",
+                        text = game.modernPortDetails ?: "Modern Port / Remaster Available",
                         style = CodeSkuStyle.copy(fontSize = 11.sp),
                         color = AccentBlue,
                         maxLines = 1,
@@ -140,7 +140,7 @@ fun DiscoveredGameCard(
             }
         }
 
-        // Linha 4: Rationale / Resumo Analítico
+        // Row 4: Rationale / Analytical Summary
         if (game.recommendationReason.isNotBlank()) {
             Box(
                 modifier = Modifier
@@ -158,7 +158,7 @@ fun DiscoveredGameCard(
             }
         }
 
-        // Linha 5: Preço Estimado e Ações Táteis
+        // Row 5: Estimated Price and Tactical Actions
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -215,9 +215,9 @@ fun DiscoveredGameCardPreview() {
                 franchiseName = "F-Zero",
                 platform = ConsolePlatform.GAMECUBE,
                 releaseYear = "2003",
-                genreDisplayName = "Corrida Futurista",
+                genreDisplayName = "Futuristic Racing",
                 genreTags = listOf("Racing", "Sci-Fi"),
-                recommendationReason = "Um dos jogos de corrida arcade mais rápidos e difíceis de sempre, desenvolvido pela Sega.",
+                recommendationReason = "One of the fastest and most challenging arcade racing games ever made, developed by Sega.",
                 languageStatus = LanguageStatus.FULL_ENGLISH,
                 estimatedPriceChf = 65.0
             ),

@@ -25,6 +25,9 @@ fun SwissMarketRadarView(
     radar: SwissMarketRadar,
     modifier: Modifier = Modifier,
     askingPriceChf: Double? = null,
+    paidPriceChf: Double? = null,
+    isOwned: Boolean = false,
+    onPriceSubmitted: ((Double?) -> Unit)? = null,
     currency: String = "CHF"
 ) {
     val effectiveAsking = askingPriceChf ?: radar.spottedPriceChf
@@ -68,9 +71,12 @@ fun SwissMarketRadarView(
                 .fillMaxWidth()
                 .padding(top = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "${TextKeys.Radar.ASKING_PRICE}:",
                     style = BodySm,
@@ -87,7 +93,10 @@ fun SwissMarketRadarView(
                 )
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "${TextKeys.Radar.MEDIAN_90D}:",
                     style = BodySm,
@@ -103,16 +112,26 @@ fun SwissMarketRadarView(
                     softWrap = false
                 )
             }
+
+            if (isOwned && onPriceSubmitted != null) {
+                PaidPriceInput(
+                    paidPrice = paidPriceChf,
+                    currency = currency,
+                    label = "${TextKeys.Dossier.PAID_PRICE_LABEL}:",
+                    onPriceSubmitted = onPriceSubmitted
+                )
+            }
         }
 
         // Deal evaluation pill if both available
-        if (effectiveAsking != null && median != null && median > 0) {
-            val delta = ((effectiveAsking - median) / median) * 100
+        val priceToCompare = if (isOwned && paidPriceChf != null) paidPriceChf else effectiveAsking
+        if (priceToCompare != null && median != null && median > 0) {
+            val delta = ((priceToCompare - median) / median) * 100
             val (dealText, dealColor) = when {
-                delta <= -20 -> Pair(TextKeys.Radar.DEAL_BARGAIN, StatusEnglishFg)
-                delta <= 0 -> Pair(TextKeys.Radar.DEAL_GOOD, StatusEnglishFg)
-                delta <= 15 -> Pair(TextKeys.Radar.DEAL_FAIR, StatusEditionFg)
-                else -> Pair(TextKeys.Radar.DEAL_OVERPRICED, StatusRiskFg)
+                delta <= -20 -> Pair(if (isOwned && paidPriceChf != null) "Great Acquisition" else TextKeys.Radar.DEAL_BARGAIN, StatusEnglishFg)
+                delta <= 0 -> Pair(if (isOwned && paidPriceChf != null) "Good Value" else TextKeys.Radar.DEAL_GOOD, StatusEnglishFg)
+                delta <= 15 -> Pair(if (isOwned && paidPriceChf != null) "Fair Price" else TextKeys.Radar.DEAL_FAIR, StatusEditionFg)
+                else -> Pair(if (isOwned && paidPriceChf != null) "Premium Paid" else TextKeys.Radar.DEAL_OVERPRICED, StatusRiskFg)
             }
 
             Text(
@@ -126,7 +145,7 @@ fun SwissMarketRadarView(
             )
         }
 
-        // Barra visual de escala de preço
+        // Visual price scale bar
         Box(
             modifier = Modifier
                 .fillMaxWidth()

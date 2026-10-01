@@ -59,7 +59,7 @@ fun DiscoveryScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         // -------------------------------------------------------------
-        // CABEÇALHO & BARRA DE PROMPT IA
+        // HEADER & AI PROMPT BAR
         // -------------------------------------------------------------
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -88,7 +88,7 @@ fun DiscoveryScreen(
             }
         }
 
-        // Barra de Pesquisa com IA
+        // AI Search Bar
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -129,14 +129,14 @@ fun DiscoveryScreen(
         }
 
         // -------------------------------------------------------------
-        // FILTROS DROPDOWN: GÉNERO & PLATAFORMA
+        // DROPDOWN FILTERS: GENRE & PLATFORM
         // -------------------------------------------------------------
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Dropdown de Género
+            // Genre Dropdown
             Box(modifier = Modifier.weight(1f)) {
                 var expandedGenre by remember { mutableStateOf(false) }
 
@@ -203,10 +203,10 @@ fun DiscoveryScreen(
                 }
             }
 
-            // Dropdown de Plataforma
+            // Platform Dropdown
             Box(modifier = Modifier.weight(1f)) {
                 var expandedPlatform by remember { mutableStateOf(false) }
-                val platformLabel = selectedPlatform?.displayName ?: "Todas as Consolas"
+                val platformLabel = selectedPlatform?.displayName ?: "All Consoles"
                 val platformColor = selectedPlatform?.let { Color(it.brandColorHex) } ?: StatusUnverifiedFg
 
                 Row(
@@ -322,7 +322,7 @@ fun DiscoveryScreen(
         }
 
         // -------------------------------------------------------------
-        // LISTA DE JOGOS DESCOBERTOS
+        // DISCOVERED GAMES LIST
         // -------------------------------------------------------------
         if (isDiscovering) {
             Box(
@@ -381,9 +381,9 @@ fun DiscoveryScreenPreview() {
                 franchiseName = "F-Zero",
                 platform = ConsolePlatform.GAMECUBE,
                 releaseYear = "2003",
-                genreDisplayName = "Corrida Futurista",
+                genreDisplayName = "Futuristic Racing",
                 genreTags = listOf("Racing", "Sci-Fi"),
-                recommendationReason = "Um dos jogos de corrida arcade mais rápidos e difíceis de sempre, desenvolvido pela Amusement Vision (Sega).",
+                recommendationReason = "One of the fastest and most challenging arcade racers of all time, developed by Amusement Vision (Sega).",
                 languageStatus = LanguageStatus.FULL_ENGLISH,
                 estimatedPriceChf = 65.0
             ),
@@ -393,9 +393,9 @@ fun DiscoveryScreenPreview() {
                 franchiseName = "Perfect Dark",
                 platform = ConsolePlatform.N64,
                 releaseYear = "2000",
-                genreDisplayName = "FPS de Espionagem",
+                genreDisplayName = "Tactical Espionage FPS",
                 genreTags = listOf("FPS", "Action"),
-                recommendationReason = "Sucessor espiritual de GoldenEye 007 com bots avançados e iluminação dinâmica impressionante no N64 Expansion Pak.",
+                recommendationReason = "Spiritual successor to GoldenEye 007 with advanced combat bots and impressive lighting on the N64 Expansion Pak.",
                 languageStatus = LanguageStatus.FULL_ENGLISH,
                 estimatedPriceChf = 35.0
             )

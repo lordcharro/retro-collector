@@ -36,12 +36,12 @@ fun AdaptiveMainScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Intercetação do botão Voltar nativo (Android)
+    // Intercept native Back button (Android)
     PlatformBackHandler(enabled = state.isMobileDetailOpen) {
         dashboardViewModel.closeMobileDetail()
     }
 
-    // Coleta de Efeitos One-Off via Channel
+    // Collect One-Off Effects via Channel
     LaunchedEffect(dashboardViewModel) {
         dashboardViewModel.effects.collectLatest { effect ->
             when (effect) {
@@ -52,7 +52,7 @@ fun AdaptiveMainScreen(
                     dashboardViewModel.openMobileDetail(effect.game)
                 }
                 is DashboardEffect.ScanCompleted -> {
-                    // Jogo escaneado já salvo e selecionado
+                    // Scanned game already saved and selected
                 }
             }
         }
@@ -101,7 +101,7 @@ fun AdaptiveMainScreen(
             val isDesktop = maxWidth >= 850.dp
 
             if (isDesktop) {
-                // Ecrã largo (macOS Desktop e Web Wasm): Split-View de duas colunas
+                // Wide screen (macOS Desktop and Web Wasm): Two-column Split-View
                 DesktopWorkstationScreen(
                     state = state,
                     discoveryState = discoveryState,
@@ -109,7 +109,7 @@ fun AdaptiveMainScreen(
                     actions = actions
                 )
             } else {
-                // Ecrã estreito (Android Phone): Navegação com ecrã móvel
+                // Narrow screen (Android Phone): Mobile navigation screen
                 val activeGame = state.selectedGame
                 if (state.isMobileDetailOpen && activeGame != null) {
                     MobileGameDetailScreen(
@@ -142,7 +142,7 @@ fun AdaptiveMainScreen(
                 }
             }
 
-            // Modais globais
+            // Global Modals
             if (state.isScanDialogOpen) {
                 QuickScanDialog(
                     currency = state.settings.defaultCurrency.ifBlank { "CHF" },

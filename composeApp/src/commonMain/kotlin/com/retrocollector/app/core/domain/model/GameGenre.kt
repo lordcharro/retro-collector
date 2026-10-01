@@ -9,53 +9,53 @@ enum class GameGenre(
     val promptDescription: String
 ) {
     ALL(
-        displayName = "Todos",
+        displayName = "All",
         icon = "🌟",
-        promptDescription = "Recomendações equilibradas entre clássicos essenciais, jogos de culto e pérolas ocultas"
+        promptDescription = "Balanced recommendations between essential classics, cult games, and hidden gems"
     ),
     POINT_AND_CLICK(
         displayName = "Point & Click",
         icon = "🕹️",
-        promptDescription = "Aventuras gráficas Point & Click, quebra-cabeças com humor e histórias narrativas (estilo LucasArts, Revolution Software, Double Fine)"
+        promptDescription = "Point & Click graphic adventures, humorous puzzles, and narrative stories (LucasArts, Revolution Software, Double Fine style)"
     ),
     FPS_TACTICAL(
-        displayName = "FPS & Tático",
+        displayName = "FPS & Tactical",
         icon = "🎯",
-        promptDescription = "Jogos de tiro na primeira pessoa (FPS), shooters táticos, simuladores militares e stealth FPS"
+        promptDescription = "First-person shooters (FPS), tactical shooters, military simulations, and stealth FPS"
     ),
     STRATEGY_RTS(
-        displayName = "Estratégia & RTS",
+        displayName = "Strategy & RTS",
         icon = "⚔️",
-        promptDescription = "Estratégia em tempo real (RTS), estratégia por turnos, táticas de combate e simulação"
+        promptDescription = "Real-time strategy (RTS), turn-based strategy, tactical combat, and simulation"
     ),
     SURVIVAL_HORROR(
         displayName = "Survival Horror",
         icon = "👁️",
-        promptDescription = "Survival horror clássico, terror psicológico, gestão de recursos escassos e câmaras fixas ou sobre o ombro"
+        promptDescription = "Classic survival horror, psychological terror, scarce resource management, and fixed or over-the-shoulder camera angles"
     ),
     RPG_JRPG(
         displayName = "RPG & JRPG",
         icon = "🛡️",
-        promptDescription = "Role-playing games (RPGs ocidentais e JRPGs japoneses com combate por turnos ou ação, grande foco em história e progressão)"
+        promptDescription = "Role-playing games (Western RPGs and Japanese JRPGs with turn-based or action combat, heavy focus on story and progression)"
     ),
     ACTION_ADVENTURE(
-        displayName = "Ação & Aventura",
+        displayName = "Action & Adventure",
         icon = "🗺️",
-        promptDescription = "Jogos de ação e aventura cinemática, exploração em terceira pessoa e hack & slash"
+        promptDescription = "Cinematic action and adventure games, third-person exploration, and hack & slash"
     ),
     STEALTH(
-        displayName = "Stealth & Espionagem",
+        displayName = "Stealth & Espionage",
         icon = "👥",
-        promptDescription = "Jogos de infiltração, espionagem tática e furtividade (estilo Metal Gear Solid, Splinter Cell, Hitman)"
+        promptDescription = "Infiltration, tactical espionage, and stealth games (Metal Gear Solid, Splinter Cell, Hitman style)"
     ),
     PLATFORMER(
-        displayName = "Plataformas",
+        displayName = "Platformers",
         icon = "🍄",
-        promptDescription = "Plataformas 2D e 3D de precisão, aventura e exploração (collect-a-thons)"
+        promptDescription = "Precision 2D and 3D platformers, adventure, and exploration (collect-a-thons)"
     ),
     HIDDEN_GEMS(
-        displayName = "Pérolas Ocultas",
+        displayName = "Hidden Gems",
         icon = "💎",
-        promptDescription = "Jogos de culto menos conhecidos, ignorados comercialmente no lançamento mas adorados por colecionadores"
+        promptDescription = "Lesser-known cult games, overlooked at commercial release but beloved by collectors"
     )
 }

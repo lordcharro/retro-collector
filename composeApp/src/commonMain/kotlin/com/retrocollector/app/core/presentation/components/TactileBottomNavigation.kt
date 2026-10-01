@@ -80,7 +80,7 @@ fun TactileBottomNavigation(
                 label = AppSection.WISHLIST.label,
                 isSelected = activeSection == AppSection.WISHLIST,
                 badgeCount = wishlistCount,
-                badgeBg = Color(0xFF6366F1), // Vibrant Indigo
+                badgeBg = if (LocalTactileColors.current.isDark) Color(0xFF6366F1) else Color(0xFF4F46E5),
                 onClick = { onSectionSelect(AppSection.WISHLIST) },
                 icon = { color -> WishlistNavIcon(color = color) }
             )
@@ -90,7 +90,7 @@ fun TactileBottomNavigation(
                 label = AppSection.COLLECTION.label,
                 isSelected = activeSection == AppSection.COLLECTION,
                 badgeCount = collectionCount,
-                badgeBg = Color(0xFF3F3F46), // Muted Zinc Badge
+                badgeBg = if (LocalTactileColors.current.isDark) Color(0xFF3F3F46) else Color(0xFF64748B),
                 onClick = { onSectionSelect(AppSection.COLLECTION) },
                 icon = { color -> CollectionNavIcon(color = color) }
             )
@@ -117,7 +117,7 @@ private fun RowScope.TactileBottomNavItem(
     onClick: () -> Unit,
     icon: @Composable (color: Color) -> Unit
 ) {
-    val activeColor = Color(0xFF818CF8) // Vibrant Light Indigo / Primary
+    val activeColor = if (LocalTactileColors.current.isDark) Color(0xFF818CF8) else Color(0xFF4F46E5)
     val inactiveColor = TextSecondary
 
     val color by animateColorAsState(

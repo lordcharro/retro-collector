@@ -22,8 +22,8 @@ import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
- * Ecrã da coleção pessoal — lista tática de jogos OWNED
- * com barra de estatísticas (contagem + valor total em CHF).
+ * Personal collection screen — tactical list of OWNED games
+ * with statistics header (game count + total value).
  */
 @Composable
 fun CollectionScreen(
@@ -41,13 +41,13 @@ fun CollectionScreen(
             .fillMaxSize()
             .background(SurfaceBase)
     ) {
-        // Barra de estatísticas da coleção
+        // Collection statistics bar
         CollectionStatsBar(
             games = state.collectionGames,
             currency = currency
         )
 
-        // Lista de jogos da coleção
+        // Collection games list
         if (state.collectionGames.isEmpty()) {
             TacticalEmptyState(
                 icon = "📦",

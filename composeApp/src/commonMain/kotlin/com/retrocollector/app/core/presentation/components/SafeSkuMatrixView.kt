@@ -43,7 +43,7 @@ fun SafeSkuMatrixView(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            // Códigos Seguros
+            // Safe Codes
             safeSkus.forEach { sku ->
                 Row(
                     modifier = Modifier
@@ -77,7 +77,7 @@ fun SafeSkuMatrixView(
                 }
             }
 
-            // Códigos de Risco
+            // Risky Codes
             riskySkus.forEach { sku ->
                 Row(
                     modifier = Modifier

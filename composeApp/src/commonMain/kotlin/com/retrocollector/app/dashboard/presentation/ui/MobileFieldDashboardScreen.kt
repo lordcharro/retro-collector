@@ -145,7 +145,7 @@ fun MobileFieldDashboardScreen(
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Barra de Pesquisa de SKU Tática Compartilhada
+                // Shared Tactical SKU Search Bar
                 TactileSearchField(
                     query = state.searchQuery,
                     onQueryChange = { actions.onSearchQueryChange(it) },
@@ -167,7 +167,7 @@ fun MobileFieldDashboardScreen(
                     }
                 )
 
-                // Grelha de Consola (Adaptive Active Platforms)
+                // Console Grid (Adaptive Active Platforms)
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -273,7 +273,7 @@ fun MobileFieldDashboardScreen(
 
                 when (state.activeSection) {
                     AppSection.ACTIVITY -> {
-                        // Cabeçalho da Lista e Contador
+                        // List Header and Counter
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -308,7 +308,7 @@ fun MobileFieldDashboardScreen(
                             }
                         }
 
-                        // Lista de Cartões de Jogos em Contentor Agrupado
+                        // Game Cards List in Grouped Container
                         Surface(
                             shape = RoundedCornerShape(8.dp),
                             color = SurfaceCard,

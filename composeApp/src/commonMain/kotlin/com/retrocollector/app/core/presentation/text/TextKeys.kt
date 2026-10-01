@@ -1,9 +1,9 @@
 package com.retrocollector.app.core.presentation.text
 
 /**
- * Catálogo centralizado de TextKeys para a aplicação RetroCollector.
- * Evita strings hardcoded na interface gráfica, facilitando manutenção,
- * testes e internacionalização futura (DE / FR / EN / PT).
+ * Centralized TextKeys catalog for the RetroCollector application.
+ * Prevents hardcoded strings in the UI, facilitating maintenance,
+ * testing, and future internationalization (DE / FR / EN / PT).
  */
 object TextKeys {
 

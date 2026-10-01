@@ -14,7 +14,7 @@ data class GameItem(
     val productCode: String? = null, // ex: DOL-P-G4BE, BLES-00561
     val barcode: String? = null,
     val spottedLocation: String = "", // ex: Brockenhaus Bern, Ricardo.ch, Basel Flohmarkt
-    val askingPriceChf: Double? = null, // preço avistado / pedido
+    val askingPriceChf: Double? = null, // spotted / asking price
     val targetPriceChf: Double? = null,
     val paidPriceChf: Double? = null,
     val languageStatus: LanguageStatus = LanguageStatus.UNVERIFIED,
