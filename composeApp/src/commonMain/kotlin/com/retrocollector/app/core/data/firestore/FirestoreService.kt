@@ -385,135 +385,123 @@ class FirestoreService(
 
         return buildJsonObject {
             put("fields", buildJsonObject {
-                put("id", buildJsonObject { put("stringValue", game.id) })
-                put("title", buildJsonObject { put("stringValue", game.title) })
-                put("platform", buildJsonObject { put("stringValue", game.platform.id) })
-                put("status", buildJsonObject { put("stringValue", game.collectionStatus.name) })
-                put("collectionStatus", buildJsonObject { put("stringValue", game.collectionStatus.name) })
-                put("enrichmentStatus", buildJsonObject { put("stringValue", game.enrichmentStatus.name) })
-                put("languageStatus", buildJsonObject { put("stringValue", game.languageStatus.name) })
-                put("updatedAt", buildJsonObject { put("integerValue", game.updatedAt.toString()) })
+                buildIdentityFields(game, this)
+                buildPricingAndConditionFields(game, this)
+                buildLanguageAndMediaFields(game, this)
+                buildRadarAndSkuFields(game, this)
+                buildOffersAndSimilarFields(game, best, this)
+            })
+        }
+    }
 
-                if (game.franchiseName.isNotBlank()) {
-                    put("franchiseName", buildJsonObject { put("stringValue", game.franchiseName) })
-                }
-                if (game.releaseYear.isNotBlank()) {
-                    put("releaseYear", buildJsonObject { put("stringValue", game.releaseYear) })
-                }
-                game.coverImageUrl?.let {
-                    put("coverImageUrl", buildJsonObject { put("stringValue", it) })
-                }
-                game.spineImageUrl?.let {
-                    put("spineImageUrl", buildJsonObject { put("stringValue", it) })
-                }
-                game.productCode?.let {
-                    put("productCode", buildJsonObject { put("stringValue", it) })
-                }
-                game.barcode?.let {
-                    put("barcode", buildJsonObject { put("stringValue", it) })
-                }
-                if (game.spottedLocation.isNotBlank()) {
-                    put("spottedLocation", buildJsonObject { put("stringValue", game.spottedLocation) })
-                }
+    private fun buildIdentityFields(game: GameItem, builder: JsonObjectBuilder) = with(builder) {
+        put("id", buildJsonObject { put("stringValue", game.id) })
+        put("title", buildJsonObject { put("stringValue", game.title) })
+        put("platform", buildJsonObject { put("stringValue", game.platform.id) })
+        put("status", buildJsonObject { put("stringValue", game.collectionStatus.name) })
+        put("collectionStatus", buildJsonObject { put("stringValue", game.collectionStatus.name) })
+        put("enrichmentStatus", buildJsonObject { put("stringValue", game.enrichmentStatus.name) })
+        put("languageStatus", buildJsonObject { put("stringValue", game.languageStatus.name) })
+        put("updatedAt", buildJsonObject { put("integerValue", game.updatedAt.toString()) })
 
-                game.askingPriceChf?.let {
-                    put("askingPriceChf", buildJsonObject { put("doubleValue", it) })
-                }
-                game.targetPriceChf?.let {
-                    put("targetPriceChf", buildJsonObject { put("doubleValue", it) })
-                }
-                game.paidPriceChf?.let {
-                    put("paidPriceChf", buildJsonObject { put("doubleValue", it) })
-                }
-                game.acquiredCondition?.let { cond ->
-                    put("acquiredCondition", buildJsonObject { put("stringValue", cond.name) })
-                }
+        if (game.franchiseName.isNotBlank()) {
+            put("franchiseName", buildJsonObject { put("stringValue", game.franchiseName) })
+        }
+        if (game.releaseYear.isNotBlank()) {
+            put("releaseYear", buildJsonObject { put("stringValue", game.releaseYear) })
+        }
+        game.productCode?.let { put("productCode", buildJsonObject { put("stringValue", it) }) }
+        game.barcode?.let { put("barcode", buildJsonObject { put("stringValue", it) }) }
+        if (game.spottedLocation.isNotBlank()) {
+            put("spottedLocation", buildJsonObject { put("stringValue", game.spottedLocation) })
+        }
+    }
 
-                if (game.languageAudio.isNotEmpty()) {
-                    put("languageAudio", buildJsonObject {
-                        put("arrayValue", buildJsonObject {
-                            put("values", buildJsonArray {
-                                game.languageAudio.forEach { add(buildJsonObject { put("stringValue", it) }) }
-                            })
-                        })
-                    })
-                }
-                if (game.languageSubtitles.isNotEmpty()) {
-                    put("languageSubtitles", buildJsonObject {
-                        put("arrayValue", buildJsonObject {
-                            put("values", buildJsonArray {
-                                game.languageSubtitles.forEach { add(buildJsonObject { put("stringValue", it) }) }
-                            })
-                        })
-                    })
-                }
+    private fun buildPricingAndConditionFields(game: GameItem, builder: JsonObjectBuilder) = with(builder) {
+        game.askingPriceChf?.let { put("askingPriceChf", buildJsonObject { put("doubleValue", it) }) }
+        game.targetPriceChf?.let { put("targetPriceChf", buildJsonObject { put("doubleValue", it) }) }
+        game.paidPriceChf?.let { put("paidPriceChf", buildJsonObject { put("doubleValue", it) }) }
+        game.acquiredCondition?.let { put("acquiredCondition", buildJsonObject { put("stringValue", it.name) }) }
+        game.censorshipWarning?.let { put("censorshipWarning", buildJsonObject { put("stringValue", it) }) }
+        if (game.collectorVerdict.isNotBlank()) {
+            put("collectorVerdict", buildJsonObject { put("stringValue", game.collectorVerdict) })
+        }
+        if (game.personalNotes.isNotBlank()) {
+            put("personalNotes", buildJsonObject { put("stringValue", game.personalNotes) })
+        }
+        game.listingUrl?.let { put("listingUrl", buildJsonObject { put("stringValue", it) }) }
+    }
 
-                game.censorshipWarning?.let {
-                    put("censorshipWarning", buildJsonObject { put("stringValue", it) })
-                }
-                if (game.collectorVerdict.isNotBlank()) {
-                    put("collectorVerdict", buildJsonObject { put("stringValue", game.collectorVerdict) })
-                }
-                if (game.personalNotes.isNotBlank()) {
-                    put("personalNotes", buildJsonObject { put("stringValue", game.personalNotes) })
-                }
-                game.listingUrl?.let {
-                    put("listingUrl", buildJsonObject { put("stringValue", it) })
-                }
+    private fun buildLanguageAndMediaFields(game: GameItem, builder: JsonObjectBuilder) = with(builder) {
+        game.coverImageUrl?.let { put("coverImageUrl", buildJsonObject { put("stringValue", it) }) }
+        game.spineImageUrl?.let { put("spineImageUrl", buildJsonObject { put("stringValue", it) }) }
 
-                if (game.safeSkus.isNotEmpty()) {
-                    put("safeSkus", buildJsonObject {
-                        put("arrayValue", buildJsonObject {
-                            put("values", buildJsonArray {
-                                game.safeSkus.forEach { add(encodeSkuInfo(it)) }
-                            })
-                        })
-                    })
-                }
-                if (game.riskySkus.isNotEmpty()) {
-                    put("riskySkus", buildJsonObject {
-                        put("arrayValue", buildJsonObject {
-                            put("values", buildJsonArray {
-                                game.riskySkus.forEach { add(encodeSkuInfo(it)) }
-                            })
-                        })
-                    })
-                }
-
-                game.marketRadar?.let { radar ->
-                    put("marketRadar", buildJsonObject {
-                        put("mapValue", encodeMarketRadar(radar))
-                    })
-                }
-
-                put("offersCount", buildJsonObject {
-                    put("integerValue", game.offers.size.toString())
-                })
-                if (best != null) {
-                    put("bestOfferStore", buildJsonObject {
-                        put("stringValue", best.source)
-                    })
-                    put("bestOfferPriceChf", buildJsonObject {
-                        put("doubleValue", best.totalLandedPriceChf)
-                    })
-                }
-                put("offers", buildJsonObject {
-                    put("arrayValue", buildJsonObject {
-                        put("values", buildJsonArray {
-                            game.offers.forEach { add(encodeGameOffer(it)) }
-                        })
+        if (game.languageAudio.isNotEmpty()) {
+            put("languageAudio", buildJsonObject {
+                put("arrayValue", buildJsonObject {
+                    put("values", buildJsonArray {
+                        game.languageAudio.forEach { add(buildJsonObject { put("stringValue", it) }) }
                     })
                 })
-
-                if (game.similarGames.isNotEmpty()) {
-                    put("similarGames", buildJsonObject {
-                        put("arrayValue", buildJsonObject {
-                            put("values", buildJsonArray {
-                                game.similarGames.forEach { add(encodeDiscoveredGameItem(it)) }
-                            })
-                        })
+            })
+        }
+        if (game.languageSubtitles.isNotEmpty()) {
+            put("languageSubtitles", buildJsonObject {
+                put("arrayValue", buildJsonObject {
+                    put("values", buildJsonArray {
+                        game.languageSubtitles.forEach { add(buildJsonObject { put("stringValue", it) }) }
                     })
-                }
+                })
+            })
+        }
+    }
+
+    private fun buildRadarAndSkuFields(game: GameItem, builder: JsonObjectBuilder) = with(builder) {
+        if (game.safeSkus.isNotEmpty()) {
+            put("safeSkus", buildJsonObject {
+                put("arrayValue", buildJsonObject {
+                    put("values", buildJsonArray {
+                        game.safeSkus.forEach { add(encodeSkuInfo(it)) }
+                    })
+                })
+            })
+        }
+        if (game.riskySkus.isNotEmpty()) {
+            put("riskySkus", buildJsonObject {
+                put("arrayValue", buildJsonObject {
+                    put("values", buildJsonArray {
+                        game.riskySkus.forEach { add(encodeSkuInfo(it)) }
+                    })
+                })
+            })
+        }
+        game.marketRadar?.let { radar ->
+            put("marketRadar", buildJsonObject {
+                put("mapValue", encodeMarketRadar(radar))
+            })
+        }
+    }
+
+    private fun buildOffersAndSimilarFields(game: GameItem, best: GameOffer?, builder: JsonObjectBuilder) = with(builder) {
+        put("offersCount", buildJsonObject { put("integerValue", game.offers.size.toString()) })
+        if (best != null) {
+            put("bestOfferStore", buildJsonObject { put("stringValue", best.source) })
+            put("bestOfferPriceChf", buildJsonObject { put("doubleValue", best.totalLandedPriceChf) })
+        }
+        put("offers", buildJsonObject {
+            put("arrayValue", buildJsonObject {
+                put("values", buildJsonArray {
+                    game.offers.forEach { add(encodeGameOffer(it)) }
+                })
+            })
+        })
+        if (game.similarGames.isNotEmpty()) {
+            put("similarGames", buildJsonObject {
+                put("arrayValue", buildJsonObject {
+                    put("values", buildJsonArray {
+                        game.similarGames.forEach { add(encodeDiscoveredGameItem(it)) }
+                    })
+                })
             })
         }
     }
