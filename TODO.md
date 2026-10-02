@@ -21,14 +21,12 @@
 
 ## 🟠 High Priority
 
-- [ ] **App Icon — replace with a lighter, modern design**
-  - Current icon (`app_icon.png`, `app_icon.icns`) is a placeholder.
-  - Needed assets:
+- [x] **App Icon — replace with a lighter, modern design**
+  - Modernized retro controller logo and icon set across all supported targets:
     - `app_icon.icns` (macOS, multi-size)
     - `app_icon.png` (desktop/Wasm, 512×512)
-    - Android adaptive icon set: `ic_launcher_foreground.xml` + `ic_launcher_background.xml` (or PNGs) in all mipmap densities (`mdpi`, `hdpi`, `xhdpi`, `xxhdpi`, `xxxhdpi`) plus `ic_launcher_round` variants
-  - The Android manifest already references `@mipmap/ic_launcher` and `@mipmap/ic_launcher_round`, so only the asset files need replacing.
-  - Suggestion: a clean retro controller or cartridge silhouette on a dark zinc background.
+    - Android launcher icon set in all mipmap densities (`mdpi`, `hdpi`, `xhdpi`, `xxhdpi`, `xxxhdpi`) plus `ic_launcher_round` variants
+    - Compose Multiplatform drawable resource (`app_icon.png`)
 
 - [ ] **Firestore: full sync integration (Phase 4 from progress notes)**
   - The `FirestoreService` is implemented and wired up, but sync is not automatic — the user has to manually trigger it.
@@ -95,9 +93,8 @@
   - Network errors from Gemini and Firestore bubble up as plain text in a snackbar.
   - Add structured error types and user-friendly recovery actions (e.g. "Retry", "Check API key").
 
-- [ ] **Dark / Light theme toggle**
-  - App is permanently dark (`RetroTactileTheme` hard-codes dark mode).
-  - Consider respecting the system theme, or adding a toggle in Settings.
+- [x] **Dark / Light theme toggle**
+  - App supports Dark, Light, and System theme modes selectable via Settings (`ThemeMode`).
 
 ---
 
@@ -128,5 +125,5 @@
   - Only Konsist architecture tests exist.
   - Add unit tests for: `GeminiRemoteDataSource` JSON parsing, `ListingScraper` URL slug extraction, `PriceFormatter`, and `DashboardViewModel` state transitions.
 
-- [ ] **GitHub Actions CI pipeline**
-  - Add a `.github/workflows/ci.yml` that runs `./gradlew detekt test` on every push/PR so linting and architecture tests are enforced automatically.
+- [x] **GitHub Actions CI pipeline**
+  - Added `.github/workflows/ci.yml` running detekt lint checks, unit tests, and multiplatform build validation on every push/PR.

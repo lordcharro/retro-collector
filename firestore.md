@@ -2,26 +2,29 @@
 
 This document describes the Firestore collections, document structures, field types, recommended composite indexes, and security rules for the **RetroCollector** cloud sync.
 
-> **Implementation status:** only the `games` collection is currently synced by [`FirestoreService.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/firestore/FirestoreService.kt). The `chat_threads` and `app_settings` collections are designed and ready but not yet integrated — see [TODO.md](TODO.md).
+> **Implementation status:** The `games` and `chat_threads` collections are fully integrated and synced by [`FirestoreService.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/firestore/FirestoreService.kt) using 100% structured Firestore serialization (with seamless backwards-compatible fallback for legacy document schemas). `app_settings` is designed and planned.
 
 ---
 
 ## 📐 Data Architecture
 
-RetroCollector uses a **hybrid document structure**:
+RetroCollector uses a **fully structured Firestore document architecture**:
 
-1. **Indexed root fields** — `title`, `platform`, `status`, `updatedAt` — exposed at the document root so Firestore can filter and sort without needing to parse the full payload.
-2. **Serialised `data` field** — the complete `GameItem` model serialised as a JSON string for direct deserialisation in Kotlin Multiplatform (Android, macOS Desktop, WebAssembly).
+1. **Direct Structured Fields** — all attributes (identity, condition, pricing, PAL language safety, SKUs, Swiss market radar, marketplace offers, and AI discovery recommendations) are stored as native Firestore types (`stringValue`, `doubleValue`, `arrayValue`, `mapValue`, `integerValue`).
+2. **Backwards Compatibility** — legacy documents with a serialized `data` string payload continue to be parsed transparently via `LegacyFirestoreDocumentParser`.
 
 ```
 Firestore (default database)
 ├── 📁 games/                          # Game catalogue, wishlist, and hunting list
 │   └── 📄 {gameId}                    # e.g. "game_ssbm_gc", "game_deadspace_ps3"
-│       ├── title, platform, status, updatedAt  (root indexed fields)
-│       └── data                                (full GameItem JSON string)
+│       ├── id, title, platform, status, languageStatus, updatedAt...
+│       ├── offers[]                   # Tracked marketplace offers (Ricardo, Tutti, Anibis)
+│       ├── similarGames[]             # Persistent AI discovery & recommendation items
+│       └── safeSkus[], riskySkus[], marketRadar
 │
-├── 📁 chat_threads/                   # [PLANNED] Gemini chat history per game/franchise
-│   └── 📄 {messageId}
+├── 📁 chat_threads/                   # [ACTIVE / SYNCED] Gemini chat history per game/franchise
+│   └── 📄 {messageId}                 # e.g. "msg_1727464100_user"
+│       ├── id, contextId, sender, text, imageBase64, timestamp
 │
 └── 📁 app_settings/                   # [PLANNED] Global or per-user preferences
     └── 📄 preferences
@@ -50,7 +53,8 @@ Each document represents a physical game — whether owned, on the wishlist, act
 | `askingPriceChf` | `number` (double) | — | Seller's asking price in CHF | `65.00` |
 | `targetPriceChf` | `number` (double) | — | Collector's target / max purchase price | `55.00` |
 | `paidPriceChf` | `number` (double) | — | Price actually paid | `60.00` |
-| `collectionStatus` | `string` | ✅ | Collection state — see allowed values | `"WISHLIST"` |
+| `collectionStatus` | `string` | ✅ | Collection state (`WISHLIST`, `OWNED`, `PASS`) | `"WISHLIST"` |
+| `status` | `string` | ✅ | Indexed root status key mirroring `collectionStatus` | `"WISHLIST"` |
 | `languageStatus` | `string` | ✅ | Language safety status — see allowed values | `"FULL_ENGLISH"` |
 | `languageAudio` | `array<string>` | — | Audio languages on the disc/cartridge | `["English", "Japanese"]` |
 | `languageSubtitles` | `array<string>` | — | Subtitle / menu languages | `["English", "French", "German"]` |
@@ -67,10 +71,8 @@ Each document represents a physical game — whether owned, on the wishlist, act
 | `bestOfferStore` | `string` | — | Store name of the lowest landed price offer | `"Anibis.ch"` |
 | `bestOfferPriceChf` | `number` (double) | — | Best landed price across all active offers | `28.00` |
 | `offers` | `array<map>` | — | Tracked marketplace offers / store listings | *See GameOffer sub-map below* |
+| `similarGames` | `array<map>` | — | AI Discovery recommendations persisted with the game | *See DiscoveredGameItem sub-map below* |
 | `updatedAt` | `integer` (int64) | ✅ | Last updated timestamp in epoch milliseconds | `1727464000000` |
-| `data` | `string` | ✅ | Full `GameItem` serialised as JSON (used by the KMP app for deserialisation) | `"{...}"` |
-
-> **Note on `status` vs `collectionStatus`:** The app saves the collection status under the root key `"status"` in Firestore (for indexing), while the full `GameItem` JSON inside the `data` field uses `"collectionStatus"`. The Firestore Security Rules validate the root `status` field.
 
 ---
 
@@ -103,7 +105,34 @@ retro_vintage
 
 ---
 
-### Sub-maps
+#### `DiscoveredGameItem` (items in `similarGames`)
+```json
+{
+  "id": "sim_gamecube_eternaldarkness",
+  "title": "Eternal Darkness: Sanity's Requiem",
+  "franchiseName": "Eternal Darkness",
+  "platform": "gamecube",
+  "releaseYear": "2002",
+  "genreDisplayName": "Action Horror",
+  "genreTags": ["Horror", "Psychological", "Sanity System"],
+  "recommendationReason": "Recommended because you collected Resident Evil 4",
+  "languageStatus": "FULL_ENGLISH",
+  "safeSkus": [
+    {
+      "code": "DOL-P-GEDP",
+      "region": "NOE / UKV",
+      "editionNote": "Includes full English voice acting and multi-language text",
+      "isSafe": true
+    }
+  ],
+  "hasModernPortOrRemaster": false,
+  "modernPortDetails": null,
+  "estimatedPriceChf": 75.0,
+  "similarTitles": ["Resident Evil", "Silent Hill"],
+  "isAlreadyInCollection": false,
+  "isAlreadyInWishlist": false
+}
+```
 
 #### `GameOffer` (items in `offers`)
 ```json
@@ -163,7 +192,8 @@ retro_vintage
   "askingPriceChf": 35.0,
   "targetPriceChf": 25.0,
   "paidPriceChf": null,
-  "collectionStatus": "EVALUATING",
+  "status": "WISHLIST",
+  "collectionStatus": "WISHLIST",
   "languageStatus": "GERMAN_ONLY",
   "languageAudio": ["German"],
   "languageSubtitles": ["German"],
@@ -195,13 +225,48 @@ retro_vintage
   "personalNotes": "",
   "enrichmentStatus": "COMPLETE",
   "listingUrl": "https://www.ricardo.ch/de/a/dead-space-ps3-1240000000/",
+  "acquiredCondition": "CIB",
+  "offersCount": 2,
+  "bestOfferStore": "Anibis.ch",
+  "bestOfferPriceChf": 25.0,
+  "offers": [
+    {
+      "id": "offer_1",
+      "source": "Ricardo.ch",
+      "priceChf": 32.0,
+      "shippingChf": 7.0,
+      "totalLandedPriceChf": 39.0,
+      "listingUrl": "https://www.ricardo.ch",
+      "condition": "CIB",
+      "sellerOrLocation": "Zurich",
+      "notes": "USK cover",
+      "isPurchased": false,
+      "isArchived": false,
+      "createdAt": 1727464000000
+    },
+    {
+      "id": "offer_2",
+      "source": "Anibis.ch",
+      "priceChf": 25.0,
+      "shippingChf": null,
+      "totalLandedPriceChf": 25.0,
+      "listingUrl": "https://www.anibis.ch",
+      "condition": "LOOSE",
+      "sellerOrLocation": "Basel",
+      "notes": "Disc only UK copy",
+      "isPurchased": false,
+      "isArchived": false,
+      "createdAt": 1727464010000
+    }
+  ],
+  "similarGames": [],
   "updatedAt": 1727464000000
 }
 ```
 
 ---
 
-## 📂 Collection: `chat_threads` *(planned — not yet synced)*
+## 📂 Collection: `chat_threads` *(active / synced)*
 
 Stores contextual Gemini chat messages for each game or inspection session.
 
@@ -215,7 +280,6 @@ Stores contextual Gemini chat messages for each game or inspection session.
 | `text` | `string` | Message body | `"The NOE edition has a 60Hz selector and English audio."` |
 | `imageBase64` | `string` | Optional photo sent for analysis (thumbnail) | `null` |
 | `timestamp` | `integer` (int64) | Send time in epoch milliseconds | `1727464100000` |
-| `suggestedGameUpdate` | `map` | Optional one-click field update suggestion from Gemini | `null` |
 
 ---
 
@@ -259,8 +323,6 @@ service cloud.firestore {
           ]
           && doc.status is string
           && doc.status in ['WISHLIST', 'OWNED', 'PASS']
-          && doc.data is string
-          && doc.data.size() <= 100000  // 100 KB limit for the serialised JSON
           && (doc.updatedAt is int || doc.updatedAt is timestamp);
     }
 

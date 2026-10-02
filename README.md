@@ -6,6 +6,42 @@ Covers **30 consoles across 5 ecosystems** — Nintendo, PlayStation, Xbox, Sega
 
 ---
 
+## 🖥️ App Highlights & Screenshots (macOS Desktop)
+
+### 🎯 Wishlist & Game Dossier
+*Master-detail workstation layout with multi-console filtering, regional SKU matrix (`DOL-P-GBSE EUR/UK`), live marketplace store offers (Ricardo.ch), similar games in genre, and interactive Gemini chat.*
+
+![RetroCollector Wishlist & Dossier](docs/wishlist.png)
+
+---
+
+### 📡 Discovery Radar
+*Explore PAL gems and search using natural language (e.g. "games like Monkey Island" or "tactical FPS on PS3") with remaster alerts and instant wishlist triage.*
+
+![RetroCollector Discovery Radar](docs/discover.png)
+
+---
+
+### ⚙️ Settings & Intelligence Engine
+*Dark / Light / System interface theme toggle, Google Gemini Flash model selector, API key verification, and Quota Saver controls.*
+
+<p align="center">
+  <img src="docs/settings.png" width="450" alt="RetroCollector Settings and Integrations" />
+</p>
+
+---
+
+## 🚀 Key Features
+
+* **🛡️ PAL Language Safety Verifier**: Distinguishes guaranteed English editions (UKV/PEGI) from German-locked USK copies (`DOL-P-xxxx-(NOE)`, `BLES-00351`, etc.) to prevent unplayable purchases.
+* **🏷️ Tracked Marketplace Offers**: Track multiple listings across Ricardo.ch, Tutti.ch, and Anibis.ch with condition (`CIB`, `BOXED`, `LOOSE`), shipping costs, and lowest landed price calculation.
+* **🇨🇭 Swiss Market Radar**: Tracks median asking prices, historical min/max CHF ranges, and market pricing trends in Switzerland.
+* **🧠 Gemini AI Discovery & Chat**: Multimodal spine OCR, curated catalog exploration, similarity recommendations based on owned games, and persistent contextual chat per title.
+* **☁️ Structured Firestore Sync**: Real-time multiplatform synchronization for your collection, wishlist, marketplace offers, and chat history.
+* **🌓 Adaptive Material 3 Theming**: Dark and Light tactile themes with high-contrast retro accents.
+
+---
+
 ## 🚀 Supported Platforms (3-in-1 Shared Codebase)
 
 1. **📱 Android (`:androidApp`)**
