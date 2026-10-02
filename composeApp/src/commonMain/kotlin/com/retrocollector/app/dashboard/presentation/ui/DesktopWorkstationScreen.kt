@@ -767,7 +767,8 @@ fun DesktopWorkstationScreen(
                                         isLoading = state.isSimilarGamesLoading,
                                         currency = state.settings.defaultCurrency.ifBlank { "CHF" },
                                         onSelectGame = { actions.onOpenDiscoveredDossier(it) },
-                                        onAddToWishlist = { actions.onAddDiscoveredToWishlist(it) }
+                                        onAddToWishlist = { actions.onAddDiscoveredToWishlist(it) },
+                                        onRefreshSimilarGames = { actions.onLoadSimilarGames(game) }
                                     )
                                 }
 

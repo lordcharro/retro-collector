@@ -34,7 +34,8 @@ fun SimilarGamesShelf(
     onSelectGame: (DiscoveredGameItem) -> Unit,
     onAddToWishlist: (DiscoveredGameItem) -> Unit,
     modifier: Modifier = Modifier,
-    currency: String = "CHF"
+    currency: String = "CHF",
+    onRefreshSimilarGames: (() -> Unit)? = null
 ) {
     Column(
         modifier = modifier
@@ -61,18 +62,38 @@ fun SimilarGamesShelf(
                 )
             }
 
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(14.dp),
-                    color = ConsoleGamecube,
-                    strokeWidth = 2.dp
-                )
-            } else {
-                Text(
-                    text = "${similarGames.size} ${TextKeys.Discovery.SHELF_SUGGESTIONS}",
-                    style = CodeSkuStyle.copy(fontSize = 10.sp),
-                    color = StatusUnverifiedFg
-                )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(14.dp),
+                        color = ConsoleGamecube,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    if (onRefreshSimilarGames != null) {
+                        Box(
+                            modifier = Modifier
+                                .background(SurfaceElevated, RoundedCornerShape(3.dp))
+                                .border(1.dp, BorderSubtle, RoundedCornerShape(3.dp))
+                                .clickable { onRefreshSimilarGames() }
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = TextKeys.Discovery.SHELF_AI_SCAN,
+                                style = LabelBadgeStyle.copy(fontSize = 10.sp),
+                                color = ConsoleGamecube
+                            )
+                        }
+                    }
+                    Text(
+                        text = "${similarGames.size} ${TextKeys.Discovery.SHELF_SUGGESTIONS}",
+                        style = CodeSkuStyle.copy(fontSize = 10.sp),
+                        color = StatusUnverifiedFg
+                    )
+                }
             }
         }
 

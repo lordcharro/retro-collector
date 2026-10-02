@@ -104,10 +104,37 @@ class DashboardViewModelTest {
             forceRefresh: Boolean
         ): Result<List<DiscoveredGameItem>> = Result.success(emptyList())
 
+        var similarGamesCallCount = 0
+
+        override fun getCuratedSimilarGames(game: GameItem): List<DiscoveredGameItem> = listOf(
+            DiscoveredGameItem(
+                id = "curated_banjo",
+                title = "Banjo-Kazooie",
+                platform = ConsolePlatform.N64,
+                genreDisplayName = "Platformer"
+            )
+        )
+
         override suspend fun getSimilarGames(
             game: GameItem,
             forceRefresh: Boolean
-        ): Result<List<DiscoveredGameItem>> = Result.success(emptyList())
+        ): Result<List<DiscoveredGameItem>> {
+            similarGamesCallCount++
+            return Result.success(
+                if (game.similarGames.isNotEmpty() && !forceRefresh) {
+                    game.similarGames
+                } else {
+                    listOf(
+                        DiscoveredGameItem(
+                            id = "ai_mario_sunshine",
+                            title = "Super Mario Sunshine",
+                            platform = ConsolePlatform.GAMECUBE,
+                            genreDisplayName = "Platformer"
+                        )
+                    )
+                }
+            )
+        }
     }
 
     private lateinit var repository: FakeRepository
@@ -260,5 +287,76 @@ class DashboardViewModelTest {
         viewModel.analyzeNewGame("Super Mario 64", null, "Bern", 45.0)
         assertTrue(effects.any { it is DashboardEffect.ShowToast })
         job.cancel()
+    }
+
+    @Test
+    fun `manual mode uses curated fallback and does not invoke AI getSimilarGames`() = runTest {
+        repository.updateSettings(AppSettings(isAutoSimilarGamesEnabled = false))
+        repository.similarGamesCallCount = 0
+
+        viewModel.onGameSelected(sampleGame)
+
+        val state = viewModel.uiState.value
+        assertEquals(1, state.similarGamesForActiveGame.size)
+        assertEquals("curated_banjo", state.similarGamesForActiveGame.first().id)
+        assertEquals(0, repository.similarGamesCallCount)
+    }
+
+    @Test
+    fun `auto mode invokes getSimilarGames and persists recommendations to game`() = runTest {
+        repository.updateSettings(AppSettings(isAutoSimilarGamesEnabled = true))
+        repository.similarGamesCallCount = 0
+
+        viewModel.onGameSelected(sampleGame)
+
+        val state = viewModel.uiState.value
+        assertEquals(1, state.similarGamesForActiveGame.size)
+        assertEquals("ai_mario_sunshine", state.similarGamesForActiveGame.first().id)
+        assertEquals(1, repository.similarGamesCallCount)
+
+        val savedGame = repository.getGameById(sampleGame.id)
+        assertNotNull(savedGame)
+        assertEquals(1, savedGame!!.similarGames.size)
+        assertEquals("ai_mario_sunshine", savedGame.similarGames.first().id)
+    }
+
+    @Test
+    fun `when game already has saved similarGames selecting it loads without force AI refresh`() = runTest {
+        repository.updateSettings(AppSettings(isAutoSimilarGamesEnabled = false))
+        val existingSimilar = listOf(
+            DiscoveredGameItem(
+                id = "saved_rec_1",
+                title = "Saved Recommendation 1",
+                platform = ConsolePlatform.N64,
+                genreDisplayName = "Platformer"
+            )
+        )
+        val gameWithSavedRecs = sampleGame.copy(similarGames = existingSimilar)
+        repository.upsertGame(gameWithSavedRecs)
+        repository.similarGamesCallCount = 0
+
+        viewModel.onGameSelected(gameWithSavedRecs)
+
+        val state = viewModel.uiState.value
+        assertEquals(1, state.similarGamesForActiveGame.size)
+        assertEquals("saved_rec_1", state.similarGamesForActiveGame.first().id)
+    }
+
+    @Test
+    fun `explicit force refresh on similar games updates repository and selectedGame`() = runTest {
+        viewModel.onGameSelected(sampleGame)
+        repository.similarGamesCallCount = 0
+
+        viewModel.loadSimilarGamesForSelectedGame(sampleGame, forceRefresh = true)
+
+        val state = viewModel.uiState.value
+        assertEquals(1, state.similarGamesForActiveGame.size)
+        assertEquals("ai_mario_sunshine", state.similarGamesForActiveGame.first().id)
+        assertEquals(1, repository.similarGamesCallCount)
+
+        val updatedGame = repository.getGameById(sampleGame.id)
+        assertEquals(1, updatedGame?.similarGames?.size)
+        assertEquals("ai_mario_sunshine", updatedGame?.similarGames?.first()?.id)
+        assertEquals(1, state.selectedGame?.similarGames?.size)
     }
 }

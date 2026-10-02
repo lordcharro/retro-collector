@@ -22,6 +22,7 @@ data class AppSettings(
     val defaultCurrency: String = "CHF",
     val isScraperEnabled: Boolean = true,
     val isAutoDiscoveryEnabled: Boolean = false,
+    val isAutoSimilarGamesEnabled: Boolean = false,
     val ricardoSessionCookie: String = "",
     val selectedPlatformFilter: ConsolePlatform? = null,
     val onlyEnglishFilter: Boolean = false,

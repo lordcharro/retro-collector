@@ -59,4 +59,8 @@ interface IGameRepository {
         platform: com.retrocollector.app.core.domain.model.ConsolePlatform? = null,
         query: String? = null
     ): List<com.retrocollector.app.core.domain.model.DiscoveredGameItem> = emptyList()
+
+    fun getCuratedSimilarGames(
+        game: GameItem
+    ): List<com.retrocollector.app.core.domain.model.DiscoveredGameItem> = emptyList()
 }

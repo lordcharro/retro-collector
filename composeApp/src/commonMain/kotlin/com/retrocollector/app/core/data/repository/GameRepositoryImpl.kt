@@ -491,16 +491,22 @@ class GameRepositoryImpl(
         forceRefresh: Boolean
     ): Result<List<DiscoveredGameItem>> {
         val cacheKey = "similar_${game.id}"
-        if (!forceRefresh && similarGamesCache.containsKey(cacheKey)) {
-            val cached = similarGamesCache[cacheKey].orEmpty()
-            return Result.success(enrichWithUserCollection(cached))
+        if (!forceRefresh) {
+            if (game.similarGames.isNotEmpty()) {
+                similarGamesCache[cacheKey] = game.similarGames
+                return Result.success(enrichWithUserCollection(game.similarGames))
+            }
+            if (similarGamesCache.containsKey(cacheKey)) {
+                val cached = similarGamesCache[cacheKey].orEmpty()
+                return Result.success(enrichWithUserCollection(cached))
+            }
         }
 
         val apiKey = _settings.value.geminiApiKey
         val model = _settings.value.geminiModel.ifBlank { "gemini-3.7-flash" }
 
         if (apiKey.isBlank()) {
-            val fallback = CuratedDiscoveryDataSource.getSimilarGames(game)
+            val fallback = if (game.similarGames.isNotEmpty()) game.similarGames else CuratedDiscoveryDataSource.getSimilarGames(game)
             similarGamesCache[cacheKey] = fallback
             return Result.success(enrichWithUserCollection(fallback))
         }
@@ -508,12 +514,12 @@ class GameRepositoryImpl(
         val result = geminiDataSource.fetchSimilarGames(game.title, game.platform, game.franchiseName, apiKey, model)
         return result.fold(
             onSuccess = { items ->
-                val finalItems = if (items.isNotEmpty()) items else CuratedDiscoveryDataSource.getSimilarGames(game)
+                val finalItems = if (items.isNotEmpty()) items else (if (game.similarGames.isNotEmpty()) game.similarGames else CuratedDiscoveryDataSource.getSimilarGames(game))
                 similarGamesCache[cacheKey] = finalItems
                 Result.success(enrichWithUserCollection(finalItems))
             },
             onFailure = { _ ->
-                val fallback = CuratedDiscoveryDataSource.getSimilarGames(game)
+                val fallback = if (game.similarGames.isNotEmpty()) game.similarGames else CuratedDiscoveryDataSource.getSimilarGames(game)
                 similarGamesCache[cacheKey] = fallback
                 Result.success(enrichWithUserCollection(fallback))
             }
@@ -526,6 +532,11 @@ class GameRepositoryImpl(
         query: String?
     ): List<DiscoveredGameItem> {
         val list = CuratedDiscoveryDataSource.getFilteredCatalog(genre, platform, query)
+        return enrichWithUserCollection(list)
+    }
+
+    override fun getCuratedSimilarGames(game: GameItem): List<DiscoveredGameItem> {
+        val list = CuratedDiscoveryDataSource.getSimilarGames(game)
         return enrichWithUserCollection(list)
     }
 

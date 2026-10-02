@@ -149,7 +149,19 @@ class DashboardViewModel(
                 activeChatMessages = chats
             )
         }
-        loadSimilarGamesForSelectedGame(game)
+        if (game.similarGames.isNotEmpty()) {
+            loadSimilarGamesForSelectedGame(game, forceRefresh = false)
+        } else if (_uiState.value.settings.isAutoSimilarGamesEnabled) {
+            loadSimilarGamesForSelectedGame(game, forceRefresh = false)
+        } else {
+            val curated = repository.getCuratedSimilarGames(game)
+            _uiState.update {
+                it.copy(
+                    similarGamesForActiveGame = curated,
+                    isSimilarGamesLoading = false
+                )
+            }
+        }
     }
 
     fun clearFilters() {
@@ -426,15 +438,28 @@ class DashboardViewModel(
         onGameSelected(targetGame)
     }
 
-    fun loadSimilarGamesForSelectedGame(game: GameItem) {
+    fun loadSimilarGamesForSelectedGame(game: GameItem, forceRefresh: Boolean = false) {
         _uiState.update { it.copy(isSimilarGamesLoading = true) }
         scope.launch {
-            val result = getSimilarGamesUseCase(game)
+            val result = getSimilarGamesUseCase(game, forceRefresh = forceRefresh)
+            val items = result.getOrDefault(emptyList())
             _uiState.update { state ->
                 state.copy(
-                    similarGamesForActiveGame = result.getOrDefault(emptyList()),
+                    similarGamesForActiveGame = items,
                     isSimilarGamesLoading = false
                 )
+            }
+            if (items.isNotEmpty()) {
+                val currentSavedGame = repository.getGameById(game.id) ?: game
+                if (forceRefresh || currentSavedGame.similarGames.isEmpty()) {
+                    val updatedGame = currentSavedGame.copy(similarGames = items)
+                    saveGameUseCase(updatedGame)
+                    _uiState.update { state ->
+                        if (state.selectedGame?.id == updatedGame.id) {
+                            state.copy(selectedGame = updatedGame)
+                        } else state
+                    }
+                }
             }
         }
     }

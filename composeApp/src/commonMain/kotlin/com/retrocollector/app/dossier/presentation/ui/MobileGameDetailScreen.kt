@@ -45,6 +45,7 @@ fun MobileGameDetailScreen(
     onSendFollowUpMessage: (String) -> Unit = {},
     onSelectSimilarGame: (DiscoveredGameItem) -> Unit = {},
     onAddSimilarGameToWishlist: (DiscoveredGameItem) -> Unit = {},
+    onRefreshSimilarGames: () -> Unit = {},
     onAddOrUpdateOffer: (GameItem, com.retrocollector.app.core.domain.model.GameOffer) -> Unit = { _, _ -> },
     onDeleteOffer: (GameItem, String) -> Unit = { _, _ -> },
     onConvertOfferToOwned: (GameItem, String?, Double, com.retrocollector.app.core.domain.model.GameCondition) -> Unit = { _, _, _, _ -> }
@@ -324,7 +325,8 @@ fun MobileGameDetailScreen(
                         isLoading = isSimilarGamesLoading,
                         currency = currency,
                         onSelectGame = onSelectSimilarGame,
-                        onAddToWishlist = onAddSimilarGameToWishlist
+                        onAddToWishlist = onAddSimilarGameToWishlist,
+                        onRefreshSimilarGames = onRefreshSimilarGames
                     )
                 }
 

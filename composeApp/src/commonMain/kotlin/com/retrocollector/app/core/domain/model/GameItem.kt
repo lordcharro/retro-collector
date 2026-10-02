@@ -30,6 +30,7 @@ data class GameItem(
     val personalNotes: String = "",
     val listingUrl: String? = null,
     val offers: List<GameOffer> = emptyList(),
+    val similarGames: List<DiscoveredGameItem> = emptyList(),
     val acquiredCondition: GameCondition? = null,
     val updatedAt: Long = 0L
 ) {

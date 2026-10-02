@@ -48,6 +48,7 @@ fun SettingsDialog(
     var selectedCurrency by remember { mutableStateOf(settings.defaultCurrency.ifBlank { "CHF" }) }
     var isScraperEnabled by remember { mutableStateOf(settings.isScraperEnabled) }
     var isAutoDiscoveryEnabled by remember { mutableStateOf(settings.isAutoDiscoveryEnabled) }
+    var isAutoSimilarGamesEnabled by remember { mutableStateOf(settings.isAutoSimilarGamesEnabled) }
     var ricardoCookie by remember { mutableStateOf(settings.ricardoSessionCookie) }
     var pinnedPlatformIds by remember { mutableStateOf(settings.pinnedPlatformIds.toSet()) }
     var isKeyVisible by remember { mutableStateOf(false) }
@@ -239,6 +240,7 @@ fun SettingsDialog(
                                                     defaultCurrency = selectedCurrency,
                                                     isScraperEnabled = isScraperEnabled,
                                                     isAutoDiscoveryEnabled = isAutoDiscoveryEnabled,
+                                                    isAutoSimilarGamesEnabled = isAutoSimilarGamesEnabled,
                                                     ricardoSessionCookie = ricardoCookie.trim(),
                                                     pinnedPlatformIds = pinnedPlatformIds.toList(),
                                                     themeMode = mode
@@ -516,6 +518,57 @@ fun SettingsDialog(
                             Switch(
                                 checked = isAutoDiscoveryEnabled,
                                 onCheckedChange = { isAutoDiscoveryEnabled = it },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = ConsoleGamecube,
+                                    uncheckedThumbColor = StatusUnverifiedFg,
+                                    uncheckedTrackColor = SurfaceElevated
+                                )
+                            )
+                        }
+
+                        HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
+
+                        // Toggle Auto-Fetch Similar Games / Quota Saver
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(1f).padding(end = 12.dp),
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(
+                                        text = TextKeys.Settings.AUTO_SIMILAR_GAMES_TITLE,
+                                        style = BodyMd.copy(fontSize = 13.sp),
+                                        color = TextPrimary
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .background(SurfaceElevated, RoundedCornerShape(2.dp))
+                                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                                    ) {
+                                        Text(
+                                            text = TextKeys.Settings.AUTO_SIMILAR_GAMES_BADGE,
+                                            style = CodeSkuStyle.copy(fontSize = 9.sp),
+                                            color = ConsoleGamecube
+                                        )
+                                    }
+                                }
+                                Text(
+                                    text = TextKeys.Settings.AUTO_SIMILAR_GAMES_SUBTITLE,
+                                    style = BodySm.copy(fontSize = 11.sp),
+                                    color = TextSecondary
+                                )
+                            }
+                            Switch(
+                                checked = isAutoSimilarGamesEnabled,
+                                onCheckedChange = { isAutoSimilarGamesEnabled = it },
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = Color.White,
                                     checkedTrackColor = ConsoleGamecube,
@@ -979,6 +1032,7 @@ fun SettingsDialog(
                                 defaultCurrency = selectedCurrency,
                                 isScraperEnabled = isScraperEnabled,
                                 isAutoDiscoveryEnabled = isAutoDiscoveryEnabled,
+                                isAutoSimilarGamesEnabled = isAutoSimilarGamesEnabled,
                                 ricardoSessionCookie = ricardoCookie.trim(),
                                 pinnedPlatformIds = pinnedPlatformIds.toList(),
                                 themeMode = selectedThemeMode
