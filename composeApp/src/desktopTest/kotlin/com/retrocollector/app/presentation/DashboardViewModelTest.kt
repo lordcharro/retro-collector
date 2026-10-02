@@ -43,6 +43,32 @@ class DashboardViewModelTest {
         override fun deleteGame(id: String) {
             _games.value = _games.value.filter { it.id != id }
         }
+        override fun addOrUpdateOffer(gameId: String, offer: com.retrocollector.app.core.domain.model.GameOffer) {
+            val g = getGameById(gameId) ?: return
+            val currentOffers = g.offers.toMutableList()
+            val index = currentOffers.indexOfFirst { it.id == offer.id }
+            if (index >= 0) currentOffers[index] = offer else currentOffers.add(0, offer)
+            upsertGame(g.copy(offers = currentOffers))
+        }
+        override fun deleteOffer(gameId: String, offerId: String) {
+            val g = getGameById(gameId) ?: return
+            upsertGame(g.copy(offers = g.offers.filter { it.id != offerId }))
+        }
+        override fun convertOfferToOwned(
+            gameId: String,
+            offerId: String?,
+            finalPriceChf: Double,
+            condition: com.retrocollector.app.core.domain.model.GameCondition
+        ) {
+            val g = getGameById(gameId) ?: return
+            upsertGame(
+                g.copy(
+                    collectionStatus = com.retrocollector.app.core.domain.model.CollectionStatus.OWNED,
+                    paidPriceChf = finalPriceChf,
+                    acquiredCondition = condition
+                )
+            )
+        }
         override fun getChatMessagesForGame(gameId: String): List<ChatMessage> =
             _chatMessages.value.filter { it.contextId == gameId }
         override fun addChatMessage(message: ChatMessage) {

@@ -22,6 +22,14 @@ class DiscoverGamesUseCaseTest {
         override fun getGameById(id: String): GameItem? = null
         override fun upsertGame(game: GameItem) { /* no-op in fake */ }
         override fun deleteGame(id: String) { /* no-op in fake */ }
+        override fun addOrUpdateOffer(gameId: String, offer: com.retrocollector.app.core.domain.model.GameOffer) {}
+        override fun deleteOffer(gameId: String, offerId: String) {}
+        override fun convertOfferToOwned(
+            gameId: String,
+            offerId: String?,
+            finalPriceChf: Double,
+            condition: com.retrocollector.app.core.domain.model.GameCondition
+        ) {}
         override fun getChatMessagesForGame(gameId: String): List<ChatMessage> = emptyList()
         override fun addChatMessage(message: ChatMessage) { /* no-op in fake */ }
         override fun updateSettings(settings: AppSettings) { /* no-op in fake */ }

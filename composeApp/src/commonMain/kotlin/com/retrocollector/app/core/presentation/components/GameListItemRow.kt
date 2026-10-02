@@ -113,11 +113,22 @@ fun GameListItemRow(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    if (game.spottedLocation.isNotBlank()) {
+                    val locationText = if (game.activeOffers.isNotEmpty() && game.collectionStatus == com.retrocollector.app.core.domain.model.CollectionStatus.WISHLIST) {
+                        val count = game.activeOffers.size
+                        if (count > 1) {
+                            "• $count deals (Top: ${game.bestOffer?.source})"
+                        } else {
+                            "• ${game.bestOffer?.source}"
+                        }
+                    } else if (game.spottedLocation.isNotBlank()) {
+                        "• ${game.spottedLocation}"
+                    } else null
+
+                    if (locationText != null) {
                         Text(
-                            text = "• ${game.spottedLocation}",
+                            text = locationText,
                             style = BodySm,
-                            color = TextSecondary,
+                            color = if (game.activeOffers.isNotEmpty() && game.collectionStatus == com.retrocollector.app.core.domain.model.CollectionStatus.WISHLIST) StatusEnglishFg else TextSecondary,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -147,12 +158,16 @@ fun GameListItemRow(
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.spacedBy(3.dp)
                 ) {
-                    val displayPrice = game.askingPriceChf ?: game.targetPriceChf ?: game.paidPriceChf
+                    val displayPrice = if (game.collectionStatus == com.retrocollector.app.core.domain.model.CollectionStatus.WISHLIST && game.activeOffers.isNotEmpty()) {
+                        game.bestOffer?.totalLandedPriceChf
+                    } else {
+                        game.paidPriceChf ?: game.askingPriceChf ?: game.targetPriceChf
+                    }
 
                     Text(
                         text = PriceFormatter.format(displayPrice, currency),
                         style = CodePriceStyle,
-                        color = TextPrimary,
+                        color = if (game.activeOffers.isNotEmpty() && game.collectionStatus == com.retrocollector.app.core.domain.model.CollectionStatus.WISHLIST) StatusEnglishFg else TextPrimary,
                         maxLines = 1,
                         softWrap = false
                     )

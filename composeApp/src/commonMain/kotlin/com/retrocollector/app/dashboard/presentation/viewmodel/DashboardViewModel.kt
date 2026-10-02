@@ -191,6 +191,32 @@ class DashboardViewModel(
         saveGameUseCase(updated)
     }
 
+    fun addOrUpdateOffer(game: GameItem, offer: com.retrocollector.app.core.domain.model.GameOffer) {
+        repository.addOrUpdateOffer(game.id, offer)
+        scope.launch {
+            _effects.send(DashboardEffect.ShowToast("Offer from ${offer.source} saved."))
+        }
+    }
+
+    fun deleteOffer(game: GameItem, offerId: String) {
+        repository.deleteOffer(game.id, offerId)
+        scope.launch {
+            _effects.send(DashboardEffect.ShowToast("Offer deleted."))
+        }
+    }
+
+    fun convertOfferToOwned(
+        game: GameItem,
+        offerId: String?,
+        finalPrice: Double,
+        condition: com.retrocollector.app.core.domain.model.GameCondition
+    ) {
+        repository.convertOfferToOwned(game.id, offerId, finalPrice, condition)
+        scope.launch {
+            _effects.send(DashboardEffect.ShowToast("Added \"${game.title}\" to Collection!"))
+        }
+    }
+
     fun deleteGame(gameId: String) {
         val wasSelected = _uiState.value.selectedGame?.id == gameId
         deleteGameUseCase(gameId)

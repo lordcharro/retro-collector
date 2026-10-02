@@ -45,5 +45,9 @@ data class DashboardActions(
     val onOpenDiscoveredDossier: (DiscoveredGameItem) -> Unit = {},
     val onAddDiscoveredToWishlist: (DiscoveredGameItem) -> Unit = {},
     val onLoadSimilarGames: (GameItem) -> Unit = {},
-    val onSyncFromFirestore: () -> Unit = {}
+    val onSyncFromFirestore: () -> Unit = {},
+    // Offer & Deal Management
+    val onAddOrUpdateOffer: (GameItem, com.retrocollector.app.core.domain.model.GameOffer) -> Unit = { _, _ -> },
+    val onDeleteOffer: (GameItem, String) -> Unit = { _, _ -> },
+    val onConvertOfferToOwned: (GameItem, String?, Double, com.retrocollector.app.core.domain.model.GameCondition) -> Unit = { _, _, _, _ -> }
 )

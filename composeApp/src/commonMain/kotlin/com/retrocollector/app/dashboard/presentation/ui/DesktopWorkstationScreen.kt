@@ -41,6 +41,10 @@ fun DesktopWorkstationScreen(
     modifier: Modifier = Modifier
 ) {
     var followUpQuestion by remember { mutableStateOf("") }
+    var editingOffer by remember { mutableStateOf<com.retrocollector.app.core.domain.model.GameOffer?>(null) }
+    var isAddOfferOpen by remember { mutableStateOf(false) }
+    var acquisitionOffer by remember { mutableStateOf<com.retrocollector.app.core.domain.model.GameOffer?>(null) }
+    var isAcquisitionOpen by remember { mutableStateOf(false) }
 
     val activePlatforms = remember(state.games, state.settings.pinnedPlatformIds) {
         val fromGames = state.games.map { it.platform }.toSet()
@@ -612,7 +616,14 @@ fun DesktopWorkstationScreen(
                                     ) {
                                         CollectionStatusSelector(
                                             currentStatus = game.collectionStatus,
-                                            onStatusSelect = { actions.onUpdateGameStatus(game, it) }
+                                            onStatusSelect = { newStatus ->
+                                                if (newStatus == CollectionStatus.OWNED && game.collectionStatus == CollectionStatus.WISHLIST) {
+                                                    acquisitionOffer = game.bestOffer
+                                                    isAcquisitionOpen = true
+                                                } else {
+                                                    actions.onUpdateGameStatus(game, newStatus)
+                                                }
+                                            }
                                         )
 
                                         var showDeleteConfirm by remember(game.id) { mutableStateOf(false) }
@@ -667,7 +678,6 @@ fun DesktopWorkstationScreen(
                                                     SwissMarketRadarView(
                                                         radar = radar,
                                                         currency = currentCurrency,
-                                                        askingPriceChf = game.askingPriceChf,
                                                         paidPriceChf = game.paidPriceChf,
                                                         isOwned = game.collectionStatus == CollectionStatus.OWNED,
                                                         onPriceSubmitted = { parsed ->
@@ -709,7 +719,6 @@ fun DesktopWorkstationScreen(
                                                     SwissMarketRadarView(
                                                         radar = radar,
                                                         currency = currentCurrency,
-                                                        askingPriceChf = game.askingPriceChf,
                                                         paidPriceChf = game.paidPriceChf,
                                                         isOwned = game.collectionStatus == CollectionStatus.OWNED,
                                                         onPriceSubmitted = { parsed ->
@@ -732,6 +741,23 @@ fun DesktopWorkstationScreen(
                                             }
                                         }
                                     }
+                                }
+
+                                // Stores & Live Offers Section
+                                Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                                    val currentCurrency = state.settings.defaultCurrency.ifBlank { "CHF" }
+                                    com.retrocollector.app.offers.presentation.components.StoreOffersSection(
+                                        offers = game.offers,
+                                        currency = currentCurrency,
+                                        isCompactLayout = false,
+                                        onAddOfferClick = { isAddOfferOpen = true },
+                                        onEditOfferClick = { offer -> editingOffer = offer },
+                                        onDeleteOfferClick = { offer -> actions.onDeleteOffer(game, offer.id) },
+                                        onMarkAsBoughtClick = { offer ->
+                                            acquisitionOffer = offer
+                                            isAcquisitionOpen = true
+                                        }
+                                    )
                                 }
 
                                 // Shelf of Similar Games / Same Genre
@@ -893,6 +919,40 @@ fun DesktopWorkstationScreen(
                         }
             }
         }
+    }
+
+    val selected = state.selectedGame
+    if (selected != null && (isAddOfferOpen || editingOffer != null)) {
+        com.retrocollector.app.offers.presentation.dialog.AddEditOfferDialog(
+            initialOffer = editingOffer,
+            currency = state.settings.defaultCurrency.ifBlank { "CHF" },
+            onSave = { offer ->
+                actions.onAddOrUpdateOffer(selected, offer)
+                isAddOfferOpen = false
+                editingOffer = null
+            },
+            onDismiss = {
+                isAddOfferOpen = false
+                editingOffer = null
+            }
+        )
+    }
+
+    if (selected != null && isAcquisitionOpen) {
+        com.retrocollector.app.offers.presentation.dialog.AcquisitionModal(
+            game = selected,
+            selectedOffer = acquisitionOffer,
+            currency = state.settings.defaultCurrency.ifBlank { "CHF" },
+            onConfirm = { finalPrice, condition, offerId ->
+                actions.onConvertOfferToOwned(selected, offerId, finalPrice, condition)
+                isAcquisitionOpen = false
+                acquisitionOffer = null
+            },
+            onDismiss = {
+                isAcquisitionOpen = false
+                acquisitionOffer = null
+            }
+        )
     }
 }
 

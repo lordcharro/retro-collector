@@ -13,6 +13,14 @@ interface IGameRepository {
     fun getGameById(id: String): GameItem?
     fun upsertGame(game: GameItem)
     fun deleteGame(id: String)
+    fun addOrUpdateOffer(gameId: String, offer: com.retrocollector.app.core.domain.model.GameOffer)
+    fun deleteOffer(gameId: String, offerId: String)
+    fun convertOfferToOwned(
+        gameId: String,
+        offerId: String?,
+        finalPriceChf: Double,
+        condition: com.retrocollector.app.core.domain.model.GameCondition
+    )
     fun getChatMessagesForGame(gameId: String): List<ChatMessage>
     fun addChatMessage(message: ChatMessage)
     fun updateSettings(settings: AppSettings)

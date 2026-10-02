@@ -29,5 +29,13 @@ data class GameItem(
     val enrichmentStatus: EnrichmentStatus = EnrichmentStatus.COMPLETE,
     val personalNotes: String = "",
     val listingUrl: String? = null,
+    val offers: List<GameOffer> = emptyList(),
+    val acquiredCondition: GameCondition? = null,
     val updatedAt: Long = 0L
-)
+) {
+    val activeOffers: List<GameOffer>
+        get() = offers.filter { !it.isArchived }
+
+    val bestOffer: GameOffer?
+        get() = activeOffers.minByOrNull { it.totalLandedPriceChf }
+}

@@ -62,6 +62,11 @@ Each document represents a physical game — whether owned, on the wishlist, act
 | `personalNotes` | `string` | — | Free-text notes added by the collector | `"Bought at Basel flea market"` |
 | `enrichmentStatus` | `string` | — | AI enrichment state (`PENDING`, `ENRICHING`, `COMPLETE`, `FAILED`) | `"COMPLETE"` |
 | `listingUrl` | `string` | — | Direct link to the Ricardo.ch / Tutti.ch listing | `"https://www.ricardo.ch/de/a/..."` |
+| `acquiredCondition` | `string` | — | Condition when acquired (`CIB`, `BOXED`, `LOOSE`) | `"CIB"` |
+| `offersCount` | `integer` | — | Number of registered marketplace offers | `3` |
+| `bestOfferStore` | `string` | — | Store name of the lowest landed price offer | `"Anibis.ch"` |
+| `bestOfferPriceChf` | `number` (double) | — | Best landed price across all active offers | `28.00` |
+| `offers` | `array<map>` | — | Tracked marketplace offers / store listings | *See GameOffer sub-map below* |
 | `updatedAt` | `integer` (int64) | ✅ | Last updated timestamp in epoch milliseconds | `1727464000000` |
 | `data` | `string` | ✅ | Full `GameItem` serialised as JSON (used by the KMP app for deserialisation) | `"{...}"` |
 
@@ -74,6 +79,11 @@ Each document represents a physical game — whether owned, on the wishlist, act
 **`collectionStatus` / root `status` field** — from [`CollectionStatus.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/domain/model/CollectionStatus.kt):
 ```
 WISHLIST | OWNED | PASS
+```
+
+**`acquiredCondition` / offer `condition`** — from [`GameCondition.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/domain/model/GameCondition.kt):
+```
+CIB | BOXED | LOOSE
 ```
 
 **`languageStatus`** — from [`LanguageStatus.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/domain/model/LanguageStatus.kt):
@@ -94,6 +104,24 @@ retro_vintage
 ---
 
 ### Sub-maps
+
+#### `GameOffer` (items in `offers`)
+```json
+{
+  "id": "offer_1790870000000",
+  "source": "Anibis.ch",
+  "priceChf": 28.0,
+  "shippingChf": null,
+  "totalLandedPriceChf": 28.0,
+  "listingUrl": "https://www.anibis.ch",
+  "condition": "CIB",
+  "sellerOrLocation": "Basel Gundeli",
+  "notes": "Includes uncut English manual",
+  "isPurchased": false,
+  "isArchived": false,
+  "createdAt": 1790870000000
+}
+```
 
 #### `SkuInfo` (items in `safeSkus` and `riskySkus`)
 ```json

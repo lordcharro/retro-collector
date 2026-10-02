@@ -85,6 +85,55 @@ class GameRepositoryImpl(
         }
     }
 
+    override fun addOrUpdateOffer(gameId: String, offer: GameOffer) {
+        val game = getGameById(gameId) ?: return
+        val currentOffers = game.offers.toMutableList()
+        val index = currentOffers.indexOfFirst { it.id == offer.id }
+        if (index >= 0) {
+            currentOffers[index] = offer
+        } else {
+            currentOffers.add(0, offer)
+        }
+        val nowMs = Clock.System.now().toEpochMilliseconds()
+        upsertGame(game.copy(offers = currentOffers, updatedAt = nowMs))
+    }
+
+    override fun deleteOffer(gameId: String, offerId: String) {
+        val game = getGameById(gameId) ?: return
+        val updatedOffers = game.offers.filter { it.id != offerId }
+        val nowMs = Clock.System.now().toEpochMilliseconds()
+        upsertGame(game.copy(offers = updatedOffers, updatedAt = nowMs))
+    }
+
+    override fun convertOfferToOwned(
+        gameId: String,
+        offerId: String?,
+        finalPriceChf: Double,
+        condition: GameCondition
+    ) {
+        val game = getGameById(gameId) ?: return
+        val updatedOffers = game.offers.map { off ->
+            if (off.id == offerId) {
+                off.copy(isPurchased = true, isArchived = false)
+            } else {
+                off.copy(isArchived = true)
+            }
+        }
+        val purchasedOffer = game.offers.find { it.id == offerId }
+        val newLocation = purchasedOffer?.source?.ifBlank { null } ?: game.spottedLocation
+        val nowMs = Clock.System.now().toEpochMilliseconds()
+        upsertGame(
+            game.copy(
+                collectionStatus = CollectionStatus.OWNED,
+                paidPriceChf = finalPriceChf,
+                acquiredCondition = condition,
+                spottedLocation = newLocation,
+                offers = updatedOffers,
+                updatedAt = nowMs
+            )
+        )
+    }
+
     override fun getChatMessagesForGame(gameId: String): List<ChatMessage> {
         return _chatMessages.value.filter { it.contextId == gameId }
     }
@@ -221,7 +270,7 @@ class GameRepositoryImpl(
                 image = listingScraper.fetchImageAsBase64(listing.imageUrls.first(), sessionCookie)
             }
         }
-        return ResolvedScanInput(query, image, location, price)
+        return ResolvedScanInput(query, image, location, price, listingUrl)
     }
 
     private suspend fun resolveListingInput(
@@ -230,10 +279,11 @@ class GameRepositoryImpl(
         spottedLocation: String,
         askingPriceChf: Double?
     ): ResolvedScanInput {
-        var result = ResolvedScanInput(query, imageBase64, spottedLocation, askingPriceChf)
+        val foundUrl = findListingUrl(query, imageBase64)
+        var result = ResolvedScanInput(query, imageBase64, spottedLocation, askingPriceChf, foundUrl)
 
         if (_settings.value.isScraperEnabled) {
-            val listingUrl = findListingUrl(query, imageBase64)
+            val listingUrl = foundUrl
             if (listingUrl != null) {
                 result = fetchListingMetadata(
                     listingUrl = listingUrl,
@@ -271,6 +321,19 @@ class GameRepositoryImpl(
             historicalMaxChf = v.historicalMaxChf,
             trend = "Stable"
         )
+        val initialOffers = if (resolved.price != null || !resolved.listingUrl.isNullOrBlank() || resolved.location.isNotBlank()) {
+            listOf(
+                GameOffer(
+                    id = "offer_${nowMs}",
+                    source = resolved.location.ifBlank { "Listing" },
+                    priceChf = resolved.price ?: 0.0,
+                    listingUrl = resolved.listingUrl.orEmpty(),
+                    condition = GameCondition.CIB,
+                    createdAt = nowMs
+                )
+            )
+        } else emptyList()
+
         return GameItem(
             id = "game_${v.title.filter { it.isLetterOrDigit() }.lowercase()}_${platform.id}",
             title = v.title.ifBlank { "Analyzed Game" },
@@ -282,6 +345,8 @@ class GameRepositoryImpl(
             spottedLocation = resolved.location.ifBlank { "Field / Online" },
             askingPriceChf = resolved.price,
             targetPriceChf = v.swissMarketMedianChf,
+            listingUrl = resolved.listingUrl,
+            offers = initialOffers,
             languageStatus = status,
             languageAudio = v.audioLanguages,
             languageSubtitles = v.subtitleLanguages,
@@ -299,7 +364,8 @@ class GameRepositoryImpl(
         val query: String,
         val imageBase64: String?,
         val location: String,
-        val price: Double?
+        val price: Double?,
+        val listingUrl: String? = null
     )
 
     override suspend fun sendFollowUpChat(
@@ -513,7 +579,42 @@ class GameRepositoryImpl(
                     "the 'Assignment Ada' and 'The Mercenaries' modes were removed from the disc!",
                 collectorVerdict = "Skip this copy at CHF 35.00. Wait and hunt specifically for DOL-P-G4BE (UK PAL) " +
                     "which features 100% uncut English content and all unlockable modes.",
-                collectionStatus = CollectionStatus.WISHLIST
+                collectionStatus = CollectionStatus.WISHLIST,
+                offers = listOf(
+                    GameOffer(
+                        id = "offer_re4_anibis",
+                        source = "Anibis.ch",
+                        priceChf = 28.00,
+                        shippingChf = null,
+                        listingUrl = "https://www.anibis.ch",
+                        condition = GameCondition.CIB,
+                        sellerOrLocation = "Basel Gundeli",
+                        notes = "Top pick! Includes uncut English manual and bonus disc.",
+                        createdAt = 1790870000000L
+                    ),
+                    GameOffer(
+                        id = "offer_re4_ricardo",
+                        source = "Ricardo.ch",
+                        priceChf = 35.00,
+                        shippingChf = 1.50,
+                        listingUrl = "https://www.ricardo.ch",
+                        condition = GameCondition.BOXED,
+                        sellerOrLocation = "Zurich",
+                        notes = "B-Post letter (+CHF 1.50). Disc has minor hair scratches.",
+                        createdAt = 1790871000000L
+                    ),
+                    GameOffer(
+                        id = "offer_re4_tutti",
+                        source = "Tutti.ch",
+                        priceChf = 32.00,
+                        shippingChf = 2.00,
+                        listingUrl = "https://www.tutti.ch",
+                        condition = GameCondition.CIB,
+                        sellerOrLocation = "Bern Breitenrain",
+                        notes = "Private seller. TWINT accepted.",
+                        createdAt = 1790872000000L
+                    )
+                )
             ),
             GameItem(
                 id = "gc_zelda_ww",

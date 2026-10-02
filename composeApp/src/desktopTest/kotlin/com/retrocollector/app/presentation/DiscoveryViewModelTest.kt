@@ -33,6 +33,14 @@ class DiscoveryViewModelTest {
         override fun deleteGame(id: String) {
             // no-op
         }
+        override fun addOrUpdateOffer(gameId: String, offer: com.retrocollector.app.core.domain.model.GameOffer) {}
+        override fun deleteOffer(gameId: String, offerId: String) {}
+        override fun convertOfferToOwned(
+            gameId: String,
+            offerId: String?,
+            finalPriceChf: Double,
+            condition: com.retrocollector.app.core.domain.model.GameCondition
+        ) {}
         override fun getChatMessagesForGame(gameId: String): List<ChatMessage> = emptyList()
         override fun addChatMessage(message: ChatMessage) {
             // no-op

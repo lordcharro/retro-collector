@@ -93,7 +93,10 @@ fun AdaptiveMainScreen(
             onOpenDiscoveredDossier = dashboardViewModel::onOpenDiscoveredDossier,
             onAddDiscoveredToWishlist = discoveryViewModel::addToWishlist,
             onLoadSimilarGames = dashboardViewModel::loadSimilarGamesForSelectedGame,
-            onSyncFromFirestore = dashboardViewModel::refreshFromFirestore
+            onSyncFromFirestore = dashboardViewModel::refreshFromFirestore,
+            onAddOrUpdateOffer = dashboardViewModel::addOrUpdateOffer,
+            onDeleteOffer = dashboardViewModel::deleteOffer,
+            onConvertOfferToOwned = dashboardViewModel::convertOfferToOwned
         )
     }
 
@@ -128,7 +131,10 @@ fun AdaptiveMainScreen(
                         onSelectSimilarGame = { sim ->
                             actions.onOpenDiscoveredDossier(sim)
                         },
-                        onAddSimilarGameToWishlist = discoveryViewModel::addToWishlist
+                        onAddSimilarGameToWishlist = discoveryViewModel::addToWishlist,
+                        onAddOrUpdateOffer = dashboardViewModel::addOrUpdateOffer,
+                        onDeleteOffer = dashboardViewModel::deleteOffer,
+                        onConvertOfferToOwned = dashboardViewModel::convertOfferToOwned
                     )
                 } else {
                     MobileFieldDashboardScreen(

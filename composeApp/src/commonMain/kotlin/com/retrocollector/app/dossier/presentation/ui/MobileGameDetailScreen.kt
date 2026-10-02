@@ -44,9 +44,16 @@ fun MobileGameDetailScreen(
     onDeleteGame: (String) -> Unit = {},
     onSendFollowUpMessage: (String) -> Unit = {},
     onSelectSimilarGame: (DiscoveredGameItem) -> Unit = {},
-    onAddSimilarGameToWishlist: (DiscoveredGameItem) -> Unit = {}
+    onAddSimilarGameToWishlist: (DiscoveredGameItem) -> Unit = {},
+    onAddOrUpdateOffer: (GameItem, com.retrocollector.app.core.domain.model.GameOffer) -> Unit = { _, _ -> },
+    onDeleteOffer: (GameItem, String) -> Unit = { _, _ -> },
+    onConvertOfferToOwned: (GameItem, String?, Double, com.retrocollector.app.core.domain.model.GameCondition) -> Unit = { _, _, _, _ -> }
 ) {
     var followUpQuestion by remember { mutableStateOf("") }
+    var editingOffer by remember { mutableStateOf<com.retrocollector.app.core.domain.model.GameOffer?>(null) }
+    var isAddOfferOpen by remember { mutableStateOf(false) }
+    var acquisitionOffer by remember { mutableStateOf<com.retrocollector.app.core.domain.model.GameOffer?>(null) }
+    var isAcquisitionOpen by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -147,7 +154,14 @@ fun MobileGameDetailScreen(
                 item {
                     CollectionStatusSelector(
                         currentStatus = game.collectionStatus,
-                        onStatusSelect = { onUpdateGameStatus(game, it) },
+                        onStatusSelect = { newStatus ->
+                            if (newStatus == CollectionStatus.OWNED && game.collectionStatus == CollectionStatus.WISHLIST) {
+                                acquisitionOffer = game.bestOffer
+                                isAcquisitionOpen = true
+                            } else {
+                                onUpdateGameStatus(game, newStatus)
+                            }
+                        },
                         fillMaxWidth = true
                     )
                 }
@@ -198,10 +212,25 @@ fun MobileGameDetailScreen(
                     item {
                         SwissMarketRadarView(
                             radar = game.marketRadar,
-                            askingPriceChf = game.askingPriceChf,
                             currency = currency
                         )
                     }
+                }
+
+                // Stores & Live Offers Section
+                item {
+                    com.retrocollector.app.offers.presentation.components.StoreOffersSection(
+                        offers = game.offers,
+                        currency = currency,
+                        isCompactLayout = true,
+                        onAddOfferClick = { isAddOfferOpen = true },
+                        onEditOfferClick = { offer -> editingOffer = offer },
+                        onDeleteOfferClick = { offer -> onDeleteOffer(game, offer.id) },
+                        onMarkAsBoughtClick = { offer ->
+                            acquisitionOffer = offer
+                            isAcquisitionOpen = true
+                        }
+                    )
                 }
 
                 // Safe vs Risky SKU Matrix
@@ -379,6 +408,39 @@ fun MobileGameDetailScreen(
                 }
             }
         }
+    }
+
+    if (isAddOfferOpen || editingOffer != null) {
+        com.retrocollector.app.offers.presentation.dialog.AddEditOfferDialog(
+            initialOffer = editingOffer,
+            currency = currency,
+            onSave = { offer ->
+                onAddOrUpdateOffer(game, offer)
+                isAddOfferOpen = false
+                editingOffer = null
+            },
+            onDismiss = {
+                isAddOfferOpen = false
+                editingOffer = null
+            }
+        )
+    }
+
+    if (isAcquisitionOpen) {
+        com.retrocollector.app.offers.presentation.dialog.AcquisitionModal(
+            game = game,
+            selectedOffer = acquisitionOffer,
+            currency = currency,
+            onConfirm = { finalPrice, condition, offerId ->
+                onConvertOfferToOwned(game, offerId, finalPrice, condition)
+                isAcquisitionOpen = false
+                acquisitionOffer = null
+            },
+            onDismiss = {
+                isAcquisitionOpen = false
+                acquisitionOffer = null
+            }
+        )
     }
 }
 

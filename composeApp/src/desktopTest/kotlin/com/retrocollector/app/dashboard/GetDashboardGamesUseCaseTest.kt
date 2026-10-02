@@ -39,6 +39,14 @@ class GetDashboardGamesUseCaseTest {
         override fun deleteGame(id: String) {
             _games.value = _games.value.filter { it.id != id }
         }
+        override fun addOrUpdateOffer(gameId: String, offer: com.retrocollector.app.core.domain.model.GameOffer) {}
+        override fun deleteOffer(gameId: String, offerId: String) {}
+        override fun convertOfferToOwned(
+            gameId: String,
+            offerId: String?,
+            finalPriceChf: Double,
+            condition: com.retrocollector.app.core.domain.model.GameCondition
+        ) {}
         override fun getChatMessagesForGame(gameId: String): List<ChatMessage> = emptyList()
         override fun addChatMessage(message: ChatMessage) {
             _chatMessages.value = _chatMessages.value + message

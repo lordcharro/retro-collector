@@ -13,10 +13,8 @@ import com.retrocollector.app.core.domain.model.SwissMarketRadar
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.core.presentation.util.PriceFormatter
-
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.ui.text.style.TextOverflow
-
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -24,16 +22,23 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 fun SwissMarketRadarView(
     radar: SwissMarketRadar,
     modifier: Modifier = Modifier,
-    askingPriceChf: Double? = null,
     paidPriceChf: Double? = null,
     isOwned: Boolean = false,
     onPriceSubmitted: ((Double?) -> Unit)? = null,
     currency: String = "CHF"
 ) {
-    val effectiveAsking = askingPriceChf ?: radar.spottedPriceChf
     val median = radar.medianPriceChf
+    val minPrice = radar.historicalMinChf
+    val maxPrice = radar.historicalMaxChf
+
+    val trendColor = when {
+        radar.trend.contains("Rising", ignoreCase = true) || radar.trend.contains("Hot", ignoreCase = true) -> StatusEditionFg
+        radar.trend.contains("Falling", ignoreCase = true) -> AccentBlue
+        else -> StatusEnglishFg
+    }
 
     Column(modifier = modifier) {
+        // Header: Title & Market Trend
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -54,18 +59,19 @@ fun SwissMarketRadarView(
                 Box(
                     modifier = Modifier
                         .size(6.dp)
-                        .background(StatusEnglishFg, RoundedCornerShape(3.dp))
+                        .background(trendColor, RoundedCornerShape(3.dp))
                 )
                 Text(
-                    text = radar.trend,
-                    color = StatusEnglishFg,
-                    style = CodeSkuStyle.copy(fontSize = 11.sp),
+                    text = "${radar.trend.uppercase()} TREND",
+                    color = trendColor,
+                    style = CodeSkuStyle.copy(fontSize = 10.sp),
                     maxLines = 1,
                     softWrap = false
                 )
             }
         }
 
+        // Metrics Row: Median & CIB Range
         FlowRow(
             modifier = Modifier
                 .fillMaxWidth()
@@ -73,26 +79,7 @@ fun SwissMarketRadarView(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "${TextKeys.Radar.ASKING_PRICE}:",
-                    style = BodySm,
-                    color = TextSecondary,
-                    maxLines = 1,
-                    softWrap = false
-                )
-                Text(
-                    text = PriceFormatter.format(effectiveAsking, currency),
-                    style = CodePriceStyle,
-                    color = TextPrimary,
-                    maxLines = 1,
-                    softWrap = false
-                )
-            }
-
+            // 90d Median
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -113,6 +100,37 @@ fun SwissMarketRadarView(
                 )
             }
 
+            // CIB / Historical Price Range
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "CIB Range:",
+                    style = BodySm,
+                    color = TextSecondary,
+                    maxLines = 1,
+                    softWrap = false
+                )
+                val rangeText = when {
+                    minPrice != null && maxPrice != null ->
+                        "${PriceFormatter.formatAmount(minPrice)} – ${PriceFormatter.format(maxPrice, currency)}"
+                    minPrice != null ->
+                        "From ${PriceFormatter.format(minPrice, currency)}"
+                    maxPrice != null ->
+                        "Up to ${PriceFormatter.format(maxPrice, currency)}"
+                    else -> "—"
+                }
+                Text(
+                    text = rangeText,
+                    style = CodePriceStyle.copy(fontSize = 12.sp),
+                    color = TextPrimary,
+                    maxLines = 1,
+                    softWrap = false
+                )
+            }
+
+            // Acquisition Paid Price (if owned)
             if (isOwned && onPriceSubmitted != null) {
                 PaidPriceInput(
                     paidPrice = paidPriceChf,
@@ -123,15 +141,14 @@ fun SwissMarketRadarView(
             }
         }
 
-        // Deal evaluation pill if both available
-        val priceToCompare = if (isOwned && paidPriceChf != null) paidPriceChf else effectiveAsking
-        if (priceToCompare != null && median != null && median > 0) {
-            val delta = ((priceToCompare - median) / median) * 100
+        // Deal evaluation vs Median (if owned)
+        if (isOwned && paidPriceChf != null && median != null && median > 0) {
+            val delta = ((paidPriceChf - median) / median) * 100
             val (dealText, dealColor) = when {
-                delta <= -20 -> Pair(if (isOwned && paidPriceChf != null) "Great Acquisition" else TextKeys.Radar.DEAL_BARGAIN, StatusEnglishFg)
-                delta <= 0 -> Pair(if (isOwned && paidPriceChf != null) "Good Value" else TextKeys.Radar.DEAL_GOOD, StatusEnglishFg)
-                delta <= 15 -> Pair(if (isOwned && paidPriceChf != null) "Fair Price" else TextKeys.Radar.DEAL_FAIR, StatusEditionFg)
-                else -> Pair(if (isOwned && paidPriceChf != null) "Premium Paid" else TextKeys.Radar.DEAL_OVERPRICED, StatusRiskFg)
+                delta <= -20 -> Pair("Great Acquisition", StatusEnglishFg)
+                delta <= 0 -> Pair("Good Value", StatusEnglishFg)
+                delta <= 15 -> Pair("Fair Price", StatusEditionFg)
+                else -> Pair("Premium Paid", StatusRiskFg)
             }
 
             Text(
@@ -156,8 +173,8 @@ fun SwissMarketRadarView(
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .fillMaxWidth(0.6f)
-                    .padding(start = 24.dp)
+                    .fillMaxWidth(0.65f)
+                    .padding(start = 16.dp)
                     .background(AccentBlue.copy(alpha = 0.35f), RoundedCornerShape(3.dp))
             )
 
@@ -165,8 +182,8 @@ fun SwissMarketRadarView(
                 modifier = Modifier
                     .fillMaxHeight()
                     .width(4.dp)
-                    .padding(start = 48.dp)
-                    .background(StatusEditionFg, RoundedCornerShape(2.dp))
+                    .padding(start = 36.dp)
+                    .background(StatusEnglishFg, RoundedCornerShape(2.dp))
             )
         }
     }
@@ -184,7 +201,6 @@ fun SwissMarketRadarViewPreview() {
                 historicalMaxChf = 36.0,
                 trend = "Stable"
             ),
-            askingPriceChf = 35.0,
             modifier = Modifier.padding(16.dp)
         )
     }
