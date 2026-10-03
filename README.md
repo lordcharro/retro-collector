@@ -23,7 +23,7 @@ Covers **30 consoles across 5 ecosystems** — Nintendo, PlayStation, Xbox, Sega
 ---
 
 ### ⚙️ Settings & Intelligence Engine
-*Dark / Light / System interface theme toggle, Google Gemini Flash model selector, API key verification, and Quota Saver controls.*
+*Dark / Light / System interface theme toggle, Google Gemini Flash model selector, API key verification, Marketplace Scraper Proxy (Scrape.do & Custom curl-cffi proxy with Residential `super=true` toggle), and Quota Saver controls.*
 
 <p align="center">
   <img src="docs/settings.png" width="450" alt="RetroCollector Settings and Integrations" />
@@ -35,6 +35,7 @@ Covers **30 consoles across 5 ecosystems** — Nintendo, PlayStation, Xbox, Sega
 
 * **🛡️ PAL Language Safety Verifier**: Distinguishes guaranteed English editions (UKV/PEGI) from German-locked USK copies (`DOL-P-xxxx-(NOE)`, `BLES-00351`, etc.) to prevent unplayable purchases.
 * **🏷️ Tracked Marketplace Offers**: Track multiple listings across Ricardo.ch, Tutti.ch, and Anibis.ch with condition (`CIB`, `BOXED`, `LOOSE`), shipping costs, and lowest landed price calculation.
+* **⚡ Cloudflare-Bypassing Scraper Proxy**: Extracts live listings, high-resolution photos, and CHF pricing using **Scrape.do API** (with JS rendering & residential proxy support) or a **Custom / Self-Hosted `curl-cffi` proxy microservice**.
 * **🇨🇭 Swiss Market Radar**: Tracks median asking prices, historical min/max CHF ranges, and market pricing trends in Switzerland.
 * **🧠 Gemini AI Discovery & Chat**: Multimodal spine OCR, curated catalog exploration, similarity recommendations based on owned games, and persistent contextual chat per title.
 * **☁️ Structured Firestore Sync**: Real-time multiplatform synchronization for your collection, wishlist, marketplace offers, and chat history.
@@ -64,7 +65,8 @@ Covers **30 consoles across 5 ecosystems** — Nintendo, PlayStation, Xbox, Sega
 * **Material 3 Adaptive** (dark retro gaming theme, high contrast)
 * **Google Gemini Flash API** (multimodal vision, spine serial OCR, PAL-specialised prompts)
 * **Firebase Cloud Firestore** (real-time game and chat sync across devices)
-* **Ktor Client 3.0** (multiplatform REST calls and listing scraping from Ricardo.ch / Tutti.ch)
+* **Marketplace Proxy Scraper** (Scrape.do API & custom `curl-cffi` TLS/JA3 impersonation proxy)
+* **Ktor Client 3.0** (multiplatform REST calls, image streaming, and proxy communication)
 * **Kotlinx Serialization & Coroutines**
 
 ---
@@ -107,7 +109,7 @@ The `docker/` folder contains everything needed to serve the WebAssembly build:
 
 ---
 
-## 🔑 API Keys Setup (Gemini & Firebase)
+## 🔑 API Keys & Integrations Setup
 
 In the app, tap the gear icon **⚙️ Settings**:
 
@@ -115,11 +117,19 @@ In the app, tap the gear icon **⚙️ Settings**:
    - Generate a free key at [Google AI Studio](https://aistudio.google.com/).
    - Paste it in the corresponding field and tap **Test Gemini Key**.
 
-2. **Firebase Firestore**
+2. **Marketplace Scraper Proxy (Ricardo.ch, Tutti.ch, Anibis.ch)**
+   - **Option A: Scrape.do API (Recommended for zero maintenance)**
+     - Create a free account at [Scrape.do](https://scrape.do/) (1,000 free requests/month).
+     - Paste your API Token in Settings.
+     - Toggle **Residential Proxy (`super=true`)** if you encounter stubborn captchas (uses 25 credits/req instead of 5 credits/req).
+   - **Option B: Custom / Self-Hosted Proxy (Unlimited / Free)**
+     - Select **Custom Proxy** and enter the endpoint URL of your self-hosted scraper microservice (e.g., `https://my-scraper.fly.dev/scrape?url=`).
+
+3. **Firebase Firestore**
    - Create a free project at the [Firebase Console](https://console.firebase.google.com/).
    - Enable **Cloud Firestore** in test mode or with read/write rules.
    - Enter your **Firebase Project ID** in Settings.
-   > ⚠️ **Security note:** Test mode leaves the database publicly readable and writable. This is fine for personal use in a controlled environment, but configure proper [Firestore Security Rules](https://firebase.google.com/docs/firestore/security/get-started) before sharing your Project ID or using in production.
+   > ⚠️ **Security note:** Test mode leaves the database publicly readable and writable. This is fine for personal use in a controlled environment, but configure proper [Firestore Security Rules](https://firebase.google.com/docs/firestore/security/get-started) (see [`firestore.md`](firestore.md)) before sharing your Project ID or using in production.
 
 ---
 

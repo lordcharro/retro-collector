@@ -283,6 +283,30 @@ Stores contextual Gemini chat messages for each game or inspection session.
 
 ---
 
+## 📂 Collection: `app_settings` *(planned)*
+
+Stores global or device synchronized preferences.
+
+### Document structure: `/app_settings/preferences`
+
+| Field | Firestore type | Description | Example |
+| :--- | :--- | :--- | :--- |
+| `themeMode` | `string` | App theme (`DARK`, `LIGHT`, `SYSTEM`) | `"DARK"` |
+| `geminiApiKey` | `string` | User's Gemini API key | `"AIzaSy..."` |
+| `geminiModel` | `string` | Default model identifier | `"gemini-3.7-flash"` |
+| `firebaseProjectId` | `string` | Cloud Firestore sync target project | `"retrocollector-swiss"` |
+| `defaultCurrency` | `string` | ISO currency symbol | `"CHF"` |
+| `isScraperEnabled` | `boolean` | Master toggle for marketplace scraping | `true` |
+| `scraperProvider` | `string` | Proxy provider (`SCRAPE_DO`, `CUSTOM_PROXY`) | `"SCRAPE_DO"` |
+| `scrapeDoApiKey` | `string` | Scrape.do API token | `"token_xyz"` |
+| `scrapeDoSuperProxy` | `boolean` | Residential proxy toggle (`super=true`) | `false` |
+| `customScraperProxyUrl` | `string` | Custom `curl-cffi` microservice endpoint | `"https://my-proxy.fly.dev/scrape?url="` |
+| `isAutoDiscoveryEnabled` | `boolean` | Auto AI catalog discovery flag | `true` |
+| `isAutoSimilarGamesEnabled` | `boolean` | Auto similar games recommendation flag | `true` |
+| `pinnedPlatformIds` | `array<string>` | Console IDs pinned to filter bar | `["gamecube", "ps3", "switch"]` |
+
+---
+
 ## ⚡ Recommended Composite Indexes
 
 Add these in the **Firestore Console → Indexes → Composite** tab:

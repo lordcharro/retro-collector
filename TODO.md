@@ -131,8 +131,12 @@
   - Add documentation or a second Docker Compose profile for HTTPS with a self-signed cert or Let's Encrypt via a reverse proxy.
 
 - [ ] **Unit tests beyond architecture validation**
-  - Only Konsist architecture tests exist.
-  - Add unit tests for: `GeminiRemoteDataSource` JSON parsing, `ListingScraper` URL slug extraction, `PriceFormatter`, and `DashboardViewModel` state transitions.
+  - Added:
+    - [x] `ListingScraperProxyTest.kt` — Scrape.do query generation (`render=true`, `super=true`), custom proxy endpoint mapping, marketplace URL pattern matching, and slug/title extraction.
+  - Remaining:
+    - [ ] `GeminiRemoteDataSource` JSON parsing and error recovery
+    - [ ] `PriceFormatter` currency calculations
+    - [ ] `DashboardViewModel` MVI state transitions
 
 - [x] **GitHub Actions CI pipeline**
   - Added `.github/workflows/ci.yml` running detekt lint checks, unit tests, and multiplatform build validation on every push/PR.
