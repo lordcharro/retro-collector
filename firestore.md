@@ -2,7 +2,7 @@
 
 This document describes the Firestore collections, document structures, field types, recommended composite indexes, and security rules for the **RetroCollector** cloud sync.
 
-> **Implementation status:** The `games` and `chat_threads` collections are fully integrated and synced by [`FirestoreService.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/firestore/FirestoreService.kt) using 100% structured Firestore serialization (with seamless backwards-compatible fallback for legacy document schemas). `app_settings` is designed and planned.
+> **Implementation status:** The `games` and `chat_threads` collections are fully integrated and synced by [`FirestoreService.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/firestore/FirestoreService.kt) using 100% structured Firestore serialization (with seamless backwards-compatible fallback for legacy document schemas).
 
 ---
 
@@ -22,12 +22,9 @@ Firestore (default database)
 │       ├── similarGames[]             # Persistent AI discovery & recommendation items
 │       └── safeSkus[], riskySkus[], marketRadar
 │
-├── 📁 chat_threads/                   # [ACTIVE / SYNCED] Gemini chat history per game/franchise
-│   └── 📄 {messageId}                 # e.g. "msg_1727464100_user"
-│       ├── id, contextId, sender, text, imageBase64, timestamp
-│
-└── 📁 app_settings/                   # [PLANNED] Global or per-user preferences
-    └── 📄 preferences
+└── 📁 chat_threads/                   # [ACTIVE / SYNCED] Gemini chat history per game/franchise
+    └── 📄 {messageId}                 # e.g. "msg_1727464100_user"
+        ├── id, contextId, sender, text, imageBase64, timestamp
 ```
 
 ---
@@ -283,30 +280,6 @@ Stores contextual Gemini chat messages for each game or inspection session.
 
 ---
 
-## 📂 Collection: `app_settings` *(planned)*
-
-Stores global or device synchronized preferences.
-
-### Document structure: `/app_settings/preferences`
-
-| Field | Firestore type | Description | Example |
-| :--- | :--- | :--- | :--- |
-| `themeMode` | `string` | App theme (`DARK`, `LIGHT`, `SYSTEM`) | `"DARK"` |
-| `geminiApiKey` | `string` | User's Gemini API key | `"AIzaSy..."` |
-| `geminiModel` | `string` | Default model identifier | `"gemini-3.7-flash"` |
-| `firebaseProjectId` | `string` | Cloud Firestore sync target project | `"retrocollector-swiss"` |
-| `defaultCurrency` | `string` | ISO currency symbol | `"CHF"` |
-| `isScraperEnabled` | `boolean` | Master toggle for marketplace scraping | `true` |
-| `scraperProvider` | `string` | Proxy provider (`SCRAPE_DO`, `CUSTOM_PROXY`) | `"SCRAPE_DO"` |
-| `scrapeDoApiKey` | `string` | Scrape.do API token | `"token_xyz"` |
-| `scrapeDoSuperProxy` | `boolean` | Residential proxy toggle (`super=true`) | `false` |
-| `customScraperProxyUrl` | `string` | Custom `curl-cffi` microservice endpoint | `"https://my-proxy.fly.dev/scrape?url="` |
-| `isAutoDiscoveryEnabled` | `boolean` | Auto AI catalog discovery flag | `true` |
-| `isAutoSimilarGamesEnabled` | `boolean` | Auto similar games recommendation flag | `true` |
-| `pinnedPlatformIds` | `array<string>` | Console IDs pinned to filter bar | `["gamecube", "ps3", "switch"]` |
-
----
-
 ## ⚡ Recommended Composite Indexes
 
 Add these in the **Firestore Console → Indexes → Composite** tab:
@@ -367,12 +340,7 @@ service cloud.firestore {
       allow delete: if true;
     }
 
-    // 3. App settings
-    match /app_settings/{document} {
-      allow read, write: if true;
-    }
-
-    // 4. Block any other collection or path not defined above
+    // 3. Block any other collection or path not defined above
     match /{document=**} {
       allow read, write: if false;
     }
