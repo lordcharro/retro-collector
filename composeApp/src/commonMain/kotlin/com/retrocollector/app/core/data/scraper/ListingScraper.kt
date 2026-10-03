@@ -57,7 +57,10 @@ class ListingScraper(
         return when (settings.scraperProvider) {
             ScraperProvider.SCRAPE_DO -> {
                 val token = settings.scrapeDoApiKey.trim()
-                if (token.isBlank()) null else "https://api.scrape.do?token=$token&url=$encoded&render=true"
+                if (token.isBlank()) null else {
+                    val superParam = if (settings.scrapeDoSuperProxy) "&super=true" else ""
+                    "https://api.scrape.do?token=$token&url=$encoded&render=true$superParam"
+                }
             }
             ScraperProvider.CUSTOM_PROXY -> {
                 val base = settings.customScraperProxyUrl.trim()
@@ -281,7 +284,7 @@ class ListingScraper(
                 header(HttpHeaders.UserAgent, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36")
             }
             if (response.status.isSuccess()) {
-                val bytes = response.readBytes()
+                val bytes = response.readRawBytes()
                 val base64 = bytes.encodeBase64()
                 val mime = response.contentType()?.let { "${it.contentType}/${it.contentSubtype}" } ?: "image/jpeg"
                 "data:$mime;base64,$base64"

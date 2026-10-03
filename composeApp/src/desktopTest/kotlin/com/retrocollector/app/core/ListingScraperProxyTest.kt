@@ -14,21 +14,34 @@ class ListingScraperProxyTest {
     private val scraper = ListingScraper()
 
     @Test
-    fun `buildProxyUrl constructs valid Scrape_do endpoint with render parameter`() {
+    fun `buildProxyUrl constructs valid Scrape_do endpoint with render and super parameters`() {
         val targetUrl = "https://www.ricardo.ch/en/a/1318136906"
-        val settingsWithKey = AppSettings(
+        val settingsStandard = AppSettings(
             scraperProvider = ScraperProvider.SCRAPE_DO,
-            scrapeDoApiKey = "test_token_123"
+            scrapeDoApiKey = "test_token_123",
+            scrapeDoSuperProxy = false
+        )
+        val settingsSuper = AppSettings(
+            scraperProvider = ScraperProvider.SCRAPE_DO,
+            scrapeDoApiKey = "test_token_123",
+            scrapeDoSuperProxy = true
         )
         val settingsWithoutKey = AppSettings(
             scraperProvider = ScraperProvider.SCRAPE_DO,
             scrapeDoApiKey = ""
         )
 
-        val proxyUrl = scraper.buildProxyUrl(targetUrl, settingsWithKey)
-        assertNotNull(proxyUrl)
-        assertTrue(proxyUrl!!.startsWith("https://api.scrape.do?token=test_token_123&url="))
-        assertTrue(proxyUrl.contains("render=true"))
+        val standardUrl = scraper.buildProxyUrl(targetUrl, settingsStandard)
+        assertNotNull(standardUrl)
+        assertTrue(standardUrl!!.startsWith("https://api.scrape.do?token=test_token_123&url="))
+        assertTrue(standardUrl.contains("render=true"))
+        assertTrue(!standardUrl.contains("super=true"))
+
+        val superUrl = scraper.buildProxyUrl(targetUrl, settingsSuper)
+        assertNotNull(superUrl)
+        assertTrue(superUrl!!.startsWith("https://api.scrape.do?token=test_token_123&url="))
+        assertTrue(superUrl.contains("render=true"))
+        assertTrue(superUrl.contains("&super=true"))
 
         assertNull(scraper.buildProxyUrl(targetUrl, settingsWithoutKey))
     }

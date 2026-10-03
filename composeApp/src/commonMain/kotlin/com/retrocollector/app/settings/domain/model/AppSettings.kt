@@ -29,6 +29,7 @@ data class AppSettings(
     val isScraperEnabled: Boolean = true,
     val scraperProvider: ScraperProvider = ScraperProvider.SCRAPE_DO,
     val scrapeDoApiKey: String = "",
+    val scrapeDoSuperProxy: Boolean = false,
     val customScraperProxyUrl: String = "",
     val isAutoDiscoveryEnabled: Boolean = false,
     val isAutoSimilarGamesEnabled: Boolean = false,

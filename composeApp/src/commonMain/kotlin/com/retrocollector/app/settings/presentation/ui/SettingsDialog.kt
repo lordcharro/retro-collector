@@ -50,6 +50,7 @@ fun SettingsDialog(
     var isScraperEnabled by remember { mutableStateOf(settings.isScraperEnabled) }
     var scraperProvider by remember { mutableStateOf(settings.scraperProvider) }
     var scrapeDoKey by remember { mutableStateOf(settings.scrapeDoApiKey) }
+    var scrapeDoSuperProxy by remember { mutableStateOf(settings.scrapeDoSuperProxy) }
     var customProxyUrl by remember { mutableStateOf(settings.customScraperProxyUrl) }
     var isAutoDiscoveryEnabled by remember { mutableStateOf(settings.isAutoDiscoveryEnabled) }
     var isAutoSimilarGamesEnabled by remember { mutableStateOf(settings.isAutoSimilarGamesEnabled) }
@@ -244,6 +245,7 @@ fun SettingsDialog(
                                                     isScraperEnabled = isScraperEnabled,
                                                     scraperProvider = scraperProvider,
                                                     scrapeDoApiKey = scrapeDoKey.trim(),
+                                                    scrapeDoSuperProxy = scrapeDoSuperProxy,
                                                     customScraperProxyUrl = customProxyUrl.trim(),
                                                     isAutoDiscoveryEnabled = isAutoDiscoveryEnabled,
                                                     isAutoSimilarGamesEnabled = isAutoSimilarGamesEnabled,
@@ -757,37 +759,83 @@ fun SettingsDialog(
                             // Conditional Fields based on Provider
                             when (scraperProvider) {
                                 ScraperProvider.SCRAPE_DO -> {
-                                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    text = "SCRAPE.DO API TOKEN",
+                                                    style = LabelFilterStyle,
+                                                    color = TextPrimary
+                                                )
+                                                Text(
+                                                    text = "1,000 Free Req/Month",
+                                                    style = CodeSkuStyle.copy(fontSize = 10.sp),
+                                                    color = StatusEnglishFg
+                                                )
+                                            }
+                                            TactileTextField(
+                                                value = scrapeDoKey,
+                                                onValueChange = { scrapeDoKey = it },
+                                                placeholder = "Paste your Scrape.do API Token here...",
+                                                textStyle = CodeSkuStyle.copy(color = TextPrimary, fontSize = 11.sp),
+                                                placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg, fontSize = 11.sp),
+                                                backgroundColor = SurfaceCard,
+                                                modifier = Modifier.fillMaxWidth()
+                                            )
+                                            Text(
+                                                text = "Get your free API token from scrape.do dashboard. Automatically executes JS and bypasses Cloudflare.",
+                                                style = BodySm.copy(fontSize = 10.sp),
+                                                color = TextSecondary
+                                            )
+                                        }
+
+                                        // Super / Residential Proxy Toggle
                                         Row(
-                                            modifier = Modifier.fillMaxWidth(),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .background(SurfaceCard, RoundedCornerShape(4.dp))
+                                                .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
+                                                .padding(horizontal = 10.dp, vertical = 8.dp),
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Text(
-                                                text = "SCRAPE.DO API TOKEN",
-                                                style = LabelFilterStyle,
-                                                color = TextPrimary
-                                            )
-                                            Text(
-                                                text = "1,000 Free Req/Month",
-                                                style = CodeSkuStyle.copy(fontSize = 10.sp),
-                                                color = StatusEnglishFg
+                                            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                                                Row(
+                                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Text(
+                                                        text = "RESIDENTIAL PROXY (SUPER=TRUE)",
+                                                        style = LabelFilterStyle.copy(fontSize = 10.sp),
+                                                        color = TextPrimary
+                                                    )
+                                                    Text(
+                                                        text = if (scrapeDoSuperProxy) "25 credits/req" else "5 credits/req",
+                                                        style = CodeSkuStyle.copy(fontSize = 9.sp),
+                                                        color = if (scrapeDoSuperProxy) StatusEditionFg else StatusEnglishFg
+                                                    )
+                                                }
+                                                Text(
+                                                    text = "Routes requests through residential IPs for difficult captchas. Increases credit cost from 5 to 25 credits per request.",
+                                                    style = BodySm.copy(fontSize = 10.sp),
+                                                    color = TextSecondary
+                                                )
+                                            }
+                                            Switch(
+                                                checked = scrapeDoSuperProxy,
+                                                onCheckedChange = { scrapeDoSuperProxy = it },
+                                                colors = SwitchDefaults.colors(
+                                                    checkedThumbColor = Color.White,
+                                                    checkedTrackColor = ConsoleGamecube,
+                                                    uncheckedThumbColor = StatusUnverifiedFg,
+                                                    uncheckedTrackColor = SurfaceElevated
+                                                )
                                             )
                                         }
-                                        TactileTextField(
-                                            value = scrapeDoKey,
-                                            onValueChange = { scrapeDoKey = it },
-                                            placeholder = "Paste your Scrape.do API Token here...",
-                                            textStyle = CodeSkuStyle.copy(color = TextPrimary, fontSize = 11.sp),
-                                            placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg, fontSize = 11.sp),
-                                            backgroundColor = SurfaceCard,
-                                            modifier = Modifier.fillMaxWidth()
-                                        )
-                                        Text(
-                                            text = "Get your free API token from scrape.do dashboard. Automatically executes JS and bypasses Cloudflare.",
-                                            style = BodySm.copy(fontSize = 10.sp),
-                                            color = TextSecondary
-                                        )
                                     }
                                 }
                                 ScraperProvider.CUSTOM_PROXY -> {
@@ -1121,6 +1169,7 @@ fun SettingsDialog(
                                 isScraperEnabled = isScraperEnabled,
                                 scraperProvider = scraperProvider,
                                 scrapeDoApiKey = scrapeDoKey.trim(),
+                                scrapeDoSuperProxy = scrapeDoSuperProxy,
                                 customScraperProxyUrl = customProxyUrl.trim(),
                                 isAutoDiscoveryEnabled = isAutoDiscoveryEnabled,
                                 isAutoSimilarGamesEnabled = isAutoSimilarGamesEnabled,
