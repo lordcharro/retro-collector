@@ -3,6 +3,7 @@ package com.retrocollector.app.dashboard.presentation.viewmodel
 import androidx.compose.runtime.Immutable
 import com.retrocollector.app.core.domain.model.*
 import com.retrocollector.app.core.domain.repository.IGameRepository
+import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.dashboard.domain.model.DashboardFilterCriteria
 import com.retrocollector.app.dashboard.domain.usecase.DeleteGameUseCase
 import com.retrocollector.app.dashboard.domain.usecase.GetDashboardGamesUseCase
@@ -10,7 +11,9 @@ import com.retrocollector.app.dashboard.domain.usecase.SaveGameUseCase
 import com.retrocollector.app.discovery.domain.usecase.GetSimilarGamesUseCase
 import com.retrocollector.app.dossier.domain.usecase.SendFollowUpChatUseCase
 import com.retrocollector.app.scanner.domain.usecase.AnalyzeGameWithGeminiUseCase
+import com.retrocollector.app.settings.domain.model.AiProvider
 import com.retrocollector.app.settings.domain.model.AppSettings
+import com.retrocollector.app.settings.domain.usecase.TestAiConnectionUseCase
 import com.retrocollector.app.settings.domain.usecase.TestGeminiConnectionUseCase
 import com.retrocollector.app.settings.domain.usecase.UpdateSettingsUseCase
 import kotlinx.coroutines.CoroutineDispatcher
@@ -20,7 +23,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import com.retrocollector.app.core.presentation.text.TextKeys
 
 @Immutable
 data class DashboardUiState(
@@ -56,7 +58,7 @@ class DashboardViewModel(
     private val analyzeGameUseCase: AnalyzeGameWithGeminiUseCase,
     private val sendFollowUpChatUseCase: SendFollowUpChatUseCase,
     private val updateSettingsUseCase: UpdateSettingsUseCase,
-    private val testGeminiConnectionUseCase: TestGeminiConnectionUseCase = TestGeminiConnectionUseCase(repository),
+    private val testAiConnectionUseCase: TestAiConnectionUseCase = TestAiConnectionUseCase(repository),
     private val getSimilarGamesUseCase: GetSimilarGamesUseCase = GetSimilarGamesUseCase(repository),
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val scope: CoroutineScope = CoroutineScope(dispatcher)
@@ -347,14 +349,16 @@ class DashboardViewModel(
         }
     }
 
-    suspend fun testGeminiConnectionSuspend(apiKey: String, model: String = "gemini-3.7-flash"): Result<String> {
-        return testGeminiConnectionUseCase(apiKey, model)
-    }
-
-    fun testGeminiConnection(apiKey: String, model: String = "gemini-3.7-flash", onResult: (Result<String>) -> Unit) {
+    fun testAiConnection(
+        provider: AiProvider,
+        apiKey: String,
+        model: String,
+        baseUrl: String? = null,
+        onResult: (Result<String>) -> Unit
+    ) {
         scope.launch {
             try {
-                val result = testGeminiConnectionUseCase(apiKey, model)
+                val result = testAiConnectionUseCase(provider, apiKey, model, baseUrl)
                 onResult(result)
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
@@ -362,6 +366,10 @@ class DashboardViewModel(
                 onResult(Result.failure(e))
             }
         }
+    }
+
+    fun testGeminiConnection(apiKey: String, model: String = "gemini-3.7-flash", onResult: (Result<String>) -> Unit) {
+        testAiConnection(AiProvider.GEMINI, apiKey, model, null, onResult)
     }
 
     fun sendFollowUpMessage(question: String, imageBase64: String? = null) {

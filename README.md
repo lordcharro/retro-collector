@@ -23,7 +23,7 @@ Covers **30 consoles across 5 ecosystems** — Nintendo, PlayStation, Xbox, Sega
 ---
 
 ### ⚙️ Settings & Intelligence Engine
-*Dark / Light / System interface theme toggle, Google Gemini Flash model selector, API key verification, Marketplace Scraper Proxy (Scrape.do & Custom curl-cffi proxy with Residential `super=true` toggle), and Quota Saver controls.*
+*Dark / Light / System interface theme toggle, Multi-AI Provider selector (Google Gemini, Anthropic Claude, OpenAI / OpenRouter, Local Ollama), API key and live connection tester, Marketplace Scraper Proxy (Scrape.do & Custom curl-cffi proxy with Residential `super=true` toggle), and Quota Saver controls.*
 
 <p align="center">
   <img src="docs/settings.png" width="450" alt="RetroCollector Settings and Integrations" />
@@ -37,7 +37,7 @@ Covers **30 consoles across 5 ecosystems** — Nintendo, PlayStation, Xbox, Sega
 * **🏷️ Tracked Marketplace Offers**: Track multiple listings across Ricardo.ch, Tutti.ch, and Anibis.ch with condition (`CIB`, `BOXED`, `LOOSE`), shipping costs, and lowest landed price calculation.
 * **⚡ Cloudflare-Bypassing Scraper Proxy**: Extracts live listings, high-resolution photos, and CHF pricing using **Scrape.do API** (with JS rendering & residential proxy support) or a **Custom / Self-Hosted `curl-cffi` proxy microservice**.
 * **🇨🇭 Swiss Market Radar**: Tracks median asking prices, historical min/max CHF ranges, and market pricing trends in Switzerland.
-* **🧠 Gemini AI Discovery & Chat**: Multimodal spine OCR, curated catalog exploration, similarity recommendations based on owned games, and persistent contextual chat per title.
+* **🧠 Multi-AI Discovery & Intelligence Engine**: Multimodal spine OCR, curated catalog exploration, similarity recommendations based on owned games, and persistent contextual chat per title across multiple AI providers (Gemini, Claude, OpenAI/OpenRouter, Local Ollama).
 * **☁️ Structured Firestore Sync**: Real-time multiplatform synchronization for your collection, wishlist, marketplace offers, and chat history.
 * **🌓 Adaptive Material 3 Theming**: Dark and Light tactile themes with high-contrast retro accents.
 
@@ -113,23 +113,49 @@ The `docker/` folder contains everything needed to serve the WebAssembly build:
 
 In the app, tap the gear icon **⚙️ Settings**:
 
-1. **Gemini API Key**
-   - Generate a free key at [Google AI Studio](https://aistudio.google.com/).
-   - Paste it in the corresponding field and tap **Test Gemini Key**.
+### 1. 🧠 AI Provider Setup
 
-2. **Marketplace Scraper Proxy (Ricardo.ch, Tutti.ch, Anibis.ch)**
-   - **Option A: Scrape.do API (Recommended for zero maintenance)**
-     - Create a free account at [Scrape.do](https://scrape.do/) (1,000 free requests/month).
-     - Paste your API Token in Settings.
-     - Toggle **Residential Proxy (`super=true`)** if you encounter stubborn captchas (uses 25 credits/req instead of 5 credits/req).
-   - **Option B: Custom / Self-Hosted Proxy (Unlimited / Free)**
-     - Select **Custom Proxy** and enter the endpoint URL of your self-hosted scraper microservice (e.g., `https://my-scraper.fly.dev/scrape?url=`).
+RetroCollector supports multiple AI engines for OCR spine analysis, PAL edition verification, game discovery, and interactive collector chat.
 
-3. **Firebase Firestore**
-   - Create a free project at the [Firebase Console](https://console.firebase.google.com/).
-   - Enable **Cloud Firestore** in test mode or with read/write rules.
-   - Enter your **Firebase Project ID** in Settings.
-   > ⚠️ **Security note:** Test mode leaves the database publicly readable and writable. This is fine for personal use in a controlled environment, but configure proper [Firestore Security Rules](https://firebase.google.com/docs/firestore/security/get-started) (see [`firestore.md`](firestore.md)) before sharing your Project ID or using in production.
+> ⚠️ **Testing & Verification Notice:**
+> While full architecture, network clients, JSON extraction parsers, and unit tests have been implemented for all supported providers (Claude, OpenAI/OpenRouter, Local Ollama), **only Google Gemini has been extensively field-tested and battle-tested end-to-end** with live multimodal OCR on real Swiss market physical listings. If you choose another provider, ensure the chosen model supports multimodal vision input and JSON structured outputs.
+
+* **🟢 Google Gemini (Recommended & Fully Tested)**
+  - **Models:** `gemini-3.8-flash` (Default), `gemini-3.6-flash`, `gemini-3.7-flash`, `gemini-3.5-flash`, `gemini-2.5-flash`, `gemini-2.5-flash-lite`.
+  - **Setup:** Generate a free API key at [Google AI Studio](https://aistudio.google.com/), select the **Gemini** tab in Settings, paste your key, and click **Test Connection**.
+
+* **🟣 Anthropic Claude (Experimental / Architecture Tested)**
+  - **Models:** `claude-3-7-sonnet-20250219`, `claude-3-5-sonnet-20241022`, `claude-3-5-haiku-20241022`.
+  - **Setup:** Generate an API key from the [Anthropic Console](https://console.anthropic.com/), select the **Claude** tab in Settings, paste your key (`sk-ant-...`), and click **Test Connection**.
+
+* **🔵 OpenAI / OpenRouter / Custom Compatible APIs (Experimental / Architecture Tested)**
+  - **Models:** `gpt-4o`, `gpt-4o-mini`, `o3-mini`, `deepseek-chat`, or any custom model.
+  - **Setup:** Select the **OpenAI** tab in Settings. Enter your API key and set the Base URL:
+    - **OpenAI:** `https://api.openai.com/v1`
+    - **OpenRouter:** `https://openrouter.ai/api/v1`
+    - **Custom Compatible Gateway:** e.g., `https://your-custom-gateway.com/v1`
+
+* **🏠 Local Ollama / LM Studio (Experimental / Architecture Tested)**
+  - **Models:** `llama3.2-vision`, `llava`, `qwen2.5`, etc.
+  - **Setup:** Run Ollama locally (e.g., `ollama run llama3.2-vision`). In Settings under the **Local Ollama** tab, set your server URL (default: `http://localhost:11434/v1`). No API key is required. Provides 100% offline, private OCR and intelligence.
+
+---
+
+### 2. 🌐 Marketplace Scraper Proxy (Ricardo.ch, Tutti.ch, Anibis.ch)
+- **Option A: Scrape.do API (Recommended for zero maintenance)**
+  - Create a free account at [Scrape.do](https://scrape.do/) (1,000 free requests/month).
+  - Paste your API Token in Settings.
+  - Toggle **Residential Proxy (`super=true`)** if you encounter stubborn captchas (uses 25 credits/req instead of 5 credits/req).
+- **Option B: Custom / Self-Hosted Proxy (Unlimited / Free)**
+  - Select **Custom Proxy** and enter the endpoint URL of your self-hosted scraper microservice (e.g., `https://my-scraper.fly.dev/scrape?url=`).
+
+---
+
+### 3. ☁️ Firebase Firestore Sync
+- Create a free project at the [Firebase Console](https://console.firebase.google.com/).
+- Enable **Cloud Firestore** in test mode or with read/write rules.
+- Enter your **Firebase Project ID** in Settings.
+> ⚠️ **Security note:** Test mode leaves the database publicly readable and writable. This is fine for personal use in a controlled environment, but configure proper [Firestore Security Rules](https://firebase.google.com/docs/firestore/security/get-started) (see [`firestore.md`](firestore.md)) before sharing your Project ID or using in production.
 
 ---
 

@@ -168,6 +168,7 @@ fun AdaptiveMainScreen(
                     settings = state.settings,
                     onSaveSettings = dashboardViewModel::saveSettings,
                     onDismiss = dashboardViewModel::closeSettings,
+                    onTestAiConnection = dashboardViewModel::testAiConnection,
                     onTestGeminiConnection = dashboardViewModel::testGeminiConnection,
                     onTestFirestoreConnection = dashboardViewModel::testFirestoreConnection
                 )

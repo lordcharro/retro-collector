@@ -75,6 +75,7 @@ kotlin {
                 implementation(libs.junit.jupiter.engine)
                 implementation(libs.junit.jupiter.params)
                 implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.ktor.client.mock)
             }
         }
         wasmJsMain.dependencies {

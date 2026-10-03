@@ -24,6 +24,7 @@ import com.retrocollector.app.core.domain.model.PlatformEcosystem
 import com.retrocollector.app.core.presentation.components.TactileTextField
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
+import com.retrocollector.app.settings.domain.model.AiProvider
 import com.retrocollector.app.settings.domain.model.AppSettings
 import com.retrocollector.app.settings.domain.model.ScraperProvider
 import com.retrocollector.app.settings.domain.model.ThemeMode
@@ -38,13 +39,22 @@ fun SettingsDialog(
     settings: AppSettings,
     onSaveSettings: (AppSettings) -> Unit,
     onDismiss: () -> Unit,
+    onTestAiConnection: ((AiProvider, String, String, String?, (Result<String>) -> Unit) -> Unit)? = null,
     onTestGeminiConnection: ((String, String, (Result<String>) -> Unit) -> Unit)? = null,
     onTestFirestoreConnection: ((String, (Result<String>) -> Unit) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var selectedThemeMode by remember { mutableStateOf(settings.themeMode) }
+    var selectedAiProvider by remember { mutableStateOf(settings.aiProvider) }
     var geminiKey by remember { mutableStateOf(settings.geminiApiKey) }
-    var selectedModel by remember { mutableStateOf(settings.geminiModel.ifBlank { "gemini-3.7-flash" }) }
+    var selectedGeminiModel by remember { mutableStateOf(settings.geminiModel.ifBlank { "gemini-3.7-flash" }) }
+    var claudeKey by remember { mutableStateOf(settings.claudeApiKey) }
+    var selectedClaudeModel by remember { mutableStateOf(settings.claudeModel.ifBlank { "claude-3-7-sonnet-20250219" }) }
+    var openAiKey by remember { mutableStateOf(settings.openAiApiKey) }
+    var openAiBaseUrl by remember { mutableStateOf(settings.openAiBaseUrl.ifBlank { "https://api.openai.com/v1" }) }
+    var selectedOpenAiModel by remember { mutableStateOf(settings.openAiModel.ifBlank { "gpt-4o" }) }
+    var localAiBaseUrl by remember { mutableStateOf(settings.localAiBaseUrl.ifBlank { "http://localhost:11434/v1" }) }
+    var selectedLocalAiModel by remember { mutableStateOf(settings.localAiModel.ifBlank { "llama3.2-vision" }) }
     var firebaseProjectId by remember { mutableStateOf(settings.firebaseProjectId) }
     var selectedCurrency by remember { mutableStateOf(settings.defaultCurrency.ifBlank { "CHF" }) }
     var isScraperEnabled by remember { mutableStateOf(settings.isScraperEnabled) }
@@ -57,19 +67,44 @@ fun SettingsDialog(
     var pinnedPlatformIds by remember { mutableStateOf(settings.pinnedPlatformIds.toSet()) }
     var isKeyVisible by remember { mutableStateOf(false) }
     var testStatusMessage by remember { mutableStateOf<String?>(null) }
-    var isTestingGemini by remember { mutableStateOf(false) }
+    var isTestingAi by remember { mutableStateOf(false) }
     var firestoreStatusMessage by remember { mutableStateOf<String?>(null) }
     var isTestingFirestore by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     val geminiModels = remember {
         listOf(
-            "gemini-2.5-flash-lite" to "2.5 Flash-Lite",
-            "gemini-2.5-flash" to "2.5 Flash",
             "gemini-3.7-flash" to "3.7 Flash",
             "gemini-3.6-flash" to "3.6 Flash",
+            "gemini-3.8-flash" to "3.8 Flash",
             "gemini-3.5-flash" to "3.5 Flash",
-            "gemini-3.8-flash" to "3.8 Flash"
+            "gemini-2.5-flash" to "2.5 Flash",
+            "gemini-2.5-flash-lite" to "2.5 Flash-Lite"
+        )
+    }
+
+    val claudeModels = remember {
+        listOf(
+            "claude-3-7-sonnet-20250219" to "3.7 Sonnet",
+            "claude-3-5-sonnet-20241022" to "3.5 Sonnet",
+            "claude-3-5-haiku-20241022" to "3.5 Haiku"
+        )
+    }
+
+    val openAiModels = remember {
+        listOf(
+            "gpt-4o" to "GPT-4o",
+            "gpt-4o-mini" to "GPT-4o Mini",
+            "deepseek-chat" to "DeepSeek-V3"
+        )
+    }
+
+    val localAiModels = remember {
+        listOf(
+            "llama3.2-vision" to "Llama 3.2 Vision",
+            "qwen2.5-vl" to "Qwen 2.5 VL",
+            "minicpm-v" to "MiniCPM-V",
+            "gemma3" to "Gemma 3"
         )
     }
 
@@ -238,8 +273,16 @@ fun SettingsDialog(
                                             selectedThemeMode = mode
                                             onSaveSettings(
                                                 settings.copy(
+                                                    aiProvider = selectedAiProvider,
                                                     geminiApiKey = geminiKey.trim(),
-                                                    geminiModel = selectedModel,
+                                                    geminiModel = selectedGeminiModel,
+                                                    claudeApiKey = claudeKey.trim(),
+                                                    claudeModel = selectedClaudeModel,
+                                                    openAiApiKey = openAiKey.trim(),
+                                                    openAiBaseUrl = openAiBaseUrl.trim(),
+                                                    openAiModel = selectedOpenAiModel.trim(),
+                                                    localAiBaseUrl = localAiBaseUrl.trim(),
+                                                    localAiModel = selectedLocalAiModel.trim(),
                                                     firebaseProjectId = firebaseProjectId.trim(),
                                                     defaultCurrency = selectedCurrency,
                                                     isScraperEnabled = isScraperEnabled,
@@ -281,25 +324,37 @@ fun SettingsDialog(
                     }
                 }
 
-                // SECTION 1: Vision Intelligence Engine (Google Gemini AI)
+                // SECTION 1: Vision Intelligence Engine (Multi-AI Provider Support)
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = TextKeys.Settings.GEMINI_SECTION.uppercase(),
-                            style = LabelFilterStyle.copy(fontSize = 11.sp),
-                            color = StatusUnverifiedFg
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(text = "🤖", fontSize = 14.sp)
+                            Text(
+                                text = "VISION INTELLIGENCE ENGINE",
+                                style = LabelFilterStyle.copy(fontSize = 11.sp),
+                                color = StatusUnverifiedFg
+                            )
+                        }
                         Box(
                             modifier = Modifier
                                 .background(SurfaceBase, RoundedCornerShape(3.dp))
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
+                            val activeModelLabel = when (selectedAiProvider) {
+                                AiProvider.GEMINI -> selectedGeminiModel.replace("gemini-", "").uppercase()
+                                AiProvider.CLAUDE -> selectedClaudeModel.replace("claude-", "").uppercase()
+                                AiProvider.OPENAI_COMPATIBLE -> selectedOpenAiModel.uppercase()
+                                AiProvider.LOCAL_OLLAMA -> selectedLocalAiModel.uppercase()
+                            }
                             Text(
-                                text = selectedModel.replace("gemini-", "").uppercase(),
+                                text = "${selectedAiProvider.displayName.uppercase()} ($activeModelLabel)",
                                 style = CodeSkuStyle.copy(fontSize = 10.sp),
                                 color = StatusEnglishFg
                             )
@@ -312,108 +367,374 @@ fun SettingsDialog(
                             .background(SurfaceBase, RoundedCornerShape(6.dp))
                             .border(1.dp, BorderSubtle, RoundedCornerShape(6.dp))
                             .padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Throughput / Info
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(SurfaceCard, RoundedCornerShape(4.dp))
-                                .padding(horizontal = 8.dp, vertical = 5.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Model Throughput",
-                                style = BodySm.copy(fontSize = 11.sp),
-                                color = TextSecondary
-                            )
-                            Text(
-                                text = if (selectedModel.contains("lite")) {
-                                    "Ultra-low latency (~280ms)"
-                                } else {
-                                    "Avg response: ~550ms"
-                                },
-                                style = CodeSkuStyle.copy(fontSize = 11.sp),
-                                color = StatusEnglishFg
-                            )
-                        }
-
-                        // Model Selector Chips
+                        // Provider Selector Tabs
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(text = "ACTIVE MODEL", style = LabelFilterStyle, color = TextPrimary)
+                            Text(text = "ACTIVE AI PROVIDER", style = LabelFilterStyle, color = TextPrimary)
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(SurfaceCard, RoundedCornerShape(6.dp))
+                                    .border(1.dp, BorderSubtle, RoundedCornerShape(6.dp))
+                                    .padding(4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                geminiModels.forEach { (modelId, label) ->
-                                    val isSelected = selectedModel == modelId
+                                AiProvider.entries.forEach { provider ->
+                                    val isSelected = selectedAiProvider == provider
                                     Box(
                                         modifier = Modifier
                                             .weight(1f)
                                             .background(
-                                                if (isSelected) SurfaceCard else SurfaceBase,
+                                                if (isSelected) SurfaceElevated else Color.Transparent,
                                                 RoundedCornerShape(4.dp)
                                             )
                                             .border(
                                                 1.dp,
-                                                if (isSelected) StatusEnglishFg else BorderSubtle,
+                                                if (isSelected) StatusEnglishFg else Color.Transparent,
                                                 RoundedCornerShape(4.dp)
                                             )
                                             .clickable {
-                                                selectedModel = modelId
+                                                selectedAiProvider = provider
                                                 testStatusMessage = null
                                             }
-                                            .padding(vertical = 8.dp, horizontal = 4.dp),
+                                            .padding(vertical = 8.dp, horizontal = 2.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(
-                                            text = label,
-                                            style = CodeSkuStyle.copy(
-                                                fontSize = 10.sp,
-                                                color = if (isSelected) StatusEnglishFg else TextSecondary
-                                            ),
-                                            maxLines = 1,
-                                            softWrap = false
-                                        )
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                                        ) {
+                                            Text(text = provider.icon, fontSize = 14.sp)
+                                            Text(
+                                                text = when (provider) {
+                                                    AiProvider.GEMINI -> "Gemini"
+                                                    AiProvider.CLAUDE -> "Claude"
+                                                    AiProvider.OPENAI_COMPATIBLE -> "OpenAI"
+                                                    AiProvider.LOCAL_OLLAMA -> "Local"
+                                                },
+                                                style = LabelFilterStyle.copy(fontSize = 10.sp),
+                                                color = if (isSelected) StatusEnglishFg else TextSecondary,
+                                                maxLines = 1,
+                                                softWrap = false
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
 
-                        // API Key Input
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(text = TextKeys.Settings.GEMINI_API_KEY_LABEL, style = LabelFilterStyle, color = TextPrimary)
-                            TactileTextField(
-                                value = geminiKey,
-                                onValueChange = {
-                                    geminiKey = it
-                                    testStatusMessage = null
-                                },
-                                placeholder = TextKeys.Settings.GEMINI_API_KEY_HINT,
-                                textStyle = CodeSkuStyle.copy(color = TextPrimary),
-                                placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg),
-                                visualTransformation = if (isKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                                backgroundColor = SurfaceCard,
-                                modifier = Modifier.fillMaxWidth(),
-                                trailingIcon = {
+                        // Provider specific configurations
+                        when (selectedAiProvider) {
+                            AiProvider.GEMINI -> {
+                                // Model Chips for Gemini
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(text = "GEMINI MODEL", style = LabelFilterStyle, color = TextPrimary)
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        geminiModels.forEach { (modelId, label) ->
+                                            val isSelected = selectedGeminiModel == modelId
+                                            Box(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .background(if (isSelected) SurfaceCard else SurfaceBase, RoundedCornerShape(4.dp))
+                                                    .border(1.dp, if (isSelected) StatusEnglishFg else BorderSubtle, RoundedCornerShape(4.dp))
+                                                    .clickable {
+                                                        selectedGeminiModel = modelId
+                                                        testStatusMessage = null
+                                                    }
+                                                    .padding(vertical = 6.dp, horizontal = 2.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = label,
+                                                    style = CodeSkuStyle.copy(
+                                                        fontSize = 9.sp,
+                                                        color = if (isSelected) StatusEnglishFg else TextSecondary
+                                                    ),
+                                                    maxLines = 1,
+                                                    softWrap = false
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // API Key
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(text = TextKeys.Settings.GEMINI_API_KEY_LABEL, style = LabelFilterStyle, color = TextPrimary)
+                                    TactileTextField(
+                                        value = geminiKey,
+                                        onValueChange = {
+                                            geminiKey = it
+                                            testStatusMessage = null
+                                        },
+                                        placeholder = TextKeys.Settings.GEMINI_API_KEY_HINT,
+                                        textStyle = CodeSkuStyle.copy(color = TextPrimary),
+                                        placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg),
+                                        visualTransformation = if (isKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                        backgroundColor = SurfaceCard,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        trailingIcon = {
+                                            Text(
+                                                text = if (isKeyVisible) "🙈" else "👁️",
+                                                modifier = Modifier
+                                                    .clickable { isKeyVisible = !isKeyVisible }
+                                                    .padding(start = 4.dp),
+                                                fontSize = 14.sp
+                                            )
+                                        }
+                                    )
                                     Text(
-                                        text = if (isKeyVisible) "🙈" else "👁️",
-                                        modifier = Modifier
-                                            .clickable { isKeyVisible = !isKeyVisible }
-                                            .padding(start = 4.dp),
-                                        fontSize = 14.sp
+                                        text = TextKeys.Settings.GEMINI_EXPLAINER,
+                                        style = BodySm.copy(fontSize = 11.sp),
+                                        color = TextSecondary
                                     )
                                 }
-                            )
-                            Text(
-                                text = TextKeys.Settings.GEMINI_EXPLAINER,
-                                style = BodySm.copy(fontSize = 11.sp),
-                                color = TextSecondary
-                            )
+                            }
+
+                            AiProvider.CLAUDE -> {
+                                // Model Chips for Claude
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(text = "CLAUDE MODEL", style = LabelFilterStyle, color = TextPrimary)
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        claudeModels.forEach { (modelId, label) ->
+                                            val isSelected = selectedClaudeModel == modelId
+                                            Box(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .background(if (isSelected) SurfaceCard else SurfaceBase, RoundedCornerShape(4.dp))
+                                                    .border(1.dp, if (isSelected) StatusEnglishFg else BorderSubtle, RoundedCornerShape(4.dp))
+                                                    .clickable {
+                                                        selectedClaudeModel = modelId
+                                                        testStatusMessage = null
+                                                    }
+                                                    .padding(vertical = 6.dp, horizontal = 4.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = label,
+                                                    style = CodeSkuStyle.copy(
+                                                        fontSize = 10.sp,
+                                                        color = if (isSelected) StatusEnglishFg else TextSecondary
+                                                    ),
+                                                    maxLines = 1,
+                                                    softWrap = false
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Claude API Key
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(text = "ANTHROPIC API KEY", style = LabelFilterStyle, color = TextPrimary)
+                                    TactileTextField(
+                                        value = claudeKey,
+                                        onValueChange = {
+                                            claudeKey = it
+                                            testStatusMessage = null
+                                        },
+                                        placeholder = "sk-ant-api03-...",
+                                        textStyle = CodeSkuStyle.copy(color = TextPrimary),
+                                        placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg),
+                                        visualTransformation = if (isKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                        backgroundColor = SurfaceCard,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        trailingIcon = {
+                                            Text(
+                                                text = if (isKeyVisible) "🙈" else "👁️",
+                                                modifier = Modifier
+                                                    .clickable { isKeyVisible = !isKeyVisible }
+                                                    .padding(start = 4.dp),
+                                                fontSize = 14.sp
+                                            )
+                                        }
+                                    )
+                                    Text(
+                                        text = "Anthropic Claude 3.7 / 3.5 Sonnet provides high-precision European retrogaming spine OCR.",
+                                        style = BodySm.copy(fontSize = 11.sp),
+                                        color = TextSecondary
+                                    )
+                                }
+                            }
+
+                            AiProvider.OPENAI_COMPATIBLE -> {
+                                // Base URL
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(text = "ENDPOINT BASE URL", style = LabelFilterStyle, color = TextPrimary)
+                                    TactileTextField(
+                                        value = openAiBaseUrl,
+                                        onValueChange = {
+                                            openAiBaseUrl = it
+                                            testStatusMessage = null
+                                        },
+                                        placeholder = "https://api.openai.com/v1 or https://openrouter.ai/api/v1",
+                                        textStyle = CodeSkuStyle.copy(color = TextPrimary),
+                                        placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg),
+                                        backgroundColor = SurfaceCard,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+
+                                // Model Presets & Custom
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(text = "MODEL PRESETS & SELECTION", style = LabelFilterStyle, color = TextPrimary)
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        openAiModels.forEach { (modelId, label) ->
+                                            val isSelected = selectedOpenAiModel == modelId
+                                            Box(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .background(if (isSelected) SurfaceCard else SurfaceBase, RoundedCornerShape(4.dp))
+                                                    .border(1.dp, if (isSelected) StatusEnglishFg else BorderSubtle, RoundedCornerShape(4.dp))
+                                                    .clickable {
+                                                        selectedOpenAiModel = modelId
+                                                        testStatusMessage = null
+                                                    }
+                                                    .padding(vertical = 6.dp, horizontal = 4.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = label,
+                                                    style = CodeSkuStyle.copy(
+                                                        fontSize = 10.sp,
+                                                        color = if (isSelected) StatusEnglishFg else TextSecondary
+                                                    ),
+                                                    maxLines = 1,
+                                                    softWrap = false
+                                                )
+                                            }
+                                        }
+                                    }
+                                    TactileTextField(
+                                        value = selectedOpenAiModel,
+                                        onValueChange = {
+                                            selectedOpenAiModel = it
+                                            testStatusMessage = null
+                                        },
+                                        placeholder = "Model ID (e.g. gpt-4o, deepseek-chat)",
+                                        textStyle = CodeSkuStyle.copy(color = TextPrimary),
+                                        placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg),
+                                        backgroundColor = SurfaceCard,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+
+                                // API Key
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(text = "API KEY (BEARER TOKEN)", style = LabelFilterStyle, color = TextPrimary)
+                                    TactileTextField(
+                                        value = openAiKey,
+                                        onValueChange = {
+                                            openAiKey = it
+                                            testStatusMessage = null
+                                        },
+                                        placeholder = "sk-...",
+                                        textStyle = CodeSkuStyle.copy(color = TextPrimary),
+                                        placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg),
+                                        visualTransformation = if (isKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                        backgroundColor = SurfaceCard,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        trailingIcon = {
+                                            Text(
+                                                text = if (isKeyVisible) "🙈" else "👁️",
+                                                modifier = Modifier
+                                                    .clickable { isKeyVisible = !isKeyVisible }
+                                                    .padding(start = 4.dp),
+                                                fontSize = 14.sp
+                                            )
+                                        }
+                                    )
+                                    Text(
+                                        text = "Compatible with OpenAI, OpenRouter, DeepSeek, and standard chat completion endpoints.",
+                                        style = BodySm.copy(fontSize = 11.sp),
+                                        color = TextSecondary
+                                    )
+                                }
+                            }
+
+                            AiProvider.LOCAL_OLLAMA -> {
+                                // Server URL
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(text = "LOCAL OLLAMA / LM STUDIO SERVER URL", style = LabelFilterStyle, color = TextPrimary)
+                                    TactileTextField(
+                                        value = localAiBaseUrl,
+                                        onValueChange = {
+                                            localAiBaseUrl = it
+                                            testStatusMessage = null
+                                        },
+                                        placeholder = "http://localhost:11434/v1 or http://192.168.x.x:11434/v1",
+                                        textStyle = CodeSkuStyle.copy(color = TextPrimary),
+                                        placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg),
+                                        backgroundColor = SurfaceCard,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+
+                                // Model Presets & Custom
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(text = "LOCAL VISION MODEL PRESETS", style = LabelFilterStyle, color = TextPrimary)
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        localAiModels.forEach { (modelId, label) ->
+                                            val isSelected = selectedLocalAiModel == modelId
+                                            Box(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .background(if (isSelected) SurfaceCard else SurfaceBase, RoundedCornerShape(4.dp))
+                                                    .border(1.dp, if (isSelected) StatusEnglishFg else BorderSubtle, RoundedCornerShape(4.dp))
+                                                    .clickable {
+                                                        selectedLocalAiModel = modelId
+                                                        testStatusMessage = null
+                                                    }
+                                                    .padding(vertical = 6.dp, horizontal = 2.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = label,
+                                                    style = CodeSkuStyle.copy(
+                                                        fontSize = 9.sp,
+                                                        color = if (isSelected) StatusEnglishFg else TextSecondary
+                                                    ),
+                                                    maxLines = 1,
+                                                    softWrap = false
+                                                )
+                                            }
+                                        }
+                                    }
+                                    TactileTextField(
+                                        value = selectedLocalAiModel,
+                                        onValueChange = {
+                                            selectedLocalAiModel = it
+                                            testStatusMessage = null
+                                        },
+                                        placeholder = "Model tag (e.g. llama3.2-vision, qwen2.5-vl:7b)",
+                                        textStyle = CodeSkuStyle.copy(color = TextPrimary),
+                                        placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg),
+                                        backgroundColor = SurfaceCard,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                    Text(
+                                        text = "100% private and offline inference. Ensure your local model supports vision (VLM) for box photo inspection.",
+                                        style = BodySm.copy(fontSize = 11.sp),
+                                        color = TextSecondary
+                                    )
+                                }
+                            }
                         }
 
-                        // Test Connection Button & Status Feedback
+                        // Universal Test Connection Button & Status Feedback
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -421,54 +742,83 @@ fun SettingsDialog(
                         ) {
                             Button(
                                 onClick = {
-                                    val trimmedKey = geminiKey.trim()
-                                    if (trimmedKey.isNotBlank()) {
-                                        if (onTestGeminiConnection != null) {
-                                            coroutineScope.launch {
-                                                isTestingGemini = true
-                                                testStatusMessage = "Testing connection..."
-                                                try {
-                                                    withTimeoutOrNull(12_000) {
-                                                        onTestGeminiConnection(trimmedKey, selectedModel) { result ->
-                                                            result.fold(
-                                                                onSuccess = { msg -> testStatusMessage = msg },
-                                                                onFailure = { err ->
-                                                                    testStatusMessage = err.message ?: TextKeys.Settings.STATUS_FAILED
-                                                                }
-                                                            )
-                                                        }
-                                                    } ?: run {
-                                                        testStatusMessage = "Connection timed out (12s). Check network connectivity."
+                                    val currentProvider = selectedAiProvider
+                                    val currentKey = when (currentProvider) {
+                                        AiProvider.GEMINI -> geminiKey.trim()
+                                        AiProvider.CLAUDE -> claudeKey.trim()
+                                        AiProvider.OPENAI_COMPATIBLE -> openAiKey.trim()
+                                        AiProvider.LOCAL_OLLAMA -> ""
+                                    }
+                                    val currentModel = when (currentProvider) {
+                                        AiProvider.GEMINI -> selectedGeminiModel
+                                        AiProvider.CLAUDE -> selectedClaudeModel
+                                        AiProvider.OPENAI_COMPATIBLE -> selectedOpenAiModel.trim()
+                                        AiProvider.LOCAL_OLLAMA -> selectedLocalAiModel.trim()
+                                    }
+                                    val currentBaseUrl = when (currentProvider) {
+                                        AiProvider.GEMINI, AiProvider.CLAUDE -> null
+                                        AiProvider.OPENAI_COMPATIBLE -> openAiBaseUrl.trim()
+                                        AiProvider.LOCAL_OLLAMA -> localAiBaseUrl.trim()
+                                    }
+
+                                    if (currentProvider != AiProvider.LOCAL_OLLAMA && currentKey.isBlank()) {
+                                        testStatusMessage = "Please enter an API key for ${currentProvider.displayName}."
+                                        return@Button
+                                    }
+
+                                    coroutineScope.launch {
+                                        isTestingAi = true
+                                        testStatusMessage = "Testing ${currentProvider.displayName} connection..."
+                                        try {
+                                            withTimeoutOrNull(12_000) {
+                                                if (onTestAiConnection != null) {
+                                                    onTestAiConnection(currentProvider, currentKey, currentModel, currentBaseUrl) { result ->
+                                                        result.fold(
+                                                            onSuccess = { msg -> testStatusMessage = msg },
+                                                            onFailure = { err ->
+                                                                testStatusMessage = err.message ?: TextKeys.Settings.STATUS_FAILED
+                                                            }
+                                                        )
                                                     }
-                                                } catch (e: Exception) {
-                                                    testStatusMessage = e.message ?: TextKeys.Settings.STATUS_FAILED
-                                                } finally {
-                                                    isTestingGemini = false
+                                                } else if (onTestGeminiConnection != null) {
+                                                    onTestGeminiConnection(currentKey, currentModel) { result ->
+                                                        result.fold(
+                                                            onSuccess = { msg -> testStatusMessage = msg },
+                                                            onFailure = { err ->
+                                                                testStatusMessage = err.message ?: TextKeys.Settings.STATUS_FAILED
+                                                            }
+                                                        )
+                                                    }
+                                                } else {
+                                                    testStatusMessage = TextKeys.Settings.STATUS_CONNECTED
                                                 }
+                                            } ?: run {
+                                                testStatusMessage = "Connection timed out (12s). Check endpoint & network."
                                             }
-                                        } else {
-                                            testStatusMessage = TextKeys.Settings.STATUS_CONNECTED
+                                        } catch (e: Exception) {
+                                            testStatusMessage = e.message ?: TextKeys.Settings.STATUS_FAILED
+                                        } finally {
+                                            isTestingAi = false
                                         }
-                                    } else {
-                                        testStatusMessage = "Please enter a valid API key."
                                     }
                                 },
-                                enabled = !isTestingGemini,
+                                enabled = !isTestingAi,
                                 colors = ButtonDefaults.buttonColors(containerColor = SurfaceElevated),
                                 shape = RoundedCornerShape(4.dp),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                             ) {
                                 Text(
-                                    text = if (isTestingGemini) "⏳ Testing..." else "⚡ " + TextKeys.Settings.GEMINI_TEST_BUTTON,
+                                    text = if (isTestingAi) "⏳ Testing..." else "⚡ TEST ${selectedAiProvider.displayName.uppercase()}",
                                     style = LabelFilterStyle,
                                     color = TextPrimary
                                 )
                             }
 
                             testStatusMessage?.let { msg ->
-                                val isTesting = isTestingGemini || msg.startsWith("Testing")
+                                val isTesting = isTestingAi || msg.startsWith("Testing")
                                 val isSuccess = msg == TextKeys.Settings.STATUS_CONNECTED ||
-                                    msg.startsWith("Connection")
+                                    msg.startsWith("Connection") ||
+                                    msg.contains("established successfully", ignoreCase = true)
                                 val textColor = when {
                                     isTesting -> StatusEditionFg
                                     isSuccess -> StatusEnglishFg
@@ -1162,8 +1512,16 @@ fun SettingsDialog(
                     onClick = {
                         onSaveSettings(
                             settings.copy(
+                                aiProvider = selectedAiProvider,
                                 geminiApiKey = geminiKey.trim(),
-                                geminiModel = selectedModel,
+                                geminiModel = selectedGeminiModel,
+                                claudeApiKey = claudeKey.trim(),
+                                claudeModel = selectedClaudeModel,
+                                openAiApiKey = openAiKey.trim(),
+                                openAiBaseUrl = openAiBaseUrl.trim(),
+                                openAiModel = selectedOpenAiModel.trim(),
+                                localAiBaseUrl = localAiBaseUrl.trim(),
+                                localAiModel = selectedLocalAiModel.trim(),
                                 firebaseProjectId = firebaseProjectId.trim(),
                                 defaultCurrency = selectedCurrency,
                                 isScraperEnabled = isScraperEnabled,

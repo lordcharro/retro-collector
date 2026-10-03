@@ -11,7 +11,6 @@ import com.retrocollector.app.discovery.domain.usecase.GetSimilarGamesUseCase
 import com.retrocollector.app.dossier.domain.usecase.SendFollowUpChatUseCase
 import com.retrocollector.app.scanner.domain.usecase.AnalyzeGameWithGeminiUseCase
 import com.retrocollector.app.settings.domain.model.AppSettings
-import com.retrocollector.app.settings.domain.usecase.TestGeminiConnectionUseCase
 import com.retrocollector.app.settings.domain.usecase.UpdateSettingsUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -164,7 +163,7 @@ class DashboardViewModelTest {
             analyzeGameUseCase = AnalyzeGameWithGeminiUseCase(repository),
             sendFollowUpChatUseCase = SendFollowUpChatUseCase(repository),
             updateSettingsUseCase = UpdateSettingsUseCase(repository),
-            testGeminiConnectionUseCase = TestGeminiConnectionUseCase(repository),
+            testAiConnectionUseCase = com.retrocollector.app.settings.domain.usecase.TestAiConnectionUseCase(repository),
             getSimilarGamesUseCase = GetSimilarGamesUseCase(repository),
             dispatcher = Dispatchers.Unconfined,
             scope = CoroutineScope(Dispatchers.Unconfined)

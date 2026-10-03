@@ -1,6 +1,9 @@
 package com.retrocollector.app.core.di
 
+import com.retrocollector.app.core.data.datasource.AiDataSourceFactory
+import com.retrocollector.app.core.data.datasource.AnthropicRemoteDataSource
 import com.retrocollector.app.core.data.datasource.GeminiRemoteDataSource
+import com.retrocollector.app.core.data.datasource.OpenAiCompatibleRemoteDataSource
 import com.retrocollector.app.core.data.firestore.FirestoreService
 import com.retrocollector.app.core.data.repository.GameRepositoryImpl
 import com.retrocollector.app.core.data.scraper.ListingScraper
@@ -14,9 +17,12 @@ import com.retrocollector.app.discovery.domain.usecase.GetCuratedGamesUseCase
 import com.retrocollector.app.discovery.domain.usecase.GetSimilarGamesUseCase
 import com.retrocollector.app.discovery.presentation.viewmodel.DiscoveryViewModel
 import com.retrocollector.app.dossier.domain.usecase.SendFollowUpChatUseCase
+import com.retrocollector.app.scanner.domain.usecase.AnalyzeGameWithAiUseCase
 import com.retrocollector.app.scanner.domain.usecase.AnalyzeGameWithGeminiUseCase
 import com.retrocollector.app.settings.data.datasource.SettingsLocalDataSource
 import com.retrocollector.app.settings.data.datasource.createSettingsLocalDataSource
+import com.retrocollector.app.settings.domain.model.AiProvider
+import com.retrocollector.app.settings.domain.usecase.TestAiConnectionUseCase
 import com.retrocollector.app.settings.domain.usecase.TestGeminiConnectionUseCase
 import com.retrocollector.app.settings.domain.usecase.UpdateSettingsUseCase
 import com.retrocollector.app.wishlist.domain.usecase.EnrichWishlistGameUseCase
@@ -34,11 +40,21 @@ val dataModule = module {
     single<SettingsLocalDataSource> { createSettingsLocalDataSource() }
     single { FirestoreService() }
     single { GeminiRemoteDataSource() }
+    single { AnthropicRemoteDataSource() }
+    single { OpenAiCompatibleRemoteDataSource(AiProvider.OPENAI_COMPATIBLE) }
+    single {
+        AiDataSourceFactory(
+            geminiDataSource = get(),
+            claudeDataSource = get(),
+            openAiDataSource = get(),
+            localOllamaDataSource = OpenAiCompatibleRemoteDataSource(AiProvider.LOCAL_OLLAMA)
+        )
+    }
     single { ListingScraper() }
     single<IGameRepository> {
         GameRepositoryImpl(
             firestoreService = get(),
-            geminiDataSource = get(),
+            aiDataSourceFactory = get(),
             listingScraper = get(),
             settingsLocalDataSource = get(),
             loadMockData = LOAD_MOCK_DATA
@@ -51,9 +67,11 @@ val domainModule = module {
     factory { SaveGameUseCase(get()) }
     factory { DeleteGameUseCase(get()) }
     factory { AnalyzeGameWithGeminiUseCase(get()) }
+    factory { AnalyzeGameWithAiUseCase(get()) }
     factory { SendFollowUpChatUseCase(get()) }
     factory { UpdateSettingsUseCase(get()) }
     factory { TestGeminiConnectionUseCase(get()) }
+    factory { TestAiConnectionUseCase(get()) }
     factory { GetSimilarGamesUseCase(get()) }
     factory { DiscoverGamesUseCase(get()) }
     factory { GetCuratedGamesUseCase(get()) }
@@ -71,7 +89,7 @@ val presentationModule = module {
             analyzeGameUseCase = get(),
             sendFollowUpChatUseCase = get(),
             updateSettingsUseCase = get(),
-            testGeminiConnectionUseCase = get(),
+            testAiConnectionUseCase = get(),
             getSimilarGamesUseCase = get()
         )
     }

@@ -1,13 +1,14 @@
 package com.retrocollector.app.core.data.repository
 
+import com.retrocollector.app.core.data.datasource.AiDataSourceFactory
 import com.retrocollector.app.core.data.datasource.CuratedDiscoveryDataSource
-import com.retrocollector.app.core.data.datasource.GeminiRemoteDataSource
 import com.retrocollector.app.core.data.datasource.StitchGeminiStructuredVerdict
 import com.retrocollector.app.core.data.firestore.FirestoreService
 import com.retrocollector.app.core.data.scraper.ListingScraper
 import com.retrocollector.app.settings.data.datasource.SettingsLocalDataSource
 import com.retrocollector.app.settings.data.datasource.createSettingsLocalDataSource
 import com.retrocollector.app.settings.domain.model.AppSettings
+import com.retrocollector.app.settings.domain.model.AiProvider
 import com.retrocollector.app.core.domain.model.*
 import com.retrocollector.app.core.domain.repository.IGameRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -22,7 +23,7 @@ import kotlinx.datetime.Clock
 @Suppress("LargeClass")
 class GameRepositoryImpl(
     private val firestoreService: FirestoreService = FirestoreService(),
-    private val geminiDataSource: GeminiRemoteDataSource = GeminiRemoteDataSource(),
+    private val aiDataSourceFactory: AiDataSourceFactory = AiDataSourceFactory(),
     private val listingScraper: ListingScraper = ListingScraper(),
     private val settingsLocalDataSource: SettingsLocalDataSource = createSettingsLocalDataSource(),
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.Default,
@@ -203,8 +204,17 @@ class GameRepositoryImpl(
         }
     }
 
+    override suspend fun testAiConnection(
+        provider: AiProvider,
+        apiKey: String,
+        model: String,
+        baseUrl: String?
+    ): Result<String> {
+        return aiDataSourceFactory.getDataSource(provider).testConnection(apiKey, model, baseUrl)
+    }
+
     override suspend fun testGeminiConnection(apiKey: String, model: String): Result<String> {
-        return geminiDataSource.testConnection(apiKey, model)
+        return testAiConnection(AiProvider.GEMINI, apiKey, model, null)
     }
 
     override suspend fun inspectGameWithAi(
@@ -213,11 +223,11 @@ class GameRepositoryImpl(
         spottedLocation: String,
         askingPriceChf: Double?
     ): Result<Pair<ChatMessage, GameItem?>> {
-        val apiKey = _settings.value.geminiApiKey
-        val model = _settings.value.geminiModel.ifBlank { "gemini-3.7-flash" }
+        val config = aiDataSourceFactory.resolveConfig(_settings.value)
+        val dataSource = aiDataSourceFactory.getDataSource(config.provider)
 
         val resolved = resolveListingInput(query, imageBase64, spottedLocation, askingPriceChf)
-        val result = geminiDataSource.inspectGame(resolved.query, resolved.imageBase64, apiKey, model)
+        val result = dataSource.inspectGame(resolved.query, resolved.imageBase64, config.apiKey, config.model, config.baseUrl)
 
         return result.map { (replyText, verdict) ->
             val nowMs = Clock.System.now().toEpochMilliseconds()
@@ -379,7 +389,8 @@ class GameRepositoryImpl(
         userMessage: String,
         imageBase64: String?
     ): Result<ChatMessage> {
-        val apiKey = _settings.value.geminiApiKey
+        val config = aiDataSourceFactory.resolveConfig(_settings.value)
+        val dataSource = aiDataSourceFactory.getDataSource(config.provider)
         val nowMs = Clock.System.now().toEpochMilliseconds()
         val game = getGameById(contextId)
 
@@ -400,7 +411,6 @@ class GameRepositoryImpl(
         }
 
         val history = getChatMessagesForGame(contextId)
-        val model = _settings.value.geminiModel.ifBlank { "gemini-3.7-flash" }
 
         var resolvedChatImage = imageBase64
         if (resolvedChatImage != null && (resolvedChatImage.startsWith("http://") || resolvedChatImage.startsWith("https://"))) {
@@ -410,7 +420,7 @@ class GameRepositoryImpl(
             }
         }
 
-        val result = geminiDataSource.sendFollowUpChat(history, game, userMessage, resolvedChatImage, apiKey, model)
+        val result = dataSource.sendFollowUpChat(history, game, userMessage, resolvedChatImage, config.apiKey, config.model, config.baseUrl)
 
         return result.fold(
             onSuccess = { (replyText, verdict) ->
@@ -443,7 +453,7 @@ class GameRepositoryImpl(
                     id = "ai_err_${Clock.System.now().toEpochMilliseconds()}",
                     contextId = contextId,
                     sender = MessageSender.GEMINI,
-                    text = "⚠️ Could not retrieve answer from Gemini: ${err.message ?: "Connection error"}. Check your API key in Settings."
+                    text = "⚠️ Could not retrieve answer from AI assistant (${config.provider.displayName}): ${err.message ?: "Connection error"}. Check your configuration in Settings."
                 )
                 addChatMessage(errorMsg)
                 Result.failure(err)
@@ -467,16 +477,16 @@ class GameRepositoryImpl(
             return Result.success(enrichWithUserCollection(cached))
         }
 
-        val apiKey = _settings.value.geminiApiKey
-        val model = _settings.value.geminiModel.ifBlank { "gemini-3.7-flash" }
+        val config = aiDataSourceFactory.resolveConfig(_settings.value)
+        val dataSource = aiDataSourceFactory.getDataSource(config.provider)
 
-        if (apiKey.isBlank()) {
+        if (config.apiKey.isBlank() && config.provider != AiProvider.LOCAL_OLLAMA) {
             val fallback = CuratedDiscoveryDataSource.getFilteredCatalog(genre, platform, query)
             discoveryCache[cacheKey] = fallback
             return Result.success(enrichWithUserCollection(fallback))
         }
 
-        val result = geminiDataSource.discoverGames(query, genre, platform, apiKey, model)
+        val result = dataSource.discoverGames(query, genre, platform, config.apiKey, config.model, config.baseUrl)
         return result.fold(
             onSuccess = { items ->
                 val finalItems = if (items.isNotEmpty()) items else CuratedDiscoveryDataSource.getFilteredCatalog(genre, platform, query)
@@ -507,16 +517,16 @@ class GameRepositoryImpl(
             }
         }
 
-        val apiKey = _settings.value.geminiApiKey
-        val model = _settings.value.geminiModel.ifBlank { "gemini-3.7-flash" }
+        val config = aiDataSourceFactory.resolveConfig(_settings.value)
+        val dataSource = aiDataSourceFactory.getDataSource(config.provider)
 
-        if (apiKey.isBlank()) {
+        if (config.apiKey.isBlank() && config.provider != AiProvider.LOCAL_OLLAMA) {
             val fallback = if (game.similarGames.isNotEmpty()) game.similarGames else CuratedDiscoveryDataSource.getSimilarGames(game)
             similarGamesCache[cacheKey] = fallback
             return Result.success(enrichWithUserCollection(fallback))
         }
 
-        val result = geminiDataSource.fetchSimilarGames(game.title, game.platform, game.franchiseName, apiKey, model)
+        val result = dataSource.fetchSimilarGames(game.title, game.platform, game.franchiseName, config.apiKey, config.model, config.baseUrl)
         return result.fold(
             onSuccess = { items ->
                 val finalItems = if (items.isNotEmpty()) items else (if (game.similarGames.isNotEmpty()) game.similarGames else CuratedDiscoveryDataSource.getSimilarGames(game))
