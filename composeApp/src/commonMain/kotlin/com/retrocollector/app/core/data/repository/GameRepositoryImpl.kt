@@ -255,10 +255,17 @@ class GameRepositoryImpl(
         var price = currentPrice
         var image = currentImage
 
-        val sessionCookie = _settings.value.ricardoSessionCookie.ifBlank { null }
-        listingScraper.fetchListing(listingUrl, sessionCookie).onSuccess { listing ->
+        val currentSettings = _settings.value
+        listingScraper.fetchListing(listingUrl, currentSettings).onSuccess { listing ->
             if (query == listingUrl || query.isBlank()) {
-                query = "Listing ${listing.sourcePlatform}: ${listing.title}. Description: ${listing.description.take(250)}"
+                val listingId = listing.listingId ?: listingScraper.extractListingId(listingUrl)
+                if (listing.isTitleExtracted && !listing.title.startsWith("${listing.sourcePlatform} Listing")) {
+                    query = "Listing ${listing.sourcePlatform}: ${listing.title}. Description: ${listing.description.take(250)}"
+                } else if (listingId != null) {
+                    query = "Swiss ${listing.sourcePlatform} marketplace listing article ID $listingId ($listingUrl). Search online for this Swiss listing to identify the exact retro game title, console platform, edition, and Swiss market valuation."
+                } else {
+                    query = "Swiss ${listing.sourcePlatform} marketplace link: $listingUrl. Search online to identify the physical retro game title, platform, and details."
+                }
             }
             if (location.isBlank() || location == "Ricardo.ch") {
                 location = listing.sourcePlatform
@@ -267,7 +274,7 @@ class GameRepositoryImpl(
                 price = listing.estimatedPriceChf
             }
             if (image == null && listing.imageUrls.isNotEmpty()) {
-                image = listingScraper.fetchImageAsBase64(listing.imageUrls.first(), sessionCookie)
+                image = listingScraper.fetchImageAsBase64(listing.imageUrls.first())
             }
         }
         return ResolvedScanInput(query, image, location, price, listingUrl)
@@ -297,8 +304,7 @@ class GameRepositoryImpl(
 
         val resolvedImg = result.imageBase64
         if (resolvedImg != null && (resolvedImg.startsWith("http://") || resolvedImg.startsWith("https://"))) {
-            val sessionCookie = _settings.value.ricardoSessionCookie.ifBlank { null }
-            val fetched = listingScraper.fetchImageAsBase64(resolvedImg, sessionCookie)
+            val fetched = listingScraper.fetchImageAsBase64(resolvedImg)
             if (fetched != null) {
                 result = result.copy(imageBase64 = fetched)
             }
@@ -398,8 +404,7 @@ class GameRepositoryImpl(
 
         var resolvedChatImage = imageBase64
         if (resolvedChatImage != null && (resolvedChatImage.startsWith("http://") || resolvedChatImage.startsWith("https://"))) {
-            val sessionCookie = _settings.value.ricardoSessionCookie.ifBlank { null }
-            val fetched = listingScraper.fetchImageAsBase64(resolvedChatImage, sessionCookie)
+            val fetched = listingScraper.fetchImageAsBase64(resolvedChatImage)
             if (fetched != null) {
                 resolvedChatImage = fetched
             }

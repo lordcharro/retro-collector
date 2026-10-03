@@ -1,12 +1,25 @@
 package com.retrocollector.app.core.data.scraper
 
-import io.ktor.client.*
-import io.ktor.client.plugins.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.util.*
+import com.retrocollector.app.settings.domain.model.AppSettings
+import com.retrocollector.app.settings.domain.model.ScraperProvider
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.readBytes
+import io.ktor.http.HttpHeaders
+import io.ktor.http.contentType
+import io.ktor.http.encodeURLQueryComponent
+import io.ktor.http.isSuccess
+import io.ktor.util.encodeBase64
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable
 data class ScrapedListing(
@@ -15,95 +28,269 @@ data class ScrapedListing(
     val description: String,
     val imageUrls: List<String> = emptyList(),
     val estimatedPriceChf: Double? = null,
-    val sourcePlatform: String // "Ricardo.ch", "Tutti.ch", "Other"
+    val sourcePlatform: String, // "Ricardo.ch", "Tutti.ch", "Other"
+    val listingId: String? = null,
+    val isTitleExtracted: Boolean = true
 )
 
 class ListingScraper(
     private val client: HttpClient = HttpClient {
         install(HttpTimeout) {
-            requestTimeoutMillis = 10000
-            connectTimeoutMillis = 8000
-        }
-        defaultRequest {
-            header(HttpHeaders.UserAgent, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
-            header(HttpHeaders.Accept, "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
-            header(HttpHeaders.AcceptLanguage, "de-CH,de;q=0.9,en-US;q=0.8,en;q=0.7")
-            header("sec-ch-ua", "\"Chromium\";v=\"124\", \"Google Chrome\";v=\"124\", \"Not-A.Brand\";v=\"99\"")
-            header("sec-ch-ua-mobile", "?0")
-            header("sec-ch-ua-platform", "\"macOS\"")
-            header("Sec-Fetch-Dest", "document")
-            header("Sec-Fetch-Mode", "navigate")
-            header("Sec-Fetch-Site", "none")
-            header("Sec-Fetch-User", "?1")
-            header("Upgrade-Insecure-Requests", "1")
+            requestTimeoutMillis = 20000
+            connectTimeoutMillis = 10000
+            socketTimeoutMillis = 20000
         }
     }
 ) {
+    private val jsonParser = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+    }
+
     fun isSupportedListing(url: String): Boolean {
         val lower = url.lowercase()
         return lower.contains("ricardo.ch") || lower.contains("tutti.ch") || lower.contains("anibis.ch") || lower.contains("ebay")
     }
 
-    suspend fun fetchListing(url: String, sessionCookie: String? = null): Result<ScrapedListing> {
+    fun buildProxyUrl(targetUrl: String, settings: AppSettings): String? {
+        val encoded = targetUrl.encodeURLQueryComponent()
+        return when (settings.scraperProvider) {
+            ScraperProvider.SCRAPE_DO -> {
+                val token = settings.scrapeDoApiKey.trim()
+                if (token.isBlank()) null else "https://api.scrape.do?token=$token&url=$encoded&render=true"
+            }
+            ScraperProvider.CUSTOM_PROXY -> {
+                val base = settings.customScraperProxyUrl.trim()
+                if (base.isBlank()) null
+                else if (base.endsWith("=") || base.endsWith("/")) "$base$encoded"
+                else if (base.contains("?")) "$base&url=$encoded"
+                else "$base?url=$encoded"
+            }
+        }
+    }
+
+    suspend fun fetchListing(url: String, settings: AppSettings): Result<ScrapedListing> {
         val source = resolveSourcePlatform(url)
+        val listingId = extractListingId(url)
+        val fallbackTitle = extractTitleFromUrl(url)
 
-        return try {
-            val response = client.get(url) {
-                if (!sessionCookie.isNullOrBlank() && url.contains("ricardo.ch", ignoreCase = true)) {
-                    val formattedCookie = if (sessionCookie.contains("=")) sessionCookie else "ricardo_session=$sessionCookie"
-                    header(HttpHeaders.Cookie, formattedCookie)
-                }
-            }
-            val html = response.bodyAsText()
-            val isBlocked = !response.status.isSuccess() || isCaptchaPage(html)
-
-            val parsedTitle = if (!isBlocked) {
-                extractMetaTag(html, "og:title") ?: extractTagContent(html, "title")
-            } else null
-
-            val urlFallbackTitle = extractTitleFromUrl(url)
-            val title = if (!parsedTitle.isNullOrBlank() && !isCaptchaPage(parsedTitle)) {
-                cleanText(parsedTitle)
-            } else {
-                urlFallbackTitle ?: "$source Listing"
-            }
-
-            val parsedDesc = if (!isBlocked) {
-                extractMetaTag(html, "og:description") ?: extractMetaTag(html, "description") ?: ""
-            } else {
-                "Item identified via link ($url). The page presented a temporary anti-bot verification challenge."
-            }
-
-            val imageUrl = if (!isBlocked) extractMetaTag(html, "og:image") else null
-            val imageUrls = listOfNotNull(imageUrl)
-
-            val price = if (!isBlocked) {
-                extractMetaTag(html, "product:price:amount")?.toDoubleOrNull() ?: extractPriceFromHtml(html)
-            } else null
-
-            Result.success(
+        if (!settings.isScraperEnabled) {
+            return Result.success(
                 ScrapedListing(
                     url = url,
-                    title = title,
-                    description = cleanText(parsedDesc),
-                    imageUrls = imageUrls,
-                    estimatedPriceChf = price,
-                    sourcePlatform = source
+                    title = fallbackTitle ?: (if (listingId != null) "$source Listing #$listingId" else "$source Link"),
+                    description = "Marketplace scraper is disabled in Settings.",
+                    sourcePlatform = source,
+                    listingId = listingId,
+                    isTitleExtracted = fallbackTitle != null
                 )
             )
+        }
+
+        val proxyUrl = buildProxyUrl(url, settings)
+        if (proxyUrl == null) {
+            val configNotice = when (settings.scraperProvider) {
+                ScraperProvider.SCRAPE_DO -> "Scrape.do API Token is not configured. Access Settings to add your token."
+                ScraperProvider.CUSTOM_PROXY -> "Custom Proxy URL is not configured. Access Settings to add your endpoint."
+            }
+            return Result.success(
+                ScrapedListing(
+                    url = url,
+                    title = fallbackTitle ?: (if (listingId != null) "$source Listing #$listingId" else "$source Link"),
+                    description = "$configNotice (Listing: $url)",
+                    sourcePlatform = source,
+                    listingId = listingId,
+                    isTitleExtracted = fallbackTitle != null
+                )
+            )
+        }
+
+        return try {
+            val response = client.get(proxyUrl)
+            if (!response.status.isSuccess()) {
+                val fallback = fallbackTitle ?: (if (listingId != null) "$source Listing #$listingId" else "$source Link")
+                return Result.success(
+                    ScrapedListing(
+                        url = url,
+                        title = fallback,
+                        description = "Proxy returned HTTP ${response.status.value}. Using link reference.",
+                        sourcePlatform = source,
+                        listingId = listingId,
+                        isTitleExtracted = fallbackTitle != null
+                    )
+                )
+            }
+
+            val bodyText = response.bodyAsText()
+
+            // Check if response is a JSON payload from a custom microservice
+            if (bodyText.trimStart().startsWith("{")) {
+                parseJsonListing(bodyText, url, source, listingId, fallbackTitle)
+            } else {
+                parseHtmlListing(bodyText, url, source, listingId, fallbackTitle)
+            }
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
         } catch (e: Exception) {
-            println("Scraping fallback triggered for $url: ${e.message}")
-            val fallbackTitle = extractTitleFromUrl(url) ?: "$source Link"
+            println("Scraper proxy failed for $url: ${e.message}")
+            val finalTitle = fallbackTitle ?: (if (listingId != null) "$source Listing #$listingId" else "$source Link")
             Result.success(
                 ScrapedListing(
                     url = url,
-                    title = fallbackTitle,
-                    description = "Shared listing: $url",
-                    sourcePlatform = source
+                    title = finalTitle,
+                    description = "Shared listing: $url (Proxy error: ${e.message})",
+                    sourcePlatform = source,
+                    listingId = listingId,
+                    isTitleExtracted = fallbackTitle != null
                 )
             )
+        }
+    }
+
+    private fun parseJsonListing(
+        jsonString: String,
+        originalUrl: String,
+        source: String,
+        listingId: String?,
+        fallbackTitle: String?
+    ): Result<ScrapedListing> {
+        return try {
+            val json = jsonParser.decodeFromString<JsonObject>(jsonString)
+            val title = json["title"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() }
+                ?: fallbackTitle
+                ?: (if (listingId != null) "$source Listing #$listingId" else "$source Listing")
+            val description = json["description"]?.jsonPrimitive?.content ?: ""
+            val singleImg = json["imageUrl"]?.jsonPrimitive?.content
+            val multiImgs = json["imageUrls"]?.jsonArray?.mapNotNull { it.jsonPrimitive.content }
+            val imageUrls = multiImgs ?: listOfNotNull(singleImg)
+            val price = json["estimatedPriceChf"]?.jsonPrimitive?.doubleOrNull
+                ?: json["priceChf"]?.jsonPrimitive?.doubleOrNull
+
+            Result.success(
+                ScrapedListing(
+                    url = originalUrl,
+                    title = cleanText(title),
+                    description = cleanText(description),
+                    imageUrls = imageUrls,
+                    estimatedPriceChf = price,
+                    sourcePlatform = source,
+                    listingId = listingId,
+                    isTitleExtracted = fallbackTitle != null || !title.startsWith("$source Listing")
+                )
+            )
+        } catch (_: Exception) {
+            parseHtmlListing(jsonString, originalUrl, source, listingId, fallbackTitle)
+        }
+    }
+
+    private fun parseHtmlListing(
+        html: String,
+        originalUrl: String,
+        source: String,
+        listingId: String?,
+        fallbackTitle: String?
+    ): Result<ScrapedListing> {
+        val parsedTitle = extractMetaTag(html, "og:title")
+            ?: extractMetaTag(html, "twitter:title")
+            ?: extractTagContent(html, "title")
+
+        val hasValidParsedTitle = !parsedTitle.isNullOrBlank() && !isCaptchaPage(parsedTitle)
+        val title = when {
+            hasValidParsedTitle -> cleanText(parsedTitle)
+            fallbackTitle != null -> fallbackTitle
+            listingId != null -> "$source Listing #$listingId"
+            else -> "$source Listing"
+        }
+
+        val parsedDesc = extractMetaTag(html, "og:description")
+            ?: extractMetaTag(html, "description")
+            ?: ""
+
+        val imageUrl = extractMetaTag(html, "og:image")
+            ?: extractMetaTag(html, "twitter:image")
+        val imageUrls = listOfNotNull(imageUrl)
+
+        val price = extractMetaTag(html, "product:price:amount")?.toDoubleOrNull()
+            ?: extractPriceFromHtml(html)
+
+        return Result.success(
+            ScrapedListing(
+                url = originalUrl,
+                title = title,
+                description = cleanText(parsedDesc),
+                imageUrls = imageUrls,
+                estimatedPriceChf = price,
+                sourcePlatform = source,
+                listingId = listingId,
+                isTitleExtracted = hasValidParsedTitle || fallbackTitle != null
+            )
+        )
+    }
+
+    fun extractListingId(url: String): String? {
+        val lower = url.lowercase()
+        if (lower.contains("ricardo.ch")) {
+            val segment = url.substringAfter("/a/", "").substringBefore("/").substringBefore("?")
+            if (segment.isNotBlank() && segment.all { it.isDigit() }) return segment
+            val match = Regex("""-(\d+)$""").find(segment)
+            if (match != null) return match.groupValues[1]
+        } else if (lower.contains("tutti.ch")) {
+            val segment = url.trimEnd('/').substringAfterLast('/')
+            val matchPrefix = Regex("""^(\d+)-""").find(segment)
+            if (matchPrefix != null) return matchPrefix.groupValues[1]
+            val matchSuffix = Regex("""-(\d+)$""").find(segment)
+            if (matchSuffix != null) return matchSuffix.groupValues[1]
+        }
+        return null
+    }
+
+    fun extractTitleFromUrl(url: String): String? {
+        val lower = url.lowercase()
+        if (lower.contains("ricardo.ch")) {
+            val segment = url.substringAfter("/a/", "").substringBefore("/").substringBefore("?")
+            if (segment.isNotBlank() && !segment.all { it.isDigit() }) {
+                val cleanSlug = segment.replace(Regex("""-\d+$"""), "")
+                if (cleanSlug.isBlank() || cleanSlug.all { it.isDigit() }) return null
+                val words = cleanSlug.split("-").filter { it.isNotBlank() }
+                if (words.isNotEmpty()) {
+                    return words.joinToString(" ") { word ->
+                        if (word.length <= 4) word.uppercase() else word.replaceFirstChar { it.uppercase() }
+                    }
+                }
+            }
+        } else if (lower.contains("tutti.ch")) {
+            val segment = url.trimEnd('/').substringAfterLast('/')
+            if (segment.isNotBlank() && !segment.all { it.isDigit() }) {
+                val cleanSlug = segment.replace(Regex("""^\d+-"""), "").replace(Regex("""-\d+$"""), "")
+                if (cleanSlug.isBlank() || cleanSlug.all { it.isDigit() }) return null
+                val words = cleanSlug.split("-").filter { it.isNotBlank() }
+                if (words.isNotEmpty()) {
+                    return words.joinToString(" ") { word ->
+                        if (word.length <= 4) word.uppercase() else word.replaceFirstChar { it.uppercase() }
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    suspend fun fetchImageAsBase64(imageUrl: String): String? {
+        if (imageUrl.isBlank()) return null
+        return try {
+            val response = client.get(imageUrl) {
+                header(HttpHeaders.UserAgent, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36")
+            }
+            if (response.status.isSuccess()) {
+                val bytes = response.readBytes()
+                val base64 = bytes.encodeBase64()
+                val mime = response.contentType()?.let { "${it.contentType}/${it.contentSubtype}" } ?: "image/jpeg"
+                "data:$mime;base64,$base64"
+            } else null
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            println("Failed to fetch image $imageUrl: ${e.message}")
+            null
         }
     }
 
@@ -129,32 +316,6 @@ class ListingScraper(
             lower.contains("captcha")
     }
 
-    fun extractTitleFromUrl(url: String): String? {
-        val lower = url.lowercase()
-        if (lower.contains("ricardo.ch")) {
-            val segment = url.substringAfter("/a/", "").substringBefore("/").substringBefore("?")
-            if (segment.isNotBlank()) {
-                val cleanSlug = segment.replace(Regex("""-\d+$"""), "")
-                val words = cleanSlug.split("-").filter { it.isNotBlank() }
-                if (words.isNotEmpty()) {
-                    return words.joinToString(" ") { word ->
-                        if (word.length <= 4) word.uppercase() else word.replaceFirstChar { it.uppercase() }
-                    }
-                }
-            }
-        } else if (lower.contains("tutti.ch")) {
-            val segment = url.trimEnd('/').substringAfterLast('/')
-            val cleanSlug = segment.replace(Regex("""^\d+-"""), "").replace(Regex("""-\d+$"""), "")
-            val words = cleanSlug.split("-").filter { it.isNotBlank() }
-            if (words.isNotEmpty()) {
-                return words.joinToString(" ") { word ->
-                    if (word.length <= 4) word.uppercase() else word.replaceFirstChar { it.uppercase() }
-                }
-            }
-        }
-        return null
-    }
-
     private fun extractMetaTag(html: String, property: String): String? {
         val regex = Regex("""<meta\s+(?:property|name)=["']$property["']\s+content=["'](.*?)["']""", RegexOption.IGNORE_CASE)
         val match = regex.find(html)
@@ -168,29 +329,6 @@ class ListingScraper(
     private fun extractTagContent(html: String, tag: String): String? {
         val regex = Regex("""<$tag[^>]*>([\s\S]*?)</$tag>""", RegexOption.IGNORE_CASE)
         return regex.find(html)?.groupValues?.get(1)
-    }
-
-    suspend fun fetchImageAsBase64(imageUrl: String, sessionCookie: String? = null): String? {
-        if (imageUrl.isBlank()) return null
-        return try {
-            val response = client.get(imageUrl) {
-                if (!sessionCookie.isNullOrBlank() && imageUrl.contains("ricardo", ignoreCase = true)) {
-                    val formattedCookie = if (sessionCookie.contains("=")) sessionCookie else "ricardo_session=$sessionCookie"
-                    header(HttpHeaders.Cookie, formattedCookie)
-                }
-            }
-            if (response.status.isSuccess()) {
-                val bytes = response.readRawBytes()
-                val base64 = bytes.encodeBase64()
-                val mime = response.contentType()?.let { "${it.contentType}/${it.contentSubtype}" } ?: "image/jpeg"
-                "data:$mime;base64,$base64"
-            } else null
-        } catch (e: kotlinx.coroutines.CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            println("Failed to fetch image $imageUrl: ${e.message}")
-            null
-        }
     }
 
     private fun extractPriceFromHtml(html: String): Double? {

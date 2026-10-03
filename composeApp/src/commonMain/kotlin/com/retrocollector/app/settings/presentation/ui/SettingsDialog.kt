@@ -25,6 +25,7 @@ import com.retrocollector.app.core.presentation.components.TactileTextField
 import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.settings.domain.model.AppSettings
+import com.retrocollector.app.settings.domain.model.ScraperProvider
 import com.retrocollector.app.settings.domain.model.ThemeMode
 import com.retrocollector.app.settings.domain.model.defaultPinnedPlatformIds
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -47,9 +48,11 @@ fun SettingsDialog(
     var firebaseProjectId by remember { mutableStateOf(settings.firebaseProjectId) }
     var selectedCurrency by remember { mutableStateOf(settings.defaultCurrency.ifBlank { "CHF" }) }
     var isScraperEnabled by remember { mutableStateOf(settings.isScraperEnabled) }
+    var scraperProvider by remember { mutableStateOf(settings.scraperProvider) }
+    var scrapeDoKey by remember { mutableStateOf(settings.scrapeDoApiKey) }
+    var customProxyUrl by remember { mutableStateOf(settings.customScraperProxyUrl) }
     var isAutoDiscoveryEnabled by remember { mutableStateOf(settings.isAutoDiscoveryEnabled) }
     var isAutoSimilarGamesEnabled by remember { mutableStateOf(settings.isAutoSimilarGamesEnabled) }
-    var ricardoCookie by remember { mutableStateOf(settings.ricardoSessionCookie) }
     var pinnedPlatformIds by remember { mutableStateOf(settings.pinnedPlatformIds.toSet()) }
     var isKeyVisible by remember { mutableStateOf(false) }
     var testStatusMessage by remember { mutableStateOf<String?>(null) }
@@ -239,9 +242,11 @@ fun SettingsDialog(
                                                     firebaseProjectId = firebaseProjectId.trim(),
                                                     defaultCurrency = selectedCurrency,
                                                     isScraperEnabled = isScraperEnabled,
+                                                    scraperProvider = scraperProvider,
+                                                    scrapeDoApiKey = scrapeDoKey.trim(),
+                                                    customScraperProxyUrl = customProxyUrl.trim(),
                                                     isAutoDiscoveryEnabled = isAutoDiscoveryEnabled,
                                                     isAutoSimilarGamesEnabled = isAutoSimilarGamesEnabled,
-                                                    ricardoSessionCookie = ricardoCookie.trim(),
                                                     pinnedPlatformIds = pinnedPlatformIds.toList(),
                                                     themeMode = mode
                                                 )
@@ -654,7 +659,7 @@ fun SettingsDialog(
 
                         HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
 
-                        // Toggle do Scraper Ricardo & Tutti
+                        // SECTION 2: Marketplace Scraper Proxy (Scrape.do & Self-Hosted)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -669,7 +674,7 @@ fun SettingsDialog(
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
                                     Text(
-                                        text = TextKeys.Settings.SCRAPER_TITLE,
+                                        text = "MARKETPLACE SCRAPER PROXY",
                                         style = BodyMd.copy(fontSize = 13.sp),
                                         color = TextPrimary
                                     )
@@ -679,14 +684,14 @@ fun SettingsDialog(
                                             .padding(horizontal = 4.dp, vertical = 1.dp)
                                     ) {
                                         Text(
-                                            text = TextKeys.Settings.SCRAPER_BADGE,
+                                            text = "CLOUDFLARE BYPASS",
                                             style = CodeSkuStyle.copy(fontSize = 9.sp),
                                             color = ConsoleGamecube
                                         )
                                     }
                                 }
                                 Text(
-                                    text = TextKeys.Settings.SCRAPER_SUBTITLE,
+                                    text = "Bypasses Cloudflare anti-bot shields on Ricardo.ch & Tutti.ch to extract live titles, photos, and prices in CHF.",
                                     style = BodySm.copy(fontSize = 11.sp),
                                     color = TextSecondary
                                 )
@@ -703,40 +708,123 @@ fun SettingsDialog(
                             )
                         }
 
-                        HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
+                        if (isScraperEnabled) {
+                            HorizontalDivider(color = BorderSubtle, thickness = 1.dp)
 
-                        // Ricardo.ch Session Cookie (Optional anti-captcha)
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
+                            // Provider Selector (Scrape.do vs Custom Proxy)
+                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 Text(
-                                    text = "RICARDO.CH SESSION COOKIE (OPTIONAL)",
+                                    text = "SCRAPER SERVICE PROVIDER",
                                     style = LabelFilterStyle,
                                     color = TextPrimary
                                 )
-                                Text(
-                                    text = "Anti-Captcha",
-                                    style = CodeSkuStyle.copy(fontSize = 10.sp),
-                                    color = StatusEnglishFg
-                                )
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(SurfaceCard, RoundedCornerShape(4.dp))
+                                        .border(1.dp, BorderSubtle, RoundedCornerShape(4.dp))
+                                        .padding(2.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    ScraperProvider.entries.forEach { provider ->
+                                        val isSelected = scraperProvider == provider
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .background(
+                                                    if (isSelected) SurfaceElevated else Color.Transparent,
+                                                    RoundedCornerShape(4.dp)
+                                                )
+                                                .border(
+                                                    1.dp,
+                                                    if (isSelected) BorderStrong else Color.Transparent,
+                                                    RoundedCornerShape(4.dp)
+                                                )
+                                                .clickable { scraperProvider = provider }
+                                                .padding(vertical = 6.dp, horizontal = 4.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = provider.displayName,
+                                                style = LabelFilterStyle.copy(fontSize = 11.sp),
+                                                color = if (isSelected) TextPrimary else TextSecondary
+                                            )
+                                        }
+                                    }
+                                }
                             }
-                            TactileTextField(
-                                value = ricardoCookie,
-                                onValueChange = { ricardoCookie = it },
-                                placeholder = "e.g. ricardo_session=... or account token",
-                                textStyle = CodeSkuStyle.copy(color = TextPrimary, fontSize = 11.sp),
-                                placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg, fontSize = 11.sp),
-                                backgroundColor = SurfaceCard,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Text(
-                                text = "Allows authenticating requests to Ricardo.ch with your account to bypass Captcha challenges.",
-                                style = BodySm.copy(fontSize = 10.sp),
-                                color = TextSecondary
-                            )
+
+                            // Conditional Fields based on Provider
+                            when (scraperProvider) {
+                                ScraperProvider.SCRAPE_DO -> {
+                                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = "SCRAPE.DO API TOKEN",
+                                                style = LabelFilterStyle,
+                                                color = TextPrimary
+                                            )
+                                            Text(
+                                                text = "1,000 Free Req/Month",
+                                                style = CodeSkuStyle.copy(fontSize = 10.sp),
+                                                color = StatusEnglishFg
+                                            )
+                                        }
+                                        TactileTextField(
+                                            value = scrapeDoKey,
+                                            onValueChange = { scrapeDoKey = it },
+                                            placeholder = "Paste your Scrape.do API Token here...",
+                                            textStyle = CodeSkuStyle.copy(color = TextPrimary, fontSize = 11.sp),
+                                            placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg, fontSize = 11.sp),
+                                            backgroundColor = SurfaceCard,
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                        Text(
+                                            text = "Get your free API token from scrape.do dashboard. Automatically executes JS and bypasses Cloudflare.",
+                                            style = BodySm.copy(fontSize = 10.sp),
+                                            color = TextSecondary
+                                        )
+                                    }
+                                }
+                                ScraperProvider.CUSTOM_PROXY -> {
+                                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = "CUSTOM / SELF-HOSTED PROXY URL",
+                                                style = LabelFilterStyle,
+                                                color = TextPrimary
+                                            )
+                                            Text(
+                                                text = "Unlimited / Free",
+                                                style = CodeSkuStyle.copy(fontSize = 10.sp),
+                                                color = StatusEnglishFg
+                                            )
+                                        }
+                                        TactileTextField(
+                                            value = customProxyUrl,
+                                            onValueChange = { customProxyUrl = it },
+                                            placeholder = "e.g. https://my-scraper.fly.dev/scrape?url=",
+                                            textStyle = CodeSkuStyle.copy(color = TextPrimary, fontSize = 11.sp),
+                                            placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg, fontSize = 11.sp),
+                                            backgroundColor = SurfaceCard,
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                        Text(
+                                            text = "URL of your curl-cffi or custom microservice endpoint. The listing URL will be passed via query parameter.",
+                                            style = BodySm.copy(fontSize = 10.sp),
+                                            color = TextSecondary
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -1031,9 +1119,11 @@ fun SettingsDialog(
                                 firebaseProjectId = firebaseProjectId.trim(),
                                 defaultCurrency = selectedCurrency,
                                 isScraperEnabled = isScraperEnabled,
+                                scraperProvider = scraperProvider,
+                                scrapeDoApiKey = scrapeDoKey.trim(),
+                                customScraperProxyUrl = customProxyUrl.trim(),
                                 isAutoDiscoveryEnabled = isAutoDiscoveryEnabled,
                                 isAutoSimilarGamesEnabled = isAutoSimilarGamesEnabled,
-                                ricardoSessionCookie = ricardoCookie.trim(),
                                 pinnedPlatformIds = pinnedPlatformIds.toList(),
                                 themeMode = selectedThemeMode
                             )

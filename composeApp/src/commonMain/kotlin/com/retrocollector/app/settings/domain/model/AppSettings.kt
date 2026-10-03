@@ -14,6 +14,12 @@ enum class ThemeMode(val displayName: String, val icon: String) {
 }
 
 @Serializable
+enum class ScraperProvider(val displayName: String) {
+    SCRAPE_DO("Scrape.do API"),
+    CUSTOM_PROXY("Custom Proxy")
+}
+
+@Serializable
 data class AppSettings(
     val geminiApiKey: String = "",
     val geminiModel: String = "gemini-3.7-flash",
@@ -21,9 +27,11 @@ data class AppSettings(
     val firebaseApiKey: String = "",
     val defaultCurrency: String = "CHF",
     val isScraperEnabled: Boolean = true,
+    val scraperProvider: ScraperProvider = ScraperProvider.SCRAPE_DO,
+    val scrapeDoApiKey: String = "",
+    val customScraperProxyUrl: String = "",
     val isAutoDiscoveryEnabled: Boolean = false,
     val isAutoSimilarGamesEnabled: Boolean = false,
-    val ricardoSessionCookie: String = "",
     val selectedPlatformFilter: ConsolePlatform? = null,
     val onlyEnglishFilter: Boolean = false,
     val statusFilter: CollectionStatus? = null,

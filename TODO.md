@@ -28,6 +28,15 @@
     - Android launcher icon set in all mipmap densities (`mdpi`, `hdpi`, `xhdpi`, `xxhdpi`, `xxxhdpi`) plus `ic_launcher_round` variants
     - Compose Multiplatform drawable resource (`app_icon.png`)
 
+- [ ] **Self-Hosted `curl-cffi` Scraper Proxy Microservice (Long-term unlimited scraping)**
+  - Standalone, containerized microservice using Python (FastAPI + `curl-cffi`) or Go to scrape Swiss marketplaces (Ricardo.ch, Tutti.ch, Anibis.ch) with zero recurring API costs.
+  - Features:
+    - Impersonates Chrome TLS/HTTP2 fingerprints (JA3/JA4) to seamlessly bypass Cloudflare WAF.
+    - Resolves short numeric Ricardo links (`/a/1318136906` -> `/a/mass-effect-3-ps3-1318136906/`) and extracts high-res cover photos, condition, and price in CHF.
+    - Deployment blueprints for Fly.io, Railway, and Synology Docker (LAN/Tailscale).
+    - Client endpoint in RetroCollector configured via **Settings > Custom Proxy**.
+  - File: [`TODO.md`](TODO.md), [`ListingScraper.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/scraper/ListingScraper.kt)
+
 - [ ] **Firestore: full sync integration (Phase 4 from progress notes)**
   - The `FirestoreService` is implemented and wired up, but sync is not automatic — the user has to manually trigger it.
   - Missing:
