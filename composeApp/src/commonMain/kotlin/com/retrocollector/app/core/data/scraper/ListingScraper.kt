@@ -4,10 +4,10 @@ import com.retrocollector.app.settings.domain.model.AppSettings
 import com.retrocollector.app.settings.domain.model.ScraperProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
-import io.ktor.client.statement.readBytes
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import io.ktor.http.encodeURLQueryComponent
@@ -284,7 +284,7 @@ class ListingScraper(
                 header(HttpHeaders.UserAgent, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36")
             }
             if (response.status.isSuccess()) {
-                val bytes = response.readRawBytes()
+                val bytes = response.body<ByteArray>()
                 val base64 = bytes.encodeBase64()
                 val mime = response.contentType()?.let { "${it.contentType}/${it.contentSubtype}" } ?: "image/jpeg"
                 "data:$mime;base64,$base64"
