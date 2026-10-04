@@ -21,7 +21,8 @@ interface IAiRemoteDataSource {
         imageBase64: String? = null,
         apiKey: String,
         model: String,
-        baseUrl: String? = null
+        baseUrl: String? = null,
+        imagesBase64: List<String> = emptyList()
     ): Result<Pair<String, StitchGeminiStructuredVerdict?>>
 
     suspend fun sendFollowUpChat(
@@ -31,7 +32,8 @@ interface IAiRemoteDataSource {
         imageBase64: String?,
         apiKey: String,
         model: String,
-        baseUrl: String? = null
+        baseUrl: String? = null,
+        imagesBase64: List<String> = emptyList()
     ): Result<Pair<String, StitchGeminiStructuredVerdict?>>
 
     suspend fun discoverGames(

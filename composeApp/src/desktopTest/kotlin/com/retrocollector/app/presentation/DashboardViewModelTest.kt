@@ -358,4 +358,16 @@ class DashboardViewModelTest {
         assertEquals("ai_mario_sunshine", updatedGame?.similarGames?.first()?.id)
         assertEquals(1, state.selectedGame?.similarGames?.size)
     }
+
+    @Test
+    fun `updateGameProductCode updates game product code and selectedGame state`() = runTest {
+        viewModel.onGameSelected(sampleGame)
+        viewModel.updateGameProductCode(sampleGame, "BLES-00779")
+
+        val updated = repository.getGameById(sampleGame.id)
+        assertNotNull(updated)
+        assertEquals("BLES-00779", updated?.productCode)
+        assertEquals("BLES-00779", viewModel.uiState.value.selectedGame?.productCode)
+    }
 }
+

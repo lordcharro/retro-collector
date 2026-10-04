@@ -41,6 +41,7 @@ fun MobileGameDetailScreen(
     isSimilarGamesLoading: Boolean = false,
     onUpdateGameStatus: (GameItem, CollectionStatus) -> Unit = { _, _ -> },
     onUpdatePaidPrice: (GameItem, Double?) -> Unit = { _, _ -> },
+    onUpdateProductCode: (GameItem, String?) -> Unit = { _, _ -> },
     onDeleteGame: (String) -> Unit = {},
     onSendFollowUpMessage: (String) -> Unit = {},
     onSelectSimilarGame: (DiscoveredGameItem) -> Unit = {},
@@ -238,7 +239,9 @@ fun MobileGameDetailScreen(
                 item {
                     SafeSkuMatrixView(
                         safeSkus = game.safeSkus,
-                        riskySkus = game.riskySkus
+                        riskySkus = game.riskySkus,
+                        activeSkuCode = game.productCode,
+                        onSelectSku = { skuCode -> onUpdateProductCode(game, skuCode) }
                     )
                 }
 

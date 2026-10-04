@@ -64,6 +64,11 @@ object TextKeys {
         const val EMPTY_RISKY = "No known risky/monolingual SKUs recorded."
         const val UNCUT_LABEL = "Uncut"
         const val CUT_LABEL = "Censored"
+        const val THIS_COPY = "THIS COPY"
+        const val CLICK_TO_SELECT = "Tap any SKU to set as this copy's active edition"
+        const val ACTIVE_SKU_LABEL = "Active Edition"
+        const val NO_SKU_ASSIGNED = "No SKU assigned"
+        const val DETECTED_SKU = "DETECTED"
     }
 
     object Dossier {

@@ -103,25 +103,29 @@ class AnthropicRemoteDataSource(
         imageBase64: String?,
         apiKey: String,
         model: String,
-        baseUrl: String?
+        baseUrl: String?,
+        imagesBase64: List<String>
     ): Result<Pair<String, StitchGeminiStructuredVerdict?>> {
         if (apiKey.isBlank()) {
             return Result.failure(IllegalArgumentException("Anthropic API key is not configured. Access Settings to set up the key."))
         }
 
+        val allImages = (listOfNotNull(imageBase64) + imagesBase64).distinct()
         val targetModel = model.ifBlank { "claude-3-7-sonnet-20250219" }
         val startTime = Clock.System.now().toEpochMilliseconds()
 
         return try {
             val contentBlocks = mutableListOf<AnthropicContentBlock>()
-            val sanitizedBase64 = AiResponseParser.sanitizeBase64(imageBase64)
-            if (sanitizedBase64 != null) {
-                contentBlocks.add(
-                    AnthropicContentBlock(
-                        type = "image",
-                        source = AnthropicImageSource(type = "base64", mediaType = "image/jpeg", data = sanitizedBase64)
+            allImages.forEach { rawImg ->
+                val sanitizedBase64 = AiResponseParser.sanitizeBase64(rawImg)
+                if (sanitizedBase64 != null) {
+                    contentBlocks.add(
+                        AnthropicContentBlock(
+                            type = "image",
+                            source = AnthropicImageSource(type = "base64", mediaType = "image/jpeg", data = sanitizedBase64)
+                        )
                     )
-                )
+                }
             }
             contentBlocks.add(AnthropicContentBlock(type = "text", text = query))
 
@@ -176,12 +180,14 @@ class AnthropicRemoteDataSource(
         imageBase64: String?,
         apiKey: String,
         model: String,
-        baseUrl: String?
+        baseUrl: String?,
+        imagesBase64: List<String>
     ): Result<Pair<String, StitchGeminiStructuredVerdict?>> {
         if (apiKey.isBlank()) {
             return Result.failure(IllegalArgumentException("Anthropic API key is not configured. Access Settings to set up the key."))
         }
 
+        val allImages = (listOfNotNull(imageBase64) + imagesBase64).distinct()
         val targetModel = model.ifBlank { "claude-3-7-sonnet-20250219" }
         val startTime = Clock.System.now().toEpochMilliseconds()
 
@@ -189,14 +195,16 @@ class AnthropicRemoteDataSource(
             val promptText = AiPromptConstants.buildFollowUpPrompt(game, history, userMessage)
             val contentBlocks = mutableListOf<AnthropicContentBlock>()
 
-            val sanitizedBase64 = AiResponseParser.sanitizeBase64(imageBase64)
-            if (sanitizedBase64 != null) {
-                contentBlocks.add(
-                    AnthropicContentBlock(
-                        type = "image",
-                        source = AnthropicImageSource(type = "base64", mediaType = "image/jpeg", data = sanitizedBase64)
+            allImages.forEach { rawImg ->
+                val sanitizedBase64 = AiResponseParser.sanitizeBase64(rawImg)
+                if (sanitizedBase64 != null) {
+                    contentBlocks.add(
+                        AnthropicContentBlock(
+                            type = "image",
+                            source = AnthropicImageSource(type = "base64", mediaType = "image/jpeg", data = sanitizedBase64)
+                        )
                     )
-                )
+                }
             }
             contentBlocks.add(AnthropicContentBlock(type = "text", text = promptText))
 

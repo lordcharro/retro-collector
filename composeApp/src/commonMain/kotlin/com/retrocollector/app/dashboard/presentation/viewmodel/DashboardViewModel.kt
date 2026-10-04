@@ -205,6 +205,20 @@ class DashboardViewModel(
         saveGameUseCase(updated)
     }
 
+    fun updateGameProductCode(game: GameItem, newProductCode: String?) {
+        val cleanCode = newProductCode?.trim()?.ifBlank { null }
+        val updated = game.copy(productCode = cleanCode)
+        saveGameUseCase(updated)
+        _uiState.update { state ->
+            if (state.selectedGame?.id == game.id) {
+                state.copy(selectedGame = updated)
+            } else state
+        }
+        scope.launch {
+            _effects.send(DashboardEffect.ShowToast("Edition SKU set to ${cleanCode ?: "none"}"))
+        }
+    }
+
     fun addOrUpdateOffer(game: GameItem, offer: com.retrocollector.app.core.domain.model.GameOffer) {
         repository.addOrUpdateOffer(game.id, offer)
         scope.launch {

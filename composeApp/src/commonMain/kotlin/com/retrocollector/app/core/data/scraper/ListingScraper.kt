@@ -209,9 +209,7 @@ class ListingScraper(
             ?: extractMetaTag(html, "description")
             ?: ""
 
-        val imageUrl = extractMetaTag(html, "og:image")
-            ?: extractMetaTag(html, "twitter:image")
-        val imageUrls = listOfNotNull(imageUrl)
+        val imageUrls = extractImageUrlsFromHtml(html, source)
 
         val price = extractMetaTag(html, "product:price:amount")?.toDoubleOrNull()
             ?: extractPriceFromHtml(html)
@@ -228,6 +226,51 @@ class ListingScraper(
                 isTitleExtracted = hasValidParsedTitle || fallbackTitle != null
             )
         )
+    }
+
+    fun extractImageUrlsFromHtml(html: String, source: String): List<String> {
+        val images = LinkedHashSet<String>()
+
+        // 1. Meta og:image and twitter:image
+        extractMetaTag(html, "og:image")?.let { if (it.isNotBlank()) images.add(it) }
+        extractMetaTag(html, "twitter:image")?.let { if (it.isNotBlank()) images.add(it) }
+
+        // 2. Ricardo specific high-res gallery images
+        if (source.contains("ricardo", ignoreCase = true) || html.contains("ricardostatic.ch", ignoreCase = true)) {
+            val ricardoRegex = Regex("""https://img\.ricardostatic\.ch/[^\s"'<>,]+""")
+            ricardoRegex.findAll(html).forEach { match ->
+                val rawUrl = match.value
+                if (!rawUrl.contains("avatar") && !rawUrl.contains("logo") && !rawUrl.contains("badge")) {
+                    val normalized = if (rawUrl.contains("t_") && rawUrl.contains("/plain/")) {
+                        rawUrl.replace(Regex("""t_\d+x\d+"""), "t_1800x1350")
+                    } else rawUrl
+                    images.add(normalized)
+                }
+            }
+        }
+
+        // 3. Tutti specific gallery images
+        if (source.contains("tutti", ignoreCase = true) || html.contains("tutti.ch", ignoreCase = true)) {
+            val tuttiRegex = Regex("""https://c\.tutti\.ch/images/[^\s"'<>,]+""")
+            tuttiRegex.findAll(html).forEach { match ->
+                images.add(match.value)
+            }
+        }
+
+        // 4. JSON-LD Schema images
+        val jsonLdRegex = Regex(""""image"\s*:\s*(\[[^\]]+\]|"[^"]+")""")
+        jsonLdRegex.findAll(html).forEach { match ->
+            val content = match.groupValues[1]
+            if (content.startsWith("[")) {
+                val urlRegex = Regex("""https?://[^\s"',]+""")
+                urlRegex.findAll(content).forEach { u -> images.add(u.value) }
+            } else {
+                val cleanUrl = content.trim('"')
+                if (cleanUrl.startsWith("http")) images.add(cleanUrl)
+            }
+        }
+
+        return images.filter { it.isNotBlank() && (it.startsWith("http://") || it.startsWith("https://")) }.take(5)
     }
 
     fun extractListingId(url: String): String? {

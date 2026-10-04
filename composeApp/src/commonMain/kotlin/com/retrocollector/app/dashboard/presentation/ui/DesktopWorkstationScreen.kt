@@ -668,9 +668,13 @@ fun DesktopWorkstationScreen(
                                                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
-                                                SafeSkuMatrixView(
+                                                 SafeSkuMatrixView(
                                                     safeSkus = game.safeSkus,
                                                     riskySkus = game.riskySkus,
+                                                    activeSkuCode = game.productCode,
+                                                    onSelectSku = { skuCode ->
+                                                        actions.onUpdateProductCode(game, skuCode)
+                                                    },
                                                     modifier = Modifier.weight(1f)
                                                 )
 
@@ -712,6 +716,10 @@ fun DesktopWorkstationScreen(
                                                 SafeSkuMatrixView(
                                                     safeSkus = game.safeSkus,
                                                     riskySkus = game.riskySkus,
+                                                    activeSkuCode = game.productCode,
+                                                    onSelectSku = { skuCode ->
+                                                        actions.onUpdateProductCode(game, skuCode)
+                                                    },
                                                     modifier = Modifier.fillMaxWidth()
                                                 )
 

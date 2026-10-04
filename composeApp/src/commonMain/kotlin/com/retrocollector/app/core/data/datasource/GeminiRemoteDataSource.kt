@@ -138,21 +138,23 @@ class GeminiRemoteDataSource(
         imageBase64: String?,
         apiKey: String,
         model: String,
-        baseUrl: String?
+        baseUrl: String?,
+        imagesBase64: List<String>
     ): Result<Pair<String, StitchGeminiStructuredVerdict?>> {
         if (apiKey.isBlank()) {
             return Result.failure(IllegalArgumentException("Gemini API key is not configured. Access Settings to set up the key."))
         }
 
+        val allImages = (listOfNotNull(imageBase64) + imagesBase64).distinct()
         val primaryModel = model.ifBlank { "gemini-3.7-flash" }
-        val result = executeInspect(query, imageBase64, apiKey, primaryModel)
+        val result = executeInspect(query, allImages, apiKey, primaryModel)
 
         // If it fails due to temporary high demand on the requested model, attempt automatic fallback
         if (result.isFailure) {
             val errMsg = result.exceptionOrNull()?.message.orEmpty()
             if (errMsg.contains("demand", ignoreCase = true) || errMsg.contains("503") || errMsg.contains("unavailable", ignoreCase = true)) {
                 val fallbackModel = if (primaryModel == "gemini-3.7-flash") "gemini-3.6-flash" else "gemini-3.7-flash"
-                return executeInspect(query, imageBase64, apiKey, fallbackModel)
+                return executeInspect(query, allImages, apiKey, fallbackModel)
             }
         }
         return result
@@ -165,20 +167,22 @@ class GeminiRemoteDataSource(
         imageBase64: String?,
         apiKey: String,
         model: String,
-        baseUrl: String?
+        baseUrl: String?,
+        imagesBase64: List<String>
     ): Result<Pair<String, StitchGeminiStructuredVerdict?>> {
         if (apiKey.isBlank()) {
             return Result.failure(IllegalArgumentException("Gemini API key is not configured. Access Settings to set up the key."))
         }
 
+        val allImages = (listOfNotNull(imageBase64) + imagesBase64).distinct()
         val primaryModel = model.ifBlank { "gemini-3.7-flash" }
-        val result = executeFollowUpChat(history, game, userMessage, imageBase64, apiKey, primaryModel)
+        val result = executeFollowUpChat(history, game, userMessage, allImages, apiKey, primaryModel)
 
         if (result.isFailure) {
             val errMsg = result.exceptionOrNull()?.message.orEmpty()
             if (errMsg.contains("demand", ignoreCase = true) || errMsg.contains("503") || errMsg.contains("unavailable", ignoreCase = true)) {
                 val fallbackModel = if (primaryModel == "gemini-3.7-flash") "gemini-3.6-flash" else "gemini-3.7-flash"
-                return executeFollowUpChat(history, game, userMessage, imageBase64, apiKey, fallbackModel)
+                return executeFollowUpChat(history, game, userMessage, allImages, apiKey, fallbackModel)
             }
         }
         return result
@@ -236,7 +240,7 @@ class GeminiRemoteDataSource(
 
     private suspend fun executeInspect(
         query: String,
-        imageBase64: String?,
+        imagesBase64: List<String>,
         apiKey: String,
         model: String
     ): Result<Pair<String, StitchGeminiStructuredVerdict?>> {
@@ -246,9 +250,11 @@ class GeminiRemoteDataSource(
             val parts = mutableListOf<GeminiPart>()
             parts.add(GeminiPart(text = query))
 
-            val sanitizedBase64 = AiResponseParser.sanitizeBase64(imageBase64)
-            if (sanitizedBase64 != null) {
-                parts.add(GeminiPart(inlineData = GeminiInlineData(mimeType = "image/jpeg", data = sanitizedBase64)))
+            imagesBase64.forEach { rawImage ->
+                val sanitizedBase64 = AiResponseParser.sanitizeBase64(rawImage)
+                if (sanitizedBase64 != null) {
+                    parts.add(GeminiPart(inlineData = GeminiInlineData(mimeType = "image/jpeg", data = sanitizedBase64)))
+                }
             }
 
             val requestBody = GeminiRequest(
@@ -295,7 +301,7 @@ class GeminiRemoteDataSource(
         history: List<ChatMessage>,
         game: GameItem?,
         userMessage: String,
-        imageBase64: String?,
+        imagesBase64: List<String>,
         apiKey: String,
         model: String
     ): Result<Pair<String, StitchGeminiStructuredVerdict?>> {
@@ -305,9 +311,11 @@ class GeminiRemoteDataSource(
             val promptText = AiPromptConstants.buildFollowUpPrompt(game, history, userMessage)
             val parts = mutableListOf(GeminiPart(text = promptText))
 
-            val sanitizedBase64 = AiResponseParser.sanitizeBase64(imageBase64)
-            if (sanitizedBase64 != null) {
-                parts.add(GeminiPart(inlineData = GeminiInlineData(mimeType = "image/jpeg", data = sanitizedBase64)))
+            imagesBase64.forEach { rawImage ->
+                val sanitizedBase64 = AiResponseParser.sanitizeBase64(rawImage)
+                if (sanitizedBase64 != null) {
+                    parts.add(GeminiPart(inlineData = GeminiInlineData(mimeType = "image/jpeg", data = sanitizedBase64)))
+                }
             }
 
             val requestBody = GeminiRequest(

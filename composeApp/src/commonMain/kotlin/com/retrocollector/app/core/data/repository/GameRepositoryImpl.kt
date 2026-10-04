@@ -227,7 +227,14 @@ class GameRepositoryImpl(
         val dataSource = aiDataSourceFactory.getDataSource(config.provider)
 
         val resolved = resolveListingInput(query, imageBase64, spottedLocation, askingPriceChf)
-        val result = dataSource.inspectGame(resolved.query, resolved.imageBase64, config.apiKey, config.model, config.baseUrl)
+        val result = dataSource.inspectGame(
+            query = resolved.query,
+            imageBase64 = resolved.imageBase64,
+            apiKey = config.apiKey,
+            model = config.model,
+            baseUrl = config.baseUrl,
+            imagesBase64 = resolved.imagesBase64
+        )
 
         return result.map { (replyText, verdict) ->
             val nowMs = Clock.System.now().toEpochMilliseconds()
@@ -264,6 +271,7 @@ class GameRepositoryImpl(
         var location = currentLocation
         var price = currentPrice
         var image = currentImage
+        val extraImages = mutableListOf<String>()
 
         val currentSettings = _settings.value
         listingScraper.fetchListing(listingUrl, currentSettings).onSuccess { listing ->
@@ -284,10 +292,18 @@ class GameRepositoryImpl(
                 price = listing.estimatedPriceChf
             }
             if (image == null && listing.imageUrls.isNotEmpty()) {
-                image = listingScraper.fetchImageAsBase64(listing.imageUrls.first())
+                listing.imageUrls.take(4).forEach { imgUrl ->
+                    val base64 = listingScraper.fetchImageAsBase64(imgUrl)
+                    if (base64 != null) {
+                        extraImages.add(base64)
+                    }
+                }
+                if (extraImages.isNotEmpty()) {
+                    image = extraImages.first()
+                }
             }
         }
-        return ResolvedScanInput(query, image, location, price, listingUrl)
+        return ResolvedScanInput(query, image, location, price, listingUrl, extraImages)
     }
 
     private suspend fun resolveListingInput(
@@ -381,7 +397,8 @@ class GameRepositoryImpl(
         val imageBase64: String?,
         val location: String,
         val price: Double?,
-        val listingUrl: String? = null
+        val listingUrl: String? = null,
+        val imagesBase64: List<String> = emptyList()
     )
 
     override suspend fun sendFollowUpChat(
@@ -433,8 +450,15 @@ class GameRepositoryImpl(
                 addChatMessage(aiMsg)
 
                 if (verdict != null && game != null) {
-                    val updatedSafe = (game.safeSkus + verdict.safeSkus).distinctBy { it.code }
-                    val updatedRisky = (game.riskySkus + verdict.riskySkus).distinctBy { it.code }
+                    val verdictSafeCodes = verdict.safeSkus.map { it.code.lowercase() }.toSet()
+                    val verdictRiskyCodes = verdict.riskySkus.map { it.code.lowercase() }.toSet()
+
+                    val cleanExistingSafe = game.safeSkus.filter { it.code.lowercase() !in verdictRiskyCodes }
+                    val cleanExistingRisky = game.riskySkus.filter { it.code.lowercase() !in verdictSafeCodes }
+
+                    val updatedSafe = (cleanExistingSafe + verdict.safeSkus).distinctBy { it.code.lowercase() }
+                    val updatedRisky = (cleanExistingRisky + verdict.riskySkus).distinctBy { it.code.lowercase() }
+
                     upsertGame(game.copy(
                         productCode = verdict.productCode ?: game.productCode,
                         languageStatus = if (verdict.languageStatus != "UNVERIFIED") {

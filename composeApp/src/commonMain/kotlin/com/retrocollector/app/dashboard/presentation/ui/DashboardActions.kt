@@ -22,6 +22,7 @@ data class DashboardActions(
     val onGameSelected: (GameItem) -> Unit = {},
     val onUpdateGameStatus: (GameItem, CollectionStatus) -> Unit = { _, _ -> },
     val onUpdatePaidPrice: (GameItem, Double?) -> Unit = { _, _ -> },
+    val onUpdateProductCode: (GameItem, String?) -> Unit = { _, _ -> },
     val onDeleteGame: (String) -> Unit = {},
     val onClearFilters: () -> Unit = {},
     val onOpenScanDialog: () -> Unit = {},

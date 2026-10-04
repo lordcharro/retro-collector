@@ -2,6 +2,7 @@ package com.retrocollector.app.core.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,28 +29,130 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 fun SafeSkuMatrixView(
     safeSkus: List<SkuInfo>,
     riskySkus: List<SkuInfo>,
+    activeSkuCode: String? = null,
+    onSelectSku: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
-        Text(
-            text = TextKeys.Sku.MATRIX_TITLE,
-            style = LabelFilterStyle.copy(fontSize = 11.sp),
-            color = TextSecondary,
-            modifier = Modifier.padding(bottom = 6.dp)
-        )
+    val cleanActiveSku = activeSkuCode?.trim()?.ifBlank { null }
+    val hasMatchingSku = cleanActiveSku != null && (
+        safeSkus.any { it.code.equals(cleanActiveSku, ignoreCase = true) } ||
+        riskySkus.any { it.code.equals(cleanActiveSku, ignoreCase = true) }
+    )
+
+    val activeIsRisky = cleanActiveSku != null && riskySkus.any { it.code.equals(cleanActiveSku, ignoreCase = true) }
+    val activeIsSafe = cleanActiveSku != null && safeSkus.any { it.code.equals(cleanActiveSku, ignoreCase = true) }
+    val activeHeaderBorder = when {
+        activeIsRisky -> StatusRiskFg
+        activeIsSafe -> StatusEnglishFg
+        else -> AccentBlue
+    }
+    val activeHeaderBg = when {
+        activeIsRisky -> StatusRiskBg
+        activeIsSafe -> StatusEnglishBg
+        else -> SurfaceElevated
+    }
+    val activeHeaderFg = when {
+        activeIsRisky -> StatusRiskFg
+        activeIsSafe -> StatusEnglishFg
+        else -> AccentBlue
+    }
+
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = TextKeys.Sku.MATRIX_TITLE,
+                style = LabelFilterStyle.copy(fontSize = 11.sp),
+                color = TextSecondary
+            )
+            if (cleanActiveSku != null) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "${TextKeys.Sku.ACTIVE_SKU_LABEL}:",
+                        style = BodySm.copy(fontSize = 11.sp),
+                        color = TextSecondary
+                    )
+                    Box(
+                        modifier = Modifier
+                            .background(activeHeaderBg, RoundedCornerShape(3.dp))
+                            .border(1.dp, activeHeaderBorder, RoundedCornerShape(3.dp))
+                            .padding(horizontal = 5.dp, vertical = 1.dp)
+                    ) {
+                        Text(
+                            text = cleanActiveSku,
+                            color = activeHeaderFg,
+                            style = CodeSkuStyle.copy(fontSize = 11.sp)
+                        )
+                    }
+                }
+            }
+        }
 
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            // Safe Codes
-            safeSkus.forEach { sku ->
+            // If activeSkuCode is set but not in safeSkus or riskySkus, show it first as Detected Active SKU
+            if (cleanActiveSku != null && !hasMatchingSku) {
                 Row(
                     modifier = Modifier
-                        .background(StatusEnglishBg, RoundedCornerShape(4.dp))
-                        .border(1.dp, StatusEnglishFg.copy(alpha = 0.4f), RoundedCornerShape(4.dp))
+                        .background(SurfaceElevated, RoundedCornerShape(4.dp))
+                        .border(2.dp, AccentBlue, RoundedCornerShape(4.dp))
                         .padding(horizontal = 7.dp, vertical = 3.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = cleanActiveSku,
+                        color = TextPrimary,
+                        style = CodeSkuStyle,
+                        maxLines = 1,
+                        softWrap = false
+                    )
+                    Box(
+                        modifier = Modifier
+                            .background(AccentBlue, RoundedCornerShape(2.dp))
+                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                    ) {
+                        Text(
+                            text = TextKeys.Sku.THIS_COPY,
+                            color = Color.White,
+                            fontSize = 9.sp,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    }
+                    Text(text = "🎯", fontSize = 11.sp)
+                }
+            }
+
+            // Safe Codes
+            safeSkus.forEach { sku ->
+                val isActive = cleanActiveSku != null && sku.code.equals(cleanActiveSku, ignoreCase = true)
+                val itemModifier = Modifier
+                    .background(
+                        if (isActive) StatusEnglishBg else StatusEnglishBg.copy(alpha = 0.5f),
+                        RoundedCornerShape(4.dp)
+                    )
+                    .border(
+                        if (isActive) 2.dp else 1.dp,
+                        if (isActive) StatusEnglishFg else StatusEnglishFg.copy(alpha = 0.4f),
+                        RoundedCornerShape(4.dp)
+                    )
+                    .then(
+                        if (onSelectSku != null) Modifier.clickable { onSelectSku(sku.code) } else Modifier
+                    )
+                    .padding(horizontal = 7.dp, vertical = 3.dp)
+
+                Row(
+                    modifier = itemModifier,
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
@@ -73,17 +176,45 @@ fun SafeSkuMatrixView(
                             softWrap = false
                         )
                     }
+                    if (isActive) {
+                        Box(
+                            modifier = Modifier
+                                .background(StatusEnglishFg, RoundedCornerShape(2.dp))
+                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                        ) {
+                            Text(
+                                text = TextKeys.Sku.THIS_COPY,
+                                color = Color.Black,
+                                fontSize = 9.sp,
+                                maxLines = 1,
+                                softWrap = false
+                            )
+                        }
+                    }
                     Text(text = "✔", color = StatusEnglishFg, fontSize = 11.sp)
                 }
             }
 
             // Risky Codes
             riskySkus.forEach { sku ->
+                val isActive = cleanActiveSku != null && sku.code.equals(cleanActiveSku, ignoreCase = true)
+                val itemModifier = Modifier
+                    .background(
+                        if (isActive) StatusRiskBg else StatusRiskBg.copy(alpha = 0.5f),
+                        RoundedCornerShape(4.dp)
+                    )
+                    .border(
+                        if (isActive) 2.dp else 1.dp,
+                        if (isActive) StatusRiskFg else StatusRiskFg.copy(alpha = 0.4f),
+                        RoundedCornerShape(4.dp)
+                    )
+                    .then(
+                        if (onSelectSku != null) Modifier.clickable { onSelectSku(sku.code) } else Modifier
+                    )
+                    .padding(horizontal = 7.dp, vertical = 3.dp)
+
                 Row(
-                    modifier = Modifier
-                        .background(StatusRiskBg, RoundedCornerShape(4.dp))
-                        .border(1.dp, StatusRiskFg.copy(alpha = 0.4f), RoundedCornerShape(4.dp))
-                        .padding(horizontal = 7.dp, vertical = 3.dp),
+                    modifier = itemModifier,
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
@@ -107,9 +238,32 @@ fun SafeSkuMatrixView(
                             softWrap = false
                         )
                     }
+                    if (isActive) {
+                        Box(
+                            modifier = Modifier
+                                .background(StatusRiskFg, RoundedCornerShape(2.dp))
+                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                        ) {
+                            Text(
+                                text = TextKeys.Sku.THIS_COPY,
+                                color = Color.White,
+                                fontSize = 9.sp,
+                                maxLines = 1,
+                                softWrap = false
+                            )
+                        }
+                    }
                     Text(text = "⊘", color = StatusRiskFg, fontSize = 11.sp)
                 }
             }
+        }
+
+        if (onSelectSku != null) {
+            Text(
+                text = TextKeys.Sku.CLICK_TO_SELECT,
+                style = BodySm.copy(fontSize = 10.sp),
+                color = StatusUnverifiedFg
+            )
         }
     }
 }
@@ -126,6 +280,8 @@ fun SafeSkuMatrixViewPreview() {
             riskySkus = listOf(
                 SkuInfo(code = "DOL-P-G4BD", region = "NOE", editionNote = "German text & subs only", isSafe = false)
             ),
+            activeSkuCode = "DOL-P-G4BE",
+            onSelectSku = {},
             modifier = Modifier.padding(16.dp)
         )
     }

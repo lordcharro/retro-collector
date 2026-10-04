@@ -71,6 +71,7 @@ fun AdaptiveMainScreen(
             onGameSelected = dashboardViewModel::onGameSelected,
             onUpdateGameStatus = dashboardViewModel::updateGameStatus,
             onUpdatePaidPrice = dashboardViewModel::updateGamePaidPrice,
+            onUpdateProductCode = dashboardViewModel::updateGameProductCode,
             onDeleteGame = dashboardViewModel::deleteGame,
             onClearFilters = {
                 dashboardViewModel.clearFilters()
@@ -127,6 +128,7 @@ fun AdaptiveMainScreen(
                         onDeleteGame = dashboardViewModel::deleteGame,
                         onUpdateGameStatus = dashboardViewModel::updateGameStatus,
                         onUpdatePaidPrice = dashboardViewModel::updateGamePaidPrice,
+                        onUpdateProductCode = dashboardViewModel::updateGameProductCode,
                         onSendFollowUpMessage = dashboardViewModel::sendFollowUpMessage,
                         onSelectSimilarGame = { sim ->
                             actions.onOpenDiscoveredDossier(sim)

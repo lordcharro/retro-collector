@@ -96,4 +96,25 @@ class ListingScraperProxyTest {
         assertTrue(scraper.isSupportedListing("https://www.anibis.ch/de/123"))
         assertTrue(scraper.isSupportedListing("https://www.ebay.ch/itm/123"))
     }
+
+    @Test
+    fun `extractImageUrlsFromHtml extracts multiple gallery images from Ricardo and Tutti`() {
+        val sampleRicardoHtml = """
+            <html>
+                <head>
+                    <meta property="og:image" content="https://img.ricardostatic.ch/images/1111/t_1000x750/front.jpg">
+                </head>
+                <body>
+                    <img src="https://img.ricardostatic.ch/images/2222/t_200x150/plain/images/disc_macro.jpg">
+                    <img src="https://img.ricardostatic.ch/images/3333/t_200x150/plain/images/back_cover.jpg">
+                </body>
+            </html>
+        """.trimIndent()
+
+        val images = scraper.extractImageUrlsFromHtml(sampleRicardoHtml, "Ricardo.ch")
+        assertEquals(3, images.size)
+        assertTrue(images[0].contains("front.jpg"))
+        assertTrue(images[1].contains("t_1800x1350"))
+        assertTrue(images[2].contains("back_cover.jpg"))
+    }
 }

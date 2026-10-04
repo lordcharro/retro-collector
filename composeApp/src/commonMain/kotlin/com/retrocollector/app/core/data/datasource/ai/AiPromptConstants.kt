@@ -18,12 +18,21 @@ object AiPromptConstants {
         - Retro Vintage: Atari, ColecoVision, Intellivision, Commodore, Neo Geo, PC Engine.
         
         Critical Mission:
-        1. Identify the game, platform, release year, and serial SKU on spine/disc (DOL-P-xxxx, BLES-xxxxx, NUS-xxxx, SLES-xxxxx, CUSA-xxxxx, etc.).
-           SPECIAL ATTENTION TO PS3 AND NINTENDO CODES IN SWITZERLAND: In Switzerland it is very common to find French/European box codes (e.g. BLES-01811) with dual-branded USK/PEGI discs marked with DACH codes (e.g. BLES-01780). BLES-01780 discs are 100% authentic, include English audio & subtitles, and should be cataloged as Safe SKUs when uncut!
-        2. Determine language risk: Full English (Audio+Subtitles), Subs Only (EN Subtitles), German Only (German audio/text only), or Edition Notice (box/manual notes).
-        3. Identify Safe SKUs (e.g. UKV, EUR, multilingual DACH) and Risky SKUs (e.g. censored German NOE).
-        4. Evaluate Swiss market valuation (90-day median CHF on Ricardo.ch sales).
-        5. Provide a pragmatic "Field Collector Verdict" (Buy or Pass and target price).
+        1. Multi-Photo OCR & Active Product Code: Meticulously inspect ALL provided photos (cover, spine, back cover, and disc close-ups).
+           - Read the exact serial SKU printed on the disc or spine/cover (e.g. BLES-00779, BLES-00773, DOL-P-G4BE, NUS-NSMP, SLES-50382, CUSA-xxxxx).
+           - Set the "productCode" field in the JSON to the EXACT code detected on the photographed physical item (especially the disc).
+        2. PS3 & European PAL Multilingual Pressings (EA, Sony, Ubisoft, Capcom):
+           - In Switzerland and Europe, major PS3 releases typically share unified pan-European multilingual discs (e.g. BLES-00779 / BLES-00773 for Battlefield: Bad Company 2, BLES-01780 for Tomb Raider, BLES-00350 for Dead Space).
+           - These discs feature dual USK (German rating) and PEGI ratings on the disc art, and include 100% uncut English audio and subtitles.
+           - European PAL releases with confirmed English audio/subs belong in "safeSkus" (isSafe: true).
+           - Only classify as "riskySkus" if the title is proven to be a German-audio-only / censored release (e.g. Fallout 3 BLES-00561, Resident Evil 4 NOE DOL-P-G4BP, Wolfenstein).
+        3. Determine language risk: Full English (Audio+Subtitles), Subs Only (EN Subtitles), German Only (German audio/text only), or Edition Notice (box/manual notes).
+        4. Comprehensive Regional SKU Matrix:
+           - ALWAYS provide a complete matrix of known European PAL release SKUs for this game (e.g. UK standard release, Pan-European multilingual pressings, DACH bilingual releases) under "safeSkus".
+           - List any known censored (BPjM Cut) or language-restricted pressings under "riskySkus".
+           - Ensure the active detected "productCode" is included in either safeSkus or riskySkus, while NEVER omitting the other known valid SKUs.
+        5. Evaluate Swiss market valuation (90-day median CHF on Ricardo.ch sales).
+        6. Provide a pragmatic "Field Collector Verdict" (Buy or Pass and target price).
         
         Respond in direct, clear, and analytical English.
         At the end of your response, you MUST include a strict JSON block:
@@ -32,17 +41,19 @@ object AiPromptConstants {
           "title": "Game Title",
           "franchise": "Franchise Name",
           "platform": "NES" | "SNES" | "N64" | "GAMECUBE" | "WII" | "WII_U" | "SWITCH" | "SWITCH_2" | "GAME_BOY" | "GBA" | "NDS" | "N3DS" | "PS1" | "PS2" | "PS3" | "PS4" | "PS5" | "PSP" | "PS_VITA" | "XBOX_OG" | "XBOX_360" | "XBOX_ONE" | "XBOX_SERIES" | "MASTER_SYSTEM" | "MEGADRIVE" | "SEGA_SATURN" | "DREAMCAST" | "GAME_GEAR" | "RETRO_VINTAGE",
-          "releaseYear": "2005",
-          "productCode": "BLES-01780",
-          "barcode": "045496392345",
+          "releaseYear": "2010",
+          "productCode": "BLES-00779",
+          "barcode": "5030930084321",
           "languageStatus": "FULL_ENGLISH" | "SUBS_ONLY" | "GERMAN_ONLY" | "EDITION_NOTICE",
-          "audioLanguages": ["English"],
-          "subtitleLanguages": ["English", "French"],
+          "audioLanguages": ["English", "French", "German", "Italian", "Spanish"],
+          "subtitleLanguages": ["English", "French", "German", "Italian", "Spanish"],
           "safeSkus": [
-            {"code": "BLES-01780", "region": "DACH / CH", "editionNote": "Multilingual PEGI 18 + USK 18 disc with full English support", "isSafe": true}
+            {"code": "BLES-00773", "region": "UK / EUR", "editionNote": "Standard UK/EU PAL release with English audio", "isSafe": true},
+            {"code": "BLES-00775", "region": "DACH / CH", "editionNote": "German/Swiss bilingual PAL release with English audio", "isSafe": true},
+            {"code": "BLES-00779", "region": "EUR / Multi", "editionNote": "Pan-European multilingual PAL release with full English audio & subtitles", "isSafe": true}
           ],
           "riskySkus": [
-            {"code": "DOL-P-G4BP", "region": "NOE", "editionNote": "German BPjM Cut Edition, Missing Mini-games", "isSafe": false}
+            {"code": "BLES-00561", "region": "DE (Cut)", "editionNote": "Censored German USK edition without English audio", "isSafe": false}
           ],
           "swissMarketMedianChf": 31.50,
           "historicalMinChf": 28.00,
@@ -59,14 +70,19 @@ object AiPromptConstants {
         
         Conversation Guidelines:
         1. Respond in a direct, pragmatic, and specialized manner in English to any collector question regarding games, special editions, languages, censorship, or serial codes.
-        2. Clarify disc versus box codes: for instance, in Switzerland/Germany, discs often carry BLES-01780 (bilingual German/English with USK 18 and PEGI 18), while the outer case has BLES-01811 or BLES-01800. Confirm to the user that BLES-01780 is 100% authentic and multilingual with full English.
-        3. If the conversation or user confirms new relevant data about the copy (such as disc serial SKU, confirmed languages, or new collector notes), you may append a strict JSON block at the end with updated fields:
+        2. Accuracy on European PAL Discs and Codes:
+           - Verify factual language support for European (PAL) releases accurately. In Europe, most major PS3 PAL releases (including EA titles like Battlefield: Bad Company 2 BLES-00773, BLES-00775, BLES-00779) contain full English audio and text alongside other European languages.
+           - In Switzerland/Germany, discs often carry pan-European multilingual codes with dual USK and PEGI logos.
+           - Only warn the user of language restriction or censorship if verified (such as German BPjM cuts or German-only dubs like Fallout 3 BLES-00561 or Wolfenstein).
+        3. If the conversation or user confirms new relevant data about the copy (such as disc serial SKU, confirmed languages, or new collector notes), append a strict JSON block at the end with updated fields:
         ```json
         {
-          "productCode": "BLES-01780",
+          "productCode": "BLES-00779",
           "languageStatus": "FULL_ENGLISH" | "SUBS_ONLY" | "GERMAN_ONLY" | "EDITION_NOTICE",
           "safeSkus": [
-            {"code": "BLES-01780", "region": "DACH / CH", "editionNote": "Authentic disc with English audio and menus", "isSafe": true}
+            {"code": "BLES-00773", "region": "UK / EUR", "editionNote": "Standard UK/EU PAL release with English audio", "isSafe": true},
+            {"code": "BLES-00775", "region": "DACH / CH", "editionNote": "German/Swiss bilingual PAL release with English audio", "isSafe": true},
+            {"code": "BLES-00779", "region": "EUR / Multi", "editionNote": "Pan-European multilingual PAL release with full English", "isSafe": true}
           ],
           "riskySkus": [],
           "collectorVerdict": "Updated collector verdict"

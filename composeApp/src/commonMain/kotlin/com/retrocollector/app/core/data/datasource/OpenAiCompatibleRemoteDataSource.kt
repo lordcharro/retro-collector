@@ -106,14 +106,17 @@ class OpenAiCompatibleRemoteDataSource(
         imageBase64: String?,
         apiKey: String,
         model: String,
-        baseUrl: String?
+        baseUrl: String?,
+        imagesBase64: List<String>
     ): Result<Pair<String, StitchGeminiStructuredVerdict?>> {
         val targetModel = model.ifBlank { "gpt-4o" }
         val endpoint = resolveEndpoint(baseUrl)
         val startTime = Clock.System.now().toEpochMilliseconds()
 
+        val allImages = (listOfNotNull(imageBase64) + imagesBase64).distinct()
+
         return try {
-            val userContent = buildUserContent(query, imageBase64)
+            val userContent = buildUserContent(query, allImages)
             val messages = listOf(
                 OpenAiChatMessage(role = "system", content = JsonPrimitive(AiPromptConstants.tacticalSystemPrompt)),
                 OpenAiChatMessage(role = "user", content = userContent)
@@ -167,15 +170,18 @@ class OpenAiCompatibleRemoteDataSource(
         imageBase64: String?,
         apiKey: String,
         model: String,
-        baseUrl: String?
+        baseUrl: String?,
+        imagesBase64: List<String>
     ): Result<Pair<String, StitchGeminiStructuredVerdict?>> {
         val targetModel = model.ifBlank { "gpt-4o" }
         val endpoint = resolveEndpoint(baseUrl)
         val startTime = Clock.System.now().toEpochMilliseconds()
 
+        val allImages = (listOfNotNull(imageBase64) + imagesBase64).distinct()
+
         return try {
             val promptText = AiPromptConstants.buildFollowUpPrompt(game, history, userMessage)
-            val userContent = buildUserContent(promptText, imageBase64)
+            val userContent = buildUserContent(promptText, allImages)
 
             val messages = listOf(
                 OpenAiChatMessage(role = "system", content = JsonPrimitive(AiPromptConstants.conversationalSystemPrompt)),
@@ -337,9 +343,9 @@ class OpenAiCompatibleRemoteDataSource(
         }
     }
 
-    private fun buildUserContent(text: String, imageBase64: String?): JsonElement {
-        val sanitized = AiResponseParser.sanitizeBase64(imageBase64)
-        if (sanitized == null) {
+    private fun buildUserContent(text: String, imagesBase64: List<String>): JsonElement {
+        val sanitizedImages = imagesBase64.mapNotNull { AiResponseParser.sanitizeBase64(it) }
+        if (sanitizedImages.isEmpty()) {
             return JsonPrimitive(text)
         }
 
@@ -348,12 +354,14 @@ class OpenAiCompatibleRemoteDataSource(
                 put("type", "text")
                 put("text", text)
             })
-            add(buildJsonObject {
-                put("type", "image_url")
-                put("image_url", buildJsonObject {
-                    put("url", "data:image/jpeg;base64,$sanitized")
+            sanitizedImages.forEach { sanitized ->
+                add(buildJsonObject {
+                    put("type", "image_url")
+                    put("image_url", buildJsonObject {
+                        put("url", "data:image/jpeg;base64,$sanitized")
+                    })
                 })
-            })
+            }
         }
         return jsonArray
     }
