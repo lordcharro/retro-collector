@@ -235,42 +235,53 @@ class ListingScraper(
         extractMetaTag(html, "og:image")?.let { if (it.isNotBlank()) images.add(it) }
         extractMetaTag(html, "twitter:image")?.let { if (it.isNotBlank()) images.add(it) }
 
-        // 2. Ricardo specific high-res gallery images
-        if (source.contains("ricardo", ignoreCase = true) || html.contains("ricardostatic.ch", ignoreCase = true)) {
-            val ricardoRegex = Regex("""https://img\.ricardostatic\.ch/[^\s"'<>,]+""")
-            ricardoRegex.findAll(html).forEach { match ->
-                val rawUrl = match.value
-                if (!rawUrl.contains("avatar") && !rawUrl.contains("logo") && !rawUrl.contains("badge")) {
-                    val normalized = if (rawUrl.contains("t_") && rawUrl.contains("/plain/")) {
-                        rawUrl.replace(Regex("""t_\d+x\d+"""), "t_1800x1350")
-                    } else rawUrl
-                    images.add(normalized)
-                }
+        // 2. Marketplace specific and schema images
+        extractRicardoImages(html, source, images)
+        extractTuttiImages(html, source, images)
+        extractJsonLdImages(html, images)
+
+        return images.filter { it.isNotBlank() && (it.startsWith("http://") || it.startsWith("https://")) }.take(5)
+    }
+
+    private fun extractRicardoImages(html: String, source: String, destination: MutableSet<String>) {
+        if (!source.contains("ricardo", ignoreCase = true) && !html.contains("ricardostatic.ch", ignoreCase = true)) return
+        val ricardoRegex = Regex("""https://img\.ricardostatic\.ch/[^\s"'<>,]+""")
+        ricardoRegex.findAll(html).forEach { match ->
+            val rawUrl = match.value
+            if (isAllowedRicardoImage(rawUrl)) {
+                destination.add(normalizeRicardoImageUrl(rawUrl))
             }
         }
+    }
 
-        // 3. Tutti specific gallery images
-        if (source.contains("tutti", ignoreCase = true) || html.contains("tutti.ch", ignoreCase = true)) {
-            val tuttiRegex = Regex("""https://c\.tutti\.ch/images/[^\s"'<>,]+""")
-            tuttiRegex.findAll(html).forEach { match ->
-                images.add(match.value)
-            }
+    private fun isAllowedRicardoImage(url: String): Boolean =
+        !url.contains("avatar") && !url.contains("logo") && !url.contains("badge")
+
+    private fun normalizeRicardoImageUrl(url: String): String =
+        if (url.contains("t_") && url.contains("/plain/")) {
+            url.replace(Regex("""t_\d+x\d+"""), "t_1800x1350")
+        } else url
+
+    private fun extractTuttiImages(html: String, source: String, destination: MutableSet<String>) {
+        if (!source.contains("tutti", ignoreCase = true) && !html.contains("tutti.ch", ignoreCase = true)) return
+        val tuttiRegex = Regex("""https://c\.tutti\.ch/images/[^\s"'<>,]+""")
+        tuttiRegex.findAll(html).forEach { match ->
+            destination.add(match.value)
         }
+    }
 
-        // 4. JSON-LD Schema images
+    private fun extractJsonLdImages(html: String, destination: MutableSet<String>) {
         val jsonLdRegex = Regex(""""image"\s*:\s*(\[[^\]]+\]|"[^"]+")""")
         jsonLdRegex.findAll(html).forEach { match ->
             val content = match.groupValues[1]
             if (content.startsWith("[")) {
                 val urlRegex = Regex("""https?://[^\s"',]+""")
-                urlRegex.findAll(content).forEach { u -> images.add(u.value) }
+                urlRegex.findAll(content).forEach { u -> destination.add(u.value) }
             } else {
                 val cleanUrl = content.trim('"')
-                if (cleanUrl.startsWith("http")) images.add(cleanUrl)
+                if (cleanUrl.startsWith("http")) destination.add(cleanUrl)
             }
         }
-
-        return images.filter { it.isNotBlank() && (it.startsWith("http://") || it.startsWith("https://")) }.take(5)
     }
 
     fun extractListingId(url: String): String? {

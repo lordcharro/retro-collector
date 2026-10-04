@@ -77,8 +77,8 @@ fun AdaptiveMainScreen(
                 dashboardViewModel.clearFilters()
                 wishlistViewModel.clearSearch()
             },
-            onOpenScanDialog = dashboardViewModel::openScanDialog,
-            onOpenSettings = dashboardViewModel::openSettings,
+            onOpenScanDialog = { dashboardViewModel.setScanDialogOpen(true) },
+            onOpenSettings = { dashboardViewModel.setSettingsOpen(true) },
             onSendFollowUpMessage = dashboardViewModel::sendFollowUpMessage,
             onOpenMobileDetail = dashboardViewModel::openMobileDetail,
             onCloseMobileDetail = dashboardViewModel::closeMobileDetail,
@@ -161,7 +161,7 @@ fun AdaptiveMainScreen(
                     isAnalyzing = state.isAnalyzing,
                     statusMessage = state.scanErrorMessage,
                     onAnalyze = dashboardViewModel::analyzeNewGame,
-                    onDismiss = dashboardViewModel::closeScanDialog
+                    onDismiss = { dashboardViewModel.setScanDialogOpen(false) }
                 )
             }
 
@@ -169,9 +169,8 @@ fun AdaptiveMainScreen(
                 SettingsDialog(
                     settings = state.settings,
                     onSaveSettings = dashboardViewModel::saveSettings,
-                    onDismiss = dashboardViewModel::closeSettings,
+                    onDismiss = { dashboardViewModel.setSettingsOpen(false) },
                     onTestAiConnection = dashboardViewModel::testAiConnection,
-                    onTestGeminiConnection = dashboardViewModel::testGeminiConnection,
                     onTestFirestoreConnection = dashboardViewModel::testFirestoreConnection
                 )
             }

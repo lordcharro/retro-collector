@@ -259,20 +259,12 @@ class DashboardViewModel(
         }
     }
 
-    fun openScanDialog() {
-        _uiState.update { it.copy(isScanDialogOpen = true, scanErrorMessage = null) }
+    fun setScanDialogOpen(isOpen: Boolean) {
+        _uiState.update { it.copy(isScanDialogOpen = isOpen, scanErrorMessage = if (isOpen) null else it.scanErrorMessage) }
     }
 
-    fun closeScanDialog() {
-        _uiState.update { it.copy(isScanDialogOpen = false, scanErrorMessage = null) }
-    }
-
-    fun openSettings() {
-        _uiState.update { it.copy(isSettingsOpen = true, firestoreTestStatusMessage = null) }
-    }
-
-    fun closeSettings() {
-        _uiState.update { it.copy(isSettingsOpen = false) }
+    fun setSettingsOpen(isOpen: Boolean) {
+        _uiState.update { it.copy(isSettingsOpen = isOpen, firestoreTestStatusMessage = if (isOpen) null else it.firestoreTestStatusMessage) }
     }
 
     fun testFirestoreConnection(projectId: String, onResult: (Result<String>) -> Unit) {
@@ -328,7 +320,7 @@ class DashboardViewModel(
 
     fun saveSettings(newSettings: AppSettings) {
         updateSettingsUseCase(newSettings)
-        closeSettings()
+        setSettingsOpen(false)
     }
 
     fun refreshFromFirestore() {
@@ -380,10 +372,6 @@ class DashboardViewModel(
                 onResult(Result.failure(e))
             }
         }
-    }
-
-    fun testGeminiConnection(apiKey: String, model: String = "gemini-3.7-flash", onResult: (Result<String>) -> Unit) {
-        testAiConnection(AiProvider.GEMINI, apiKey, model, null, onResult)
     }
 
     fun sendFollowUpMessage(question: String, imageBase64: String? = null) {
