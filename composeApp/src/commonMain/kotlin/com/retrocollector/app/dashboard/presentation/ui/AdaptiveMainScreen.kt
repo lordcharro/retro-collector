@@ -80,6 +80,7 @@ fun AdaptiveMainScreen(
             onOpenScanDialog = { dashboardViewModel.setScanDialogOpen(true) },
             onOpenSettings = { dashboardViewModel.setSettingsOpen(true) },
             onSendFollowUpMessage = dashboardViewModel::sendFollowUpMessage,
+            onDeleteChatMessage = dashboardViewModel::deleteChatMessage,
             onOpenMobileDetail = dashboardViewModel::openMobileDetail,
             onCloseMobileDetail = dashboardViewModel::closeMobileDetail,
             onSectionSelect = dashboardViewModel::onSectionSelect,
@@ -130,6 +131,7 @@ fun AdaptiveMainScreen(
                         onUpdatePaidPrice = dashboardViewModel::updateGamePaidPrice,
                         onUpdateProductCode = dashboardViewModel::updateGameProductCode,
                         onSendFollowUpMessage = dashboardViewModel::sendFollowUpMessage,
+                        onDeleteChatMessage = dashboardViewModel::deleteChatMessage,
                         onSelectSimilarGame = { sim ->
                             actions.onOpenDiscoveredDossier(sim)
                         },

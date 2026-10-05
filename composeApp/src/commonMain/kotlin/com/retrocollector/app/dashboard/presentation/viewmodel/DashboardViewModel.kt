@@ -9,6 +9,7 @@ import com.retrocollector.app.dashboard.domain.usecase.DeleteGameUseCase
 import com.retrocollector.app.dashboard.domain.usecase.GetDashboardGamesUseCase
 import com.retrocollector.app.dashboard.domain.usecase.SaveGameUseCase
 import com.retrocollector.app.discovery.domain.usecase.GetSimilarGamesUseCase
+import com.retrocollector.app.dossier.domain.usecase.DeleteChatMessageUseCase
 import com.retrocollector.app.dossier.domain.usecase.SendFollowUpChatUseCase
 import com.retrocollector.app.scanner.domain.usecase.AnalyzeGameWithGeminiUseCase
 import com.retrocollector.app.settings.domain.model.AiProvider
@@ -57,6 +58,7 @@ class DashboardViewModel(
     private val deleteGameUseCase: DeleteGameUseCase,
     private val analyzeGameUseCase: AnalyzeGameWithGeminiUseCase,
     private val sendFollowUpChatUseCase: SendFollowUpChatUseCase,
+    private val deleteChatMessageUseCase: DeleteChatMessageUseCase = DeleteChatMessageUseCase(repository),
     private val updateSettingsUseCase: UpdateSettingsUseCase,
     private val testAiConnectionUseCase: TestAiConnectionUseCase = TestAiConnectionUseCase(repository),
     private val getSimilarGamesUseCase: GetSimilarGamesUseCase = GetSimilarGamesUseCase(repository),
@@ -406,6 +408,17 @@ class DashboardViewModel(
                     activeChatMessages = updatedChats
                 )
             }
+        }
+    }
+
+    fun deleteChatMessage(messageId: String) {
+        // Optimistic UI delete
+        _uiState.update { state ->
+            state.copy(activeChatMessages = state.activeChatMessages.filter { it.id != messageId })
+        }
+        deleteChatMessageUseCase(messageId)
+        scope.launch {
+            _effects.send(DashboardEffect.ShowToast("Message deleted."))
         }
     }
 

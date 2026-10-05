@@ -28,6 +28,7 @@ data class DashboardActions(
     val onOpenScanDialog: () -> Unit = {},
     val onOpenSettings: () -> Unit = {},
     val onSendFollowUpMessage: (String) -> Unit = {},
+    val onDeleteChatMessage: (String) -> Unit = {},
     // Mobile Navigation
     val onOpenMobileDetail: (GameItem) -> Unit = {},
     val onCloseMobileDetail: () -> Unit = {},

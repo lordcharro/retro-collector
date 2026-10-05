@@ -16,6 +16,7 @@ import com.retrocollector.app.discovery.domain.usecase.DiscoverGamesUseCase
 import com.retrocollector.app.discovery.domain.usecase.GetCuratedGamesUseCase
 import com.retrocollector.app.discovery.domain.usecase.GetSimilarGamesUseCase
 import com.retrocollector.app.discovery.presentation.viewmodel.DiscoveryViewModel
+import com.retrocollector.app.dossier.domain.usecase.DeleteChatMessageUseCase
 import com.retrocollector.app.dossier.domain.usecase.SendFollowUpChatUseCase
 import com.retrocollector.app.scanner.domain.usecase.AnalyzeGameWithAiUseCase
 import com.retrocollector.app.scanner.domain.usecase.AnalyzeGameWithGeminiUseCase
@@ -69,6 +70,7 @@ val domainModule = module {
     factory { AnalyzeGameWithGeminiUseCase(get()) }
     factory { AnalyzeGameWithAiUseCase(get()) }
     factory { SendFollowUpChatUseCase(get()) }
+    factory { DeleteChatMessageUseCase(get()) }
     factory { UpdateSettingsUseCase(get()) }
     factory { TestGeminiConnectionUseCase(get()) }
     factory { TestAiConnectionUseCase(get()) }
@@ -88,6 +90,7 @@ val presentationModule = module {
             deleteGameUseCase = get(),
             analyzeGameUseCase = get(),
             sendFollowUpChatUseCase = get(),
+            deleteChatMessageUseCase = get(),
             updateSettingsUseCase = get(),
             testAiConnectionUseCase = get(),
             getSimilarGamesUseCase = get()

@@ -22,7 +22,8 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun GeminiChatBubble(
     message: ChatMessage,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    headerAction: (@Composable () -> Unit)? = null
 ) {
     if (message.sender == MessageSender.USER) {
         // User Message Bubble
@@ -39,6 +40,23 @@ fun GeminiChatBubble(
                     .border(1.dp, UserChatBorder, RoundedCornerShape(8.dp))
                     .padding(12.dp)
             ) {
+                if (headerAction != null) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "YOU",
+                            style = CodeSkuStyle.copy(fontSize = 10.sp),
+                            color = TextSecondary
+                        )
+                        headerAction()
+                    }
+                }
+
                 Text(
                     text = message.text,
                     style = BodyMd,
@@ -99,11 +117,20 @@ fun GeminiChatBubble(
                         )
                     }
 
-                    Text(
-                        text = "0.42s latency",
-                        style = CodeSkuStyle.copy(fontSize = 11.sp),
-                        color = StatusUnverifiedFg
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = "0.42s latency",
+                            style = CodeSkuStyle.copy(fontSize = 11.sp),
+                            color = StatusUnverifiedFg
+                        )
+
+                        if (headerAction != null) {
+                            headerAction()
+                        }
+                    }
                 }
 
                 Column(

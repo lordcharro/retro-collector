@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
-@Suppress("LargeClass")
+@Suppress("LargeClass", "TooManyFunctions")
 class GameRepositoryImpl(
     private val firestoreService: FirestoreService = FirestoreService(),
     private val aiDataSourceFactory: AiDataSourceFactory = AiDataSourceFactory(),
@@ -154,6 +154,20 @@ class GameRepositoryImpl(
         if (projectId.isNotBlank()) {
             scope.launch {
                 firestoreService.saveChatMessage(projectId, message)
+            }
+        }
+    }
+
+    override fun deleteChatMessage(messageId: String) {
+        val current = _chatMessages.value.toMutableList()
+        current.removeAll { it.id == messageId }
+        _chatMessages.value = current
+
+        // Background synchronization with Firestore if project ID is configured
+        val projectId = _settings.value.firebaseProjectId.trim()
+        if (projectId.isNotBlank()) {
+            scope.launch {
+                firestoreService.deleteChatMessage(projectId, messageId)
             }
         }
     }

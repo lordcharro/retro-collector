@@ -23,6 +23,7 @@ interface IGameRepository {
     )
     fun getChatMessagesForGame(gameId: String): List<ChatMessage>
     fun addChatMessage(message: ChatMessage)
+    fun deleteChatMessage(messageId: String) {}
     fun updateSettings(settings: AppSettings)
     suspend fun syncFromFirestore(): Result<Unit>
     suspend fun testAiConnection(

@@ -44,6 +44,7 @@ fun MobileGameDetailScreen(
     onUpdateProductCode: (GameItem, String?) -> Unit = { _, _ -> },
     onDeleteGame: (String) -> Unit = {},
     onSendFollowUpMessage: (String) -> Unit = {},
+    onDeleteChatMessage: (String) -> Unit = {},
     onSelectSimilarGame: (DiscoveredGameItem) -> Unit = {},
     onAddSimilarGameToWishlist: (DiscoveredGameItem) -> Unit = {},
     onRefreshSimilarGames: () -> Unit = {},
@@ -339,7 +340,10 @@ fun MobileGameDetailScreen(
                 }
 
                 items(chatMessages, key = { it.id }) { msg ->
-                    GeminiChatBubble(message = msg)
+                    DeletableChatBubble(
+                        message = msg,
+                        onDeleteMessage = onDeleteChatMessage
+                    )
                 }
 
                 if (isAnalyzing) {

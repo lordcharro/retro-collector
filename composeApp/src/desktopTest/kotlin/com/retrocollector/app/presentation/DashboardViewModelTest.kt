@@ -73,6 +73,9 @@ class DashboardViewModelTest {
         override fun addChatMessage(message: ChatMessage) {
             _chatMessages.value = _chatMessages.value + message
         }
+        override fun deleteChatMessage(messageId: String) {
+            _chatMessages.value = _chatMessages.value.filter { it.id != messageId }
+        }
         override fun updateSettings(settings: AppSettings) {
             _settings.value = settings
         }
@@ -368,6 +371,32 @@ class DashboardViewModelTest {
         assertNotNull(updated)
         assertEquals("BLES-00779", updated?.productCode)
         assertEquals("BLES-00779", viewModel.uiState.value.selectedGame?.productCode)
+    }
+
+    @Test
+    fun `deleteChatMessage removes message optimistically and invokes repository`() = runTest {
+        val msg1 = ChatMessage(id = "msg_1", contextId = sampleGame.id, sender = MessageSender.USER, text = "Hello")
+        val msg2 = ChatMessage(id = "msg_2", contextId = sampleGame.id, sender = MessageSender.GEMINI, text = "World")
+        repository.addChatMessage(msg1)
+        repository.addChatMessage(msg2)
+
+        viewModel.onGameSelected(sampleGame)
+        assertEquals(2, viewModel.uiState.value.activeChatMessages.size)
+
+        val effects = mutableListOf<DashboardEffect>()
+        val job = launch(Dispatchers.Unconfined) {
+            viewModel.effects.collect { effects.add(it) }
+        }
+
+        viewModel.deleteChatMessage("msg_1")
+
+        assertEquals(1, viewModel.uiState.value.activeChatMessages.size)
+        assertEquals("msg_2", viewModel.uiState.value.activeChatMessages.first().id)
+        assertEquals(1, repository.getChatMessagesForGame(sampleGame.id).size)
+        assertEquals("msg_2", repository.getChatMessagesForGame(sampleGame.id).first().id)
+        assertTrue(effects.any { it is DashboardEffect.ShowToast && it.message == "Message deleted." })
+
+        job.cancel()
     }
 }
 

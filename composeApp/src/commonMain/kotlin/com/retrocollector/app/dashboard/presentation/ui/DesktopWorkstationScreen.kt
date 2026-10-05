@@ -789,7 +789,10 @@ fun DesktopWorkstationScreen(
                                     verticalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     items(state.activeChatMessages, key = { it.id }) { msg ->
-                                        GeminiChatBubble(message = msg)
+                                        DeletableChatBubble(
+                                            message = msg,
+                                            onDeleteMessage = actions.onDeleteChatMessage
+                                        )
                                     }
         
                                     if (state.isAnalyzing) {

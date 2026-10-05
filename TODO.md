@@ -53,13 +53,14 @@
     - [x] Automatic background sync and save on message creation in `GameRepositoryImpl`
   - File: [`FirestoreService.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/firestore/FirestoreService.kt), [`GameRepositoryImpl.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/repository/GameRepositoryImpl.kt)
 
-- [ ] **Delete individual chat messages**
-  - Users currently cannot remove a specific message from a game's chat history.
-  - Missing:
-    - [ ] Long-press or swipe-to-dismiss gesture on a chat bubble in the dossier UI
-    - [ ] `deleteMessage(projectId, messageId)` in `FirestoreService` (DELETE to the `chat_threads/{messageId}` endpoint)
-    - [ ] Remove from the in-memory list in the ViewModel and update the UI immediately (optimistic delete)
-  - File: [`GeminiChatBubble.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/presentation/components/GeminiChatBubble.kt), [`FirestoreService.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/firestore/FirestoreService.kt)
+- [x] **Delete individual chat messages**
+  - Users can remove specific messages from a game's chat history.
+  - Implemented:
+    - [x] Long-press gesture and contextual menu trigger (`⋮`) on chat bubbles in the dossier UI
+    - [x] Tactile confirmation dialog (`TactileConfirmDialog`) to prevent accidental deletions
+    - [x] `deleteChatMessage(projectId, messageId)` in `FirestoreService` (`DELETE` to the `chat_threads/{messageId}` endpoint)
+    - [x] Immediate optimistic removal from in-memory state in `DashboardViewModel` with toast notification
+  - File: [`DeletableChatBubble.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/presentation/components/DeletableChatBubble.kt), [`GeminiChatBubble.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/presentation/components/GeminiChatBubble.kt), [`FirestoreService.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/firestore/FirestoreService.kt), [`DashboardViewModel.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/dashboard/presentation/viewmodel/DashboardViewModel.kt)
 
 - [ ] **Internationalisation (i18n) — translate the app UI**
   - All strings are currently in Portuguese (`TextKeys.kt` constants).
