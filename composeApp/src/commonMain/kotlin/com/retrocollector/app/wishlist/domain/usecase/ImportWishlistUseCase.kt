@@ -2,7 +2,7 @@ package com.retrocollector.app.wishlist.domain.usecase
 
 import com.retrocollector.app.core.domain.model.*
 import com.retrocollector.app.core.domain.repository.IGameRepository
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 data class ImportResult(
     val added: List<GameItem>,

@@ -22,7 +22,7 @@ kotlin {
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
-        moduleName = "composeApp"
+        outputModuleName.set("composeApp")
         browser {
             commonWebpackConfig {
                 outputFileName = "composeApp.js"
@@ -32,7 +32,7 @@ kotlin {
     }
 
     sourceSets {
-        val desktopMain by getting
+        val desktopMain = getByName("desktopMain")
 
         androidMain.dependencies {
             implementation(compose.preview)
@@ -67,7 +67,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.swing)
             implementation(libs.ktor.client.java)
         }
-        val desktopTest by getting {
+        getByName("desktopTest") {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.konsist)
@@ -84,9 +84,9 @@ kotlin {
     }
 }
 
-android {
+extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
     namespace = "com.retrocollector.app"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.retrocollector.app"
@@ -184,7 +184,7 @@ dependencies {
     debugImplementation(compose.uiTooling)
 }
 
-val syncComposeResourcesToAndroid by tasks.registering(Copy::class) {
+val syncComposeResourcesToAndroid = tasks.register<Copy>("syncComposeResourcesToAndroid") {
     val srcDir = layout.buildDirectory.dir("generated/compose/resourceGenerator/assembledResources/desktopMain/composeResources")
     from(srcDir)
     into(layout.projectDirectory.dir("src/androidMain/assets/composeResources"))

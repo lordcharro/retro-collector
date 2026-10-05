@@ -15,7 +15,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.serialization.json.*
 
 class OpenAiCompatibleRemoteDataSource(

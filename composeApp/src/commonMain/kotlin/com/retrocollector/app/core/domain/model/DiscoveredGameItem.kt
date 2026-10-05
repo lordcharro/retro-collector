@@ -1,6 +1,6 @@
 package com.retrocollector.app.core.domain.model
 
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.serialization.Serializable
 
 @Serializable

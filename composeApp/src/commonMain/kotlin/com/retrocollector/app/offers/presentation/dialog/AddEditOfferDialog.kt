@@ -319,7 +319,7 @@ fun AddEditOfferDialog(
                             val price = priceStr.toDoubleOrNull() ?: 0.0
                             val shipping = shippingStr.toDoubleOrNull()
                             val now = initialOffer?.createdAt ?: 0L
-                            val offerId = initialOffer?.id?.ifBlank { null } ?: "offer_${now.takeIf { it > 0 } ?: (kotlinx.datetime.Clock.System.now().toEpochMilliseconds())}"
+                            val offerId = initialOffer?.id?.ifBlank { null } ?: "offer_${now.takeIf { it > 0 } ?: (kotlin.time.Clock.System.now().toEpochMilliseconds())}"
                             val offer = GameOffer(
                                 id = offerId,
                                 source = effectiveSource,
@@ -331,7 +331,7 @@ fun AddEditOfferDialog(
                                 notes = notes.trim(),
                                 isArchived = initialOffer?.isArchived ?: false,
                                 isPurchased = initialOffer?.isPurchased ?: false,
-                                createdAt = if (now > 0) now else kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
+                                createdAt = if (now > 0) now else kotlin.time.Clock.System.now().toEpochMilliseconds()
                             )
                             onSave(offer)
                         },

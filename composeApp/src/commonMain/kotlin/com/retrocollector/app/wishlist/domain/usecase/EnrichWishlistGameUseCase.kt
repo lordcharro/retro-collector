@@ -4,7 +4,7 @@ import com.retrocollector.app.core.domain.model.EnrichmentStatus
 import com.retrocollector.app.core.domain.model.GameItem
 import com.retrocollector.app.core.domain.repository.IGameRepository
 import kotlinx.coroutines.CancellationException
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 class EnrichWishlistGameUseCase(
     private val repository: IGameRepository
