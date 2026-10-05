@@ -86,12 +86,12 @@ kotlin {
 
 android {
     namespace = "com.retrocollector.app"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.retrocollector.app"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
     }
@@ -199,5 +199,10 @@ val syncComposeResourcesToAndroid by tasks.registering(Copy::class) {
 tasks.matching { it.name.contains("DesktopMainResources", ignoreCase = true) || it.name == "copyDebugComposeResourcesToAndroidAssets" }.configureEach {
     finalizedBy(syncComposeResourcesToAndroid)
 }
+
+tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }.configureEach {
+    dependsOn(syncComposeResourcesToAndroid)
+}
+
 
 
