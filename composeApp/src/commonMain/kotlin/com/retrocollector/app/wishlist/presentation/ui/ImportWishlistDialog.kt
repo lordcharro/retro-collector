@@ -13,10 +13,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.presentation.components.TactileTextField
-import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.wishlist.domain.usecase.ImportResult
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
@@ -50,14 +51,14 @@ fun ImportWishlistDialog(
             ) {
                 // Title
                 Text(
-                    text = TextKeys.Wishlist.IMPORT_DIALOG_TITLE,
+                    text = stringResource(Res.string.wishlist_import_dialog_title),
                     style = HeadlineMd,
                     color = TextPrimary
                 )
 
                 // Format Hint
                 Text(
-                    text = TextKeys.Wishlist.IMPORT_FORMAT_HINT,
+                    text = stringResource(Res.string.wishlist_import_format_hint),
                     style = BodySm.copy(fontSize = 12.sp),
                     color = StatusUnverifiedFg
                 )
@@ -81,7 +82,7 @@ fun ImportWishlistDialog(
                 TactileTextField(
                     value = csvText,
                     onValueChange = { csvText = it },
-                    placeholder = "Enter one game per line: title, platform",
+                    placeholder = stringResource(Res.string.wishlist_import_placeholder),
                     singleLine = false,
                     shape = RoundedCornerShape(6.dp),
                     modifier = Modifier
@@ -100,14 +101,14 @@ fun ImportWishlistDialog(
                     ) {
                         if (importResult.added.isNotEmpty()) {
                             Text(
-                                text = "${TextKeys.Wishlist.IMPORT_PREVIEW_READY} (${importResult.added.size})",
+                                text = "${stringResource(Res.string.wishlist_import_preview_ready)} (${importResult.added.size})",
                                 style = LabelBadgeStyle,
                                 color = StatusEnglishFg
                             )
                         }
                         if (importResult.duplicates.isNotEmpty()) {
                             Text(
-                                text = "${TextKeys.Wishlist.IMPORT_PREVIEW_DUPLICATE} (${importResult.duplicates.size})",
+                                text = "${stringResource(Res.string.wishlist_import_preview_duplicate)} (${importResult.duplicates.size})",
                                 style = LabelBadgeStyle,
                                 color = StatusEditionFg
                             )
@@ -121,7 +122,7 @@ fun ImportWishlistDialog(
                         }
                         if (importResult.invalidLines.isNotEmpty()) {
                             Text(
-                                text = "${TextKeys.Wishlist.IMPORT_PREVIEW_INVALID} (${importResult.invalidLines.size})",
+                                text = "${stringResource(Res.string.wishlist_import_preview_invalid)} (${importResult.invalidLines.size})",
                                 style = LabelBadgeStyle,
                                 color = StatusRiskFg
                             )
@@ -153,7 +154,7 @@ fun ImportWishlistDialog(
                                 strokeWidth = 2.dp
                             )
                             Text(
-                                text = "${TextKeys.Wishlist.IMPORT_PROGRESS} $completed/$total",
+                                text = "${stringResource(Res.string.wishlist_import_progress)} $completed/$total",
                                 style = BodySm.copy(fontSize = 12.sp),
                                 color = ConsoleGamecube
                             )
@@ -182,7 +183,7 @@ fun ImportWishlistDialog(
                             shape = RoundedCornerShape(4.dp)
                         ) {
                             Text(
-                                text = TextKeys.Wishlist.IMPORT_RESET_BUTTON,
+                                text = stringResource(Res.string.wishlist_import_reset_button),
                                 style = LabelFilterStyle,
                                 color = TextPrimary
                             )
@@ -194,7 +195,7 @@ fun ImportWishlistDialog(
                             shape = RoundedCornerShape(4.dp)
                         ) {
                             Text(
-                                text = TextKeys.Wishlist.IMPORT_FINISH_BUTTON,
+                                text = stringResource(Res.string.wishlist_import_finish_button),
                                 style = LabelFilterStyle,
                                 color = Color.White
                             )
@@ -206,7 +207,7 @@ fun ImportWishlistDialog(
                             shape = RoundedCornerShape(4.dp)
                         ) {
                             Text(
-                                text = TextKeys.Scanner.CLOSE,
+                                text = stringResource(Res.string.scanner_close),
                                 style = LabelFilterStyle,
                                 color = TextSecondary
                             )
@@ -223,7 +224,7 @@ fun ImportWishlistDialog(
                             shape = RoundedCornerShape(4.dp)
                         ) {
                             Text(
-                                text = "${TextKeys.Wishlist.IMPORT_BUTTON_LABEL} ($lineCount)",
+                                text = "${stringResource(Res.string.wishlist_import_button_label)} ($lineCount)",
                                 style = LabelFilterStyle,
                                 color = Color.White
                             )

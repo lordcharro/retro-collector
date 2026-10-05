@@ -18,10 +18,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.domain.model.*
 import com.retrocollector.app.core.presentation.components.*
-import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
+import com.retrocollector.app.core.presentation.util.labelRes
+import org.jetbrains.compose.resources.stringResource
 import com.retrocollector.app.collection.presentation.ui.CollectionScreen
 import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
 import com.retrocollector.app.discovery.presentation.components.SimilarGamesShelf
@@ -83,7 +85,7 @@ fun DesktopWorkstationScreen(
                 Spacer(modifier = Modifier.width(68.dp))
 
                 Text(
-                    text = TextKeys.App.TITLE,
+                    text = stringResource(Res.string.app_name),
                     style = HeadlineSm,
                     color = TextPrimary
                 )
@@ -103,7 +105,7 @@ fun DesktopWorkstationScreen(
                     .weight(1f)
             ) {
                 Text(
-                    text = "INTELLIGENCE LIBRARY",
+                    text = stringResource(Res.string.app_intelligence_library),
                     style = LabelFilterStyle.copy(fontSize = 11.sp),
                     color = StatusUnverifiedFg,
                     modifier = Modifier.padding(vertical = 6.dp, horizontal = 6.dp)
@@ -155,7 +157,7 @@ fun DesktopWorkstationScreen(
                         Box(modifier = Modifier.width(20.dp), contentAlignment = Alignment.Center) {
                             Text(text = "⚙️", fontSize = 15.sp, textAlign = TextAlign.Center)
                         }
-                        Text(text = TextKeys.Navigation.TAB_SETTINGS, style = BodyMd, color = TextSecondary)
+                        Text(text = stringResource(Res.string.nav_settings), style = BodyMd, color = TextSecondary)
                     }
                     Box(
                         modifier = Modifier
@@ -250,9 +252,9 @@ fun DesktopWorkstationScreen(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Box(modifier = Modifier.size(6.dp).background(StatusEnglishFg, RoundedCornerShape(3.dp)))
-                        Text(text = "Clean Architecture KMP", style = CodeSkuStyle.copy(fontSize = 10.sp), color = StatusUnverifiedFg)
+                        Text(text = stringResource(Res.string.app_tagline), style = CodeSkuStyle.copy(fontSize = 10.sp), color = StatusUnverifiedFg)
                     }
-                    Text(text = "READY", style = LabelBadgeStyle.copy(fontSize = 10.sp), color = StatusEnglishFg)
+                    Text(text = stringResource(Res.string.app_ready), style = LabelBadgeStyle.copy(fontSize = 10.sp), color = StatusEnglishFg)
                 }
             }
         }
@@ -276,7 +278,7 @@ fun DesktopWorkstationScreen(
                 TactileSearchField(
                     query = state.searchQuery,
                     onQueryChange = { actions.onSearchQueryChange(it) },
-                    placeholder = TextKeys.Dashboard.SEARCH_PLACEHOLDER,
+                    placeholder = stringResource(Res.string.dashboard_search_placeholder),
                     modifier = Modifier.width(420.dp),
                     minHeight = 32.dp
                 )
@@ -357,7 +359,7 @@ fun DesktopWorkstationScreen(
                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp)
                     ) {
                         Text(
-                            text = TextKeys.Dashboard.ACTION_QUICK_SCAN,
+                            text = stringResource(Res.string.dashboard_action_quick_scan),
                             style = LabelFilterStyle.copy(fontSize = 12.sp),
                             color = Color.White
                         )
@@ -463,7 +465,7 @@ fun DesktopWorkstationScreen(
                                             .clickable { actions.onToggleEnglishOnly() }
                                             .padding(horizontal = 6.dp, vertical = 3.dp)
                                     ) {
-                                        Text(text = TextKeys.Dashboard.FILTER_ENGLISH_ONLY, style = LabelBadgeStyle, color = StatusEnglishFg)
+                                        Text(text = stringResource(Res.string.dashboard_filter_english_only), style = LabelBadgeStyle, color = StatusEnglishFg)
                                     }
         
                                     Box(
@@ -472,11 +474,11 @@ fun DesktopWorkstationScreen(
                                             .clickable { actions.onToggleUskAlerts() }
                                             .padding(horizontal = 6.dp, vertical = 3.dp)
                                     ) {
-                                        Text(text = TextKeys.Dashboard.FILTER_USK_ALERTS, style = LabelBadgeStyle, color = StatusRiskFg)
+                                        Text(text = stringResource(Res.string.dashboard_filter_usk_alerts), style = LabelBadgeStyle, color = StatusRiskFg)
                                     }
         
                                     Spacer(modifier = Modifier.weight(1f))
-                                    Text(text = "${state.games.size} items", style = CodeSkuStyle.copy(fontSize = 11.sp), color = StatusUnverifiedFg)
+                                    Text(text = stringResource(Res.string.dashboard_items_count, state.games.size), style = CodeSkuStyle.copy(fontSize = 11.sp), color = StatusUnverifiedFg)
                                 }
                             }
         
@@ -484,8 +486,8 @@ fun DesktopWorkstationScreen(
                             if (state.games.isEmpty()) {
                                 TacticalEmptyState(
                                     icon = "🔍",
-                                    title = TextKeys.Dashboard.EMPTY_CATALOG,
-                                    actionLabel = TextKeys.Dashboard.CLEAR_FILTERS,
+                                    title = stringResource(Res.string.dashboard_empty_catalog),
+                                    actionLabel = stringResource(Res.string.dashboard_clear_filters),
                                     onActionClick = actions.onClearFilters,
                                     modifier = Modifier.weight(1f)
                                 )
@@ -599,7 +601,7 @@ fun DesktopWorkstationScreen(
                                             }
                                             if (game.spottedLocation.isNotBlank()) {
                                                 Text(
-                                                    text = "•  ${TextKeys.Dossier.SPOTTED_LOCATION}: ${game.spottedLocation}",
+                                                    text = "•  ${stringResource(Res.string.dossier_spotted_location)}: ${game.spottedLocation}",
                                                     style = CodeSkuStyle.copy(fontSize = 11.sp),
                                                     color = StatusUnverifiedFg,
                                                     maxLines = 1,
@@ -636,10 +638,10 @@ fun DesktopWorkstationScreen(
 
                                         if (showDeleteConfirm) {
                                             TactileConfirmDialog(
-                                                title = TextKeys.Dossier.DELETE_CONFIRM_TITLE,
-                                                message = TextKeys.Dossier.DELETE_CONFIRM_MESSAGE,
-                                                confirmLabel = TextKeys.Dossier.DELETE_CONFIRM_BUTTON,
-                                                dismissLabel = TextKeys.Dossier.DELETE_CANCEL_BUTTON,
+                                                title = stringResource(Res.string.dossier_delete_confirm_title),
+                                                message = stringResource(Res.string.dossier_delete_confirm_message),
+                                                confirmLabel = stringResource(Res.string.dossier_delete_confirm_button),
+                                                dismissLabel = stringResource(Res.string.dossier_delete_cancel_button),
                                                 isDestructive = true,
                                                 onConfirm = {
                                                     showDeleteConfirm = false
@@ -700,7 +702,7 @@ fun DesktopWorkstationScreen(
                                                         PaidPriceInput(
                                                             paidPrice = game.paidPriceChf,
                                                             currency = currentCurrency,
-                                                            label = "${TextKeys.Dossier.PAID_PRICE_LABEL}:",
+                                                            label = "${stringResource(Res.string.dossier_paid_price_label)}:",
                                                             onPriceSubmitted = { parsed ->
                                                                 actions.onUpdatePaidPrice(game, parsed)
                                                             }
@@ -740,7 +742,7 @@ fun DesktopWorkstationScreen(
                                                     PaidPriceInput(
                                                         paidPrice = game.paidPriceChf,
                                                         currency = currentCurrency,
-                                                        label = "${TextKeys.Dossier.PAID_PRICE_LABEL}:",
+                                                        label = "${stringResource(Res.string.dossier_paid_price_label)}:",
                                                         onPriceSubmitted = { parsed ->
                                                             actions.onUpdatePaidPrice(game, parsed)
                                                         }
@@ -847,7 +849,7 @@ fun DesktopWorkstationScreen(
                                         TactileTextField(
                                             value = followUpQuestion,
                                             onValueChange = { followUpQuestion = it },
-                                            placeholder = TextKeys.Dossier.CHAT_PLACEHOLDER,
+                                            placeholder = stringResource(Res.string.dossier_chat_placeholder),
                                             modifier = Modifier.weight(1f),
                                             singleLine = true
                                         )
@@ -873,7 +875,7 @@ fun DesktopWorkstationScreen(
                                                     strokeWidth = 2.dp
                                                 )
                                             } else {
-                                                Text(text = "${TextKeys.Dossier.CHAT_SEND} \uD83D\uDE80", style = LabelFilterStyle, color = Color.White)
+                                                Text(text = "${stringResource(Res.string.dossier_chat_send)} \uD83D\uDE80", style = LabelFilterStyle, color = Color.White)
                                             }
                                         }
                                     }
@@ -891,14 +893,14 @@ fun DesktopWorkstationScreen(
                                 Text(text = "🎮", fontSize = 42.sp)
                                 Spacer(modifier = Modifier.height(14.dp))
                                 Text(
-                                    text = TextKeys.Dashboard.NO_GAME_SELECTED_TITLE,
+                                    text = stringResource(Res.string.dashboard_no_game_selected_title),
                                     style = HeadlineSm,
                                     color = TextPrimary,
                                     textAlign = TextAlign.Center
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = TextKeys.Dashboard.NO_GAME_SELECTED,
+                                    text = stringResource(Res.string.dashboard_no_game_selected),
                                     style = BodySm,
                                     color = TextSecondary,
                                     textAlign = TextAlign.Center
@@ -910,21 +912,21 @@ fun DesktopWorkstationScreen(
                                         colors = ButtonDefaults.buttonColors(containerColor = ConsoleGamecube),
                                         shape = RoundedCornerShape(4.dp)
                                     ) {
-                                        Text(text = TextKeys.Dashboard.ACTION_QUICK_SCAN, style = LabelFilterStyle, color = Color.White)
+                                        Text(text = stringResource(Res.string.dashboard_action_quick_scan), style = LabelFilterStyle, color = Color.White)
                                     }
                                     OutlinedButton(
                                         onClick = { actions.onSectionSelect(AppSection.DISCOVER) },
                                         border = BorderStroke(1.dp, BorderStrong),
                                         shape = RoundedCornerShape(4.dp)
                                     ) {
-                                        Text(text = TextKeys.Dashboard.ACTION_DISCOVER, style = LabelFilterStyle, color = TextPrimary)
+                                        Text(text = stringResource(Res.string.dashboard_action_discover), style = LabelFilterStyle, color = TextPrimary)
                                     }
                                     OutlinedButton(
                                         onClick = actions.onOpenImportDialog,
                                         border = BorderStroke(1.dp, BorderStrong),
                                         shape = RoundedCornerShape(4.dp)
                                     ) {
-                                        Text(text = TextKeys.Dashboard.ACTION_IMPORT_WISHLIST, style = LabelFilterStyle, color = TextPrimary)
+                                        Text(text = stringResource(Res.string.dashboard_action_import_wishlist), style = LabelFilterStyle, color = TextPrimary)
                                     }
                                 }
                             }
@@ -1050,7 +1052,7 @@ private fun SidebarSectionItem(
                 Text(text = section.icon, fontSize = 14.sp, textAlign = TextAlign.Center)
             }
             Text(
-                text = section.label,
+                text = stringResource(section.labelRes),
                 style = BodyMd,
                 color = if (isSelected) TextPrimary else TextSecondary
             )

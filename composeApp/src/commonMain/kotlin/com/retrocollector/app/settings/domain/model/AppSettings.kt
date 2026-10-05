@@ -7,6 +7,14 @@ import kotlinx.serialization.Serializable
 val defaultPinnedPlatformIds = listOf("n64", "gamecube", "ps3", "switch")
 
 @Serializable
+enum class AppLanguage(val code: String, val displayName: String, val icon: String) {
+    ENGLISH("en", "English", "🇬🇧"),
+    PORTUGUESE("pt", "Português", "🇵🇹"),
+    GERMAN("de", "Deutsch", "🇩🇪"),
+    FRENCH("fr", "Français", "🇫🇷")
+}
+
+@Serializable
 enum class ThemeMode(val displayName: String, val icon: String) {
     DARK("Dark", "🌙"),
     LIGHT("Light", "☀️"),
@@ -53,7 +61,8 @@ data class AppSettings(
     val onlyEnglishFilter: Boolean = false,
     val statusFilter: CollectionStatus? = null,
     val pinnedPlatformIds: List<String> = defaultPinnedPlatformIds,
-    val themeMode: ThemeMode = ThemeMode.DARK
+    val themeMode: ThemeMode = ThemeMode.DARK,
+    val appLanguage: AppLanguage = AppLanguage.ENGLISH
 ) {
     fun isPlatformPinned(platform: ConsolePlatform): Boolean =
         pinnedPlatformIds.any { it.equals(platform.id, ignoreCase = true) }

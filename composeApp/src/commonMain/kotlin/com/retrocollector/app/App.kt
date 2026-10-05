@@ -17,6 +17,9 @@ import org.koin.compose.koinInject
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 
+import androidx.compose.runtime.key
+import com.retrocollector.app.core.presentation.util.setAppLocale
+
 @Composable
 fun App() {
     KoinApplication(application = { modules(appModules) }) {
@@ -25,16 +28,20 @@ fun App() {
         val wishlistViewModel = koinInject<WishlistViewModel>()
         val dashboardState by dashboardViewModel.uiState.collectAsState()
 
-        RetroTactileTheme(themeMode = dashboardState.settings.themeMode) {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = SurfaceBase
-            ) {
-                AdaptiveMainScreen(
-                    dashboardViewModel = dashboardViewModel,
-                    discoveryViewModel = discoveryViewModel,
-                    wishlistViewModel = wishlistViewModel
-                )
+        setAppLocale(dashboardState.settings.appLanguage)
+
+        key(dashboardState.settings.appLanguage) {
+            RetroTactileTheme(themeMode = dashboardState.settings.themeMode) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = SurfaceBase
+                ) {
+                    AdaptiveMainScreen(
+                        dashboardViewModel = dashboardViewModel,
+                        discoveryViewModel = discoveryViewModel,
+                        wishlistViewModel = wishlistViewModel
+                    )
+                }
             }
         }
     }

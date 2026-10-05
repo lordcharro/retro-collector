@@ -19,9 +19,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.domain.model.SkuInfo
-import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -64,7 +65,7 @@ fun SafeSkuMatrixView(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = TextKeys.Sku.MATRIX_TITLE,
+                text = stringResource(Res.string.sku_matrix_title),
                 style = LabelFilterStyle.copy(fontSize = 11.sp),
                 color = TextSecondary
             )
@@ -74,7 +75,7 @@ fun SafeSkuMatrixView(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = "${TextKeys.Sku.ACTIVE_SKU_LABEL}:",
+                        text = "${stringResource(Res.string.sku_active_edition)}:",
                         style = BodySm.copy(fontSize = 11.sp),
                         color = TextSecondary
                     )
@@ -122,7 +123,7 @@ fun SafeSkuMatrixView(
                             .padding(horizontal = 4.dp, vertical = 1.dp)
                     ) {
                         Text(
-                            text = TextKeys.Sku.THIS_COPY,
+                            text = stringResource(Res.string.sku_this_copy),
                             color = Color.White,
                             fontSize = 9.sp,
                             maxLines = 1,
@@ -183,7 +184,7 @@ fun SafeSkuMatrixView(
                                 .padding(horizontal = 4.dp, vertical = 1.dp)
                         ) {
                             Text(
-                                text = TextKeys.Sku.THIS_COPY,
+                                text = stringResource(Res.string.sku_this_copy),
                                 color = Color.Black,
                                 fontSize = 9.sp,
                                 maxLines = 1,
@@ -245,7 +246,7 @@ fun SafeSkuMatrixView(
                                 .padding(horizontal = 4.dp, vertical = 1.dp)
                         ) {
                             Text(
-                                text = TextKeys.Sku.THIS_COPY,
+                                text = stringResource(Res.string.sku_this_copy),
                                 color = Color.White,
                                 fontSize = 9.sp,
                                 maxLines = 1,
@@ -260,7 +261,7 @@ fun SafeSkuMatrixView(
 
         if (onSelectSku != null) {
             Text(
-                text = TextKeys.Sku.CLICK_TO_SELECT,
+                text = stringResource(Res.string.sku_click_to_select),
                 style = BodySm.copy(fontSize = 10.sp),
                 color = StatusUnverifiedFg
             )

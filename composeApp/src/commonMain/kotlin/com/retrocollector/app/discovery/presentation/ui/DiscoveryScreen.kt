@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.DiscoveredGameItem
 import com.retrocollector.app.core.domain.model.GameGenre
@@ -29,9 +30,9 @@ import com.retrocollector.app.core.domain.model.LanguageStatus
 import com.retrocollector.app.core.domain.model.PlatformEcosystem
 import com.retrocollector.app.core.presentation.components.TacticalEmptyState
 import com.retrocollector.app.core.presentation.components.TactileSearchField
-import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.discovery.presentation.components.DiscoveredGameCard
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Suppress("LongParameterList")
@@ -72,7 +73,7 @@ fun DiscoveryScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Text(text = TextKeys.Discovery.TITLE, style = HeadlineMd, color = TextPrimary)
+                    Text(text = stringResource(Res.string.discovery_title), style = HeadlineMd, color = TextPrimary)
                     Box(
                         modifier = Modifier
                             .background(if (isAutoDiscoveryEnabled) ConsoleGamecube else SurfaceElevated, RoundedCornerShape(3.dp))
@@ -80,14 +81,14 @@ fun DiscoveryScreen(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = if (isAutoDiscoveryEnabled) TextKeys.Discovery.BADGE_AI else "MANUAL AI (RUN)",
+                            text = if (isAutoDiscoveryEnabled) stringResource(Res.string.discovery_badge_ai) else stringResource(Res.string.discovery_badge_manual_ai),
                             style = LabelBadgeStyle.copy(fontSize = 10.sp),
                             color = if (isAutoDiscoveryEnabled) Color.White else StatusEnglishFg
                         )
                     }
                 }
                 Text(
-                    text = TextKeys.Discovery.SUBTITLE,
+                    text = stringResource(Res.string.discovery_subtitle),
                     style = BodySm,
                     color = TextSecondary
                 )
@@ -103,7 +104,7 @@ fun DiscoveryScreen(
             TactileSearchField(
                 query = searchQuery,
                 onQueryChange = onQueryChange,
-                placeholder = TextKeys.Discovery.SEARCH_PLACEHOLDER,
+                placeholder = stringResource(Res.string.discovery_search_placeholder),
                 onSearchSubmit = onSearchSubmit,
                 searchIcon = "✨",
                 minHeight = 38.dp,
@@ -129,7 +130,7 @@ fun DiscoveryScreen(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text(text = TextKeys.Discovery.ACTION_RUN, style = LabelFilterStyle.copy(fontSize = 12.sp), color = Color.White)
+                    Text(text = stringResource(Res.string.discovery_action_run), style = LabelFilterStyle.copy(fontSize = 12.sp), color = Color.White)
                 }
             }
         }
@@ -212,7 +213,8 @@ fun DiscoveryScreen(
             // Platform Dropdown
             Box(modifier = Modifier.weight(1f)) {
                 var expandedPlatform by remember { mutableStateOf(false) }
-                val platformLabel = selectedPlatform?.displayName ?: "All Consoles"
+                val defaultPlatformLabel = stringResource(Res.string.discovery_all_consoles)
+                val platformLabel = selectedPlatform?.displayName ?: defaultPlatformLabel
                 val platformColor = selectedPlatform?.let { Color(it.brandColorHex) } ?: StatusUnverifiedFg
 
                 Row(
@@ -263,7 +265,7 @@ fun DiscoveryScreen(
                             ) {
                                 Box(modifier = Modifier.size(7.dp).background(StatusUnverifiedFg, RoundedCornerShape(3.5.dp)))
                                 Text(
-                                    text = TextKeys.Discovery.ALL_PLATFORMS,
+                                    text = stringResource(Res.string.discovery_all_platforms),
                                     style = BodyMd,
                                     color = if (selectedPlatform == null) ConsoleGamecube else TextPrimary
                                 )
@@ -343,7 +345,7 @@ fun DiscoveryScreen(
                 ) {
                     CircularProgressIndicator(color = ConsoleGamecube, strokeWidth = 3.dp)
                     Text(
-                        text = TextKeys.Discovery.LOADING_RADAR,
+                        text = stringResource(Res.string.discovery_loading_radar),
                         style = BodyMd,
                         color = StatusUnverifiedFg
                     )
@@ -352,8 +354,8 @@ fun DiscoveryScreen(
         } else if (discoveredGames.isEmpty()) {
             TacticalEmptyState(
                 icon = "🧭",
-                title = TextKeys.Discovery.EMPTY_TITLE,
-                subtitle = TextKeys.Discovery.EMPTY_SUBTITLE,
+                title = stringResource(Res.string.discovery_empty_title),
+                subtitle = stringResource(Res.string.discovery_empty_subtitle),
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)

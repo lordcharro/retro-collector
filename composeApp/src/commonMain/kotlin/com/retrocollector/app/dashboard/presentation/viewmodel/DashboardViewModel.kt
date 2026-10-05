@@ -3,7 +3,6 @@ package com.retrocollector.app.dashboard.presentation.viewmodel
 import androidx.compose.runtime.Immutable
 import com.retrocollector.app.core.domain.model.*
 import com.retrocollector.app.core.domain.repository.IGameRepository
-import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.dashboard.domain.model.DashboardFilterCriteria
 import com.retrocollector.app.dashboard.domain.usecase.DeleteGameUseCase
 import com.retrocollector.app.dashboard.domain.usecase.GetDashboardGamesUseCase
@@ -271,8 +270,8 @@ class DashboardViewModel(
 
     fun testFirestoreConnection(projectId: String, onResult: (Result<String>) -> Unit) {
         if (projectId.isBlank()) {
-            val err = IllegalArgumentException(TextKeys.Settings.FIREBASE_STATUS_NO_PROJECT)
-            _uiState.update { it.copy(firestoreTestStatusMessage = TextKeys.Settings.FIREBASE_STATUS_NO_PROJECT) }
+            val err = IllegalArgumentException("Enter a Firebase Project ID first.")
+            _uiState.update { it.copy(firestoreTestStatusMessage = "Enter a Firebase Project ID first.") }
             onResult(Result.failure(err))
             return
         }
@@ -289,13 +288,13 @@ class DashboardViewModel(
                         _uiState.update {
                             it.copy(
                                 isTestingFirestore = false,
-                                firestoreTestStatusMessage = TextKeys.Settings.FIREBASE_STATUS_CONNECTED
+                                firestoreTestStatusMessage = "Firestore connected & synced successfully!"
                             )
                         }
-                        onResult(Result.success(TextKeys.Settings.FIREBASE_STATUS_CONNECTED))
+                        onResult(Result.success("Firestore connected & synced successfully!"))
                     },
                     onFailure = { err ->
-                        val msg = err.message ?: TextKeys.Settings.FIREBASE_STATUS_FAILED
+                        val msg = err.message ?: "Firestore connection failed. Check Project ID and permissions."
                         _uiState.update {
                             it.copy(
                                 isTestingFirestore = false,
@@ -308,7 +307,7 @@ class DashboardViewModel(
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (e: Exception) {
-                val msg = e.message ?: TextKeys.Settings.FIREBASE_STATUS_FAILED
+                val msg = e.message ?: "Firestore connection failed. Check Project ID and permissions."
                 _uiState.update {
                     it.copy(
                         isTestingFirestore = false,

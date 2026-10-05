@@ -17,14 +17,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.DiscoveredGameItem
 import com.retrocollector.app.core.domain.model.LanguageStatus
 import com.retrocollector.app.core.presentation.components.LanguageRiskBadge
 import com.retrocollector.app.core.presentation.components.PlatformBadge
-import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.core.presentation.util.PriceFormatter
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -56,7 +57,7 @@ fun SimilarGamesShelf(
             ) {
                 Text(text = "🎯", fontSize = 13.sp)
                 Text(
-                    text = TextKeys.Discovery.SHELF_TITLE,
+                    text = stringResource(Res.string.discovery_shelf_title),
                     style = LabelFilterStyle.copy(fontSize = 11.sp),
                     color = TextPrimary
                 )
@@ -82,14 +83,14 @@ fun SimilarGamesShelf(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
-                                text = TextKeys.Discovery.SHELF_AI_SCAN,
+                                text = stringResource(Res.string.discovery_shelf_ai_scan),
                                 style = LabelBadgeStyle.copy(fontSize = 10.sp),
                                 color = ConsoleGamecube
                             )
                         }
                     }
                     Text(
-                        text = "${similarGames.size} ${TextKeys.Discovery.SHELF_SUGGESTIONS}",
+                        text = "${similarGames.size} ${stringResource(Res.string.discovery_shelf_suggestions)}",
                         style = CodeSkuStyle.copy(fontSize = 10.sp),
                         color = StatusUnverifiedFg
                     )
@@ -105,7 +106,7 @@ fun SimilarGamesShelf(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = TextKeys.Discovery.SHELF_EMPTY,
+                    text = stringResource(Res.string.discovery_shelf_empty),
                     style = BodySm,
                     color = TextSecondary
                 )

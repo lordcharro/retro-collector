@@ -15,13 +15,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.presentation.components.TactileTextField
-import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
+import org.jetbrains.compose.resources.stringResource
 
-private enum class QuickScanTab(val label: String, val icon: String) {
-    AUCTION_URL("Auction Link", "🔗"),
-    MANUAL_SEARCH("Manual Search / SKU", "🔍")
+private enum class QuickScanTab(val icon: String) {
+    AUCTION_URL("🔗"),
+    MANUAL_SEARCH("🔍")
 }
 
 @Composable
@@ -91,7 +92,7 @@ fun QuickScanDialog(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(text = "⚡", fontSize = 18.sp)
-                        Text(text = TextKeys.Scanner.TITLE, style = HeadlineMd, color = TextPrimary)
+                        Text(text = stringResource(Res.string.scanner_title), style = HeadlineMd, color = TextPrimary)
                     }
                     Text(
                         text = "✕",
@@ -112,6 +113,10 @@ fun QuickScanDialog(
                 ) {
                     QuickScanTab.entries.forEach { tab ->
                         val isSelected = selectedTab == tab
+                        val tabLabel = when (tab) {
+                            QuickScanTab.AUCTION_URL -> stringResource(Res.string.scanner_tab_url)
+                            QuickScanTab.MANUAL_SEARCH -> stringResource(Res.string.scanner_tab_manual)
+                        }
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -134,7 +139,7 @@ fun QuickScanDialog(
                             ) {
                                 Text(text = tab.icon, fontSize = 13.sp)
                                 Text(
-                                    text = tab.label,
+                                    text = tabLabel,
                                     style = LabelFilterStyle,
                                     color = if (isSelected) TextPrimary else TextSecondary
                                 )
@@ -148,7 +153,7 @@ fun QuickScanDialog(
                         // --- AUCTION URL TAB ---
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text(
-                                text = "AUCTION LISTING LINK (RICARDO.CH OR TUTTI.CH)",
+                                text = stringResource(Res.string.scanner_url_label),
                                 style = LabelFilterStyle,
                                 color = TextPrimary
                             )
@@ -162,7 +167,7 @@ fun QuickScanDialog(
                                         urlLocation = "Tutti.ch"
                                     }
                                 },
-                                placeholder = "https://www.ricardo.ch/de/a/... or Tutti.ch",
+                                placeholder = stringResource(Res.string.scanner_url_placeholder),
                                 modifier = Modifier.fillMaxWidth()
                             )
 
@@ -177,7 +182,7 @@ fun QuickScanDialog(
                             ) {
                                 Text(text = "🌐", fontSize = 12.sp)
                                 Text(
-                                    text = "RetroCollector automatically extracts title, description, listing photos, and asking price in CHF.",
+                                    text = stringResource(Res.string.scanner_desc_url_banner),
                                     style = BodySm.copy(fontSize = 11.sp),
                                     color = StatusEnglishFg
                                 )
@@ -186,7 +191,7 @@ fun QuickScanDialog(
 
                         // Platform / Source
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(text = "PLATFORM / SOURCE", style = LabelFilterStyle, color = TextPrimary)
+                            Text(text = stringResource(Res.string.scanner_platform_source_label), style = LabelFilterStyle, color = TextPrimary)
                             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                 listOf("Ricardo.ch", "Tutti.ch", "Anibis.ch").forEach { loc ->
                                     val isLocSelected = urlLocation == loc
@@ -209,11 +214,11 @@ fun QuickScanDialog(
 
                         // Optional Price Override
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(text = "ESTIMATED ASKING PRICE ($curr) (OPTIONAL)", style = LabelFilterStyle, color = TextPrimary)
+                            Text(text = stringResource(Res.string.scanner_asking_price_optional, curr), style = LabelFilterStyle, color = TextPrimary)
                             TactileTextField(
                                 value = urlPriceStr,
                                 onValueChange = { urlPriceStr = it },
-                                placeholder = "Leave empty to extract automatically from listing",
+                                placeholder = stringResource(Res.string.scanner_price_placeholder),
                                 textStyle = CodePriceStyle.copy(color = TextPrimary),
                                 modifier = Modifier.fillMaxWidth()
                             )
@@ -241,9 +246,9 @@ fun QuickScanDialog(
                             if (isAnalyzing) {
                                 CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(text = "Extracting & analyzing listing...", style = LabelFilterStyle)
+                                Text(text = stringResource(Res.string.scanner_action_extracting), style = LabelFilterStyle)
                             } else {
-                                Text(text = "Extract & Analyze Listing", style = LabelFilterStyle, color = Color.White)
+                                Text(text = stringResource(Res.string.scanner_action_extract), style = LabelFilterStyle, color = Color.White)
                             }
                         }
                     }
@@ -251,7 +256,7 @@ fun QuickScanDialog(
                     QuickScanTab.MANUAL_SEARCH -> {
                         // --- MANUAL SEARCH / SKU TAB ---
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(text = "GAME TITLE, SERIAL CODE OR BARCODE", style = LabelFilterStyle, color = TextPrimary)
+                            Text(text = stringResource(Res.string.scanner_query_label), style = LabelFilterStyle, color = TextPrimary)
                             TactileTextField(
                                 value = manualQuery,
                                 onValueChange = {
@@ -262,7 +267,7 @@ fun QuickScanDialog(
                                         manualLocation = "Tutti.ch"
                                     }
                                 },
-                                placeholder = "e.g. Tomb Raider PS3, BLES-01780 or 0045496351052",
+                                placeholder = stringResource(Res.string.scanner_manual_placeholder_full),
                                 modifier = Modifier.fillMaxWidth()
                             )
 
@@ -277,7 +282,7 @@ fun QuickScanDialog(
                                 ) {
                                     Text(text = "🌐", fontSize = 12.sp)
                                     Text(
-                                        text = "Listing link detected. RetroCollector will download photos and listing details.",
+                                        text = stringResource(Res.string.scanner_link_detected_hint),
                                         style = BodySm.copy(fontSize = 11.sp),
                                         color = StatusEnglishFg
                                     )
@@ -287,7 +292,7 @@ fun QuickScanDialog(
 
                         // Spotted Location
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(text = TextKeys.Dossier.SPOTTED_LOCATION, style = LabelFilterStyle, color = TextPrimary)
+                            Text(text = stringResource(Res.string.dossier_spotted_location), style = LabelFilterStyle, color = TextPrimary)
                             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                 listOf("Ricardo.ch", "Tutti.ch", "Brocki Bern", "Flohmarkt").forEach { loc ->
                                     val isLocSelected = manualLocation == loc
@@ -310,11 +315,11 @@ fun QuickScanDialog(
 
                         // Optional Photo
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(text = "DISC OR SPINE PHOTO (OPTIONAL)", style = LabelFilterStyle, color = TextPrimary)
+                            Text(text = stringResource(Res.string.scanner_photo_optional_label), style = LabelFilterStyle, color = TextPrimary)
                             TactileTextField(
                                 value = imageInput,
                                 onValueChange = { imageInput = it },
-                                placeholder = "Disc photo URL (https://...) or Base64 image",
+                                placeholder = stringResource(Res.string.scanner_photo_placeholder),
                                 textStyle = BodySm.copy(color = TextPrimary),
                                 focusedBorderColor = if (isApiKeyInImage) StatusEditionFg else AccentBlue,
                                 unfocusedBorderColor = if (isApiKeyInImage) StatusEditionFg else BorderSubtle,
@@ -333,7 +338,7 @@ fun QuickScanDialog(
                                 ) {
                                     Text(text = "⚠️", fontSize = 12.sp)
                                     Text(
-                                        text = "It looks like you pasted an API key here. This field is for disc/spine photos.",
+                                        text = stringResource(Res.string.scanner_warn_api_key_in_photo),
                                         style = BodySm.copy(fontSize = 11.sp),
                                         color = StatusEditionFg
                                     )
@@ -349,7 +354,7 @@ fun QuickScanDialog(
                                 ) {
                                     Text(text = "💡", fontSize = 12.sp)
                                     Text(
-                                        text = "This is a listing URL. Switch to the 'Auction Link' tab to extract photos and full details.",
+                                        text = stringResource(Res.string.scanner_hint_url_in_photo),
                                         style = BodySm.copy(fontSize = 11.sp),
                                         color = AccentBlue
                                     )
@@ -359,7 +364,7 @@ fun QuickScanDialog(
 
                         // Asking Price
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(text = "${TextKeys.Radar.ASKING_PRICE} ($curr)", style = LabelFilterStyle, color = TextPrimary)
+                            Text(text = "${stringResource(Res.string.radar_asking_price)} ($curr)", style = LabelFilterStyle, color = TextPrimary)
                             TactileTextField(
                                 value = manualPriceStr,
                                 onValueChange = { manualPriceStr = it },
@@ -393,9 +398,9 @@ fun QuickScanDialog(
                             if (isAnalyzing) {
                                 CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(text = TextKeys.Scanner.ANALYZING, style = LabelFilterStyle)
+                                Text(text = stringResource(Res.string.scanner_analyzing), style = LabelFilterStyle)
                             } else {
-                                Text(text = TextKeys.Scanner.MANUAL_BUTTON, style = LabelFilterStyle, color = Color.White)
+                                Text(text = stringResource(Res.string.scanner_action_extract), style = LabelFilterStyle, color = Color.White)
                             }
                         }
                     }

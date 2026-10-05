@@ -62,12 +62,17 @@
     - [x] Immediate optimistic removal from in-memory state in `DashboardViewModel` with toast notification
   - File: [`DeletableChatBubble.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/presentation/components/DeletableChatBubble.kt), [`GeminiChatBubble.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/presentation/components/GeminiChatBubble.kt), [`FirestoreService.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/firestore/FirestoreService.kt), [`DashboardViewModel.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/dashboard/presentation/viewmodel/DashboardViewModel.kt)
 
-- [ ] **Internationalisation (i18n) — translate the app UI**
-  - All strings are currently in Portuguese (`TextKeys.kt` constants).
-  - The `TextKeys` object was designed with i18n in mind but no locale switching is implemented.
-  - Languages to consider: **English** (primary), **French**, **German** (important for the CH market).
-  - Approach: replace `TextKeys` string constants with a proper `StringResource` system using Compose Multiplatform's `composeResources` (already set up in the build) and add `.xml` string files per locale.
-  - File: [`TextKeys.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/presentation/text/TextKeys.kt)
+- [x] **Internationalisation (i18n) — translate the app UI**
+  - Implemented typed Compose Multiplatform resources (`composeResources`) with comprehensive XML string catalogs:
+    - **English** (`values/strings.xml`) — default language.
+    - **Portuguese** (`values-pt/strings.xml`) — `pt-PT` European Portuguese.
+    - **German** (`values-de/strings.xml`) & **French** (`values-fr/strings.xml`) — Swiss retrogaming market coverage.
+  - Added `AppLanguage` enum (`ENGLISH`, `PORTUGUESE`, `GERMAN`, `FRENCH`) strictly in local `AppSettings` (`AppSettings.kt`), preserved locally across desktop/Android/Wasm without Firestore sync.
+  - Added `PlatformLocale` expect/actual bridge for JVM, Android, and Wasm targets with dynamic locale switching and reactive recomposition (`key(appLanguage)`).
+  - Integrated tactical language switcher in `SettingsDialog` with instant preview and save callback.
+  - Migrated 100% of UI screens, dialogs, badges, and components to typed `stringResource` tokens.
+  - Added unit test suite in `DesktopSettingsLocalDataSourceTest` for backward-compatible JSON decoding.
+  - Files: [`AppSettings.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/settings/domain/model/AppSettings.kt), [`PlatformLocale.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/presentation/util/PlatformLocale.kt), [`SettingsDialog.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/settings/presentation/ui/SettingsDialog.kt), [`strings.xml`](composeApp/src/commonMain/composeResources/values/strings.xml), [`DesktopSettingsLocalDataSourceTest.kt`](composeApp/src/desktopTest/kotlin/com/retrocollector/app/settings/DesktopSettingsLocalDataSourceTest.kt)
 
 ---
 

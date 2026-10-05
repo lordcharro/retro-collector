@@ -17,14 +17,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.DiscoveredGameItem
 import com.retrocollector.app.core.domain.model.LanguageStatus
 import com.retrocollector.app.core.presentation.components.LanguageRiskBadge
 import com.retrocollector.app.core.presentation.components.PlatformBadge
-import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.core.presentation.util.PriceFormatter
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -75,7 +76,7 @@ fun DiscoveredGameCard(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = TextKeys.Discovery.BADGE_IN_COLLECTION,
+                            text = stringResource(Res.string.discovery_badge_in_collection),
                             style = LabelBadgeStyle.copy(fontSize = 10.sp),
                             color = StatusEnglishFg
                         )
@@ -87,7 +88,7 @@ fun DiscoveredGameCard(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = TextKeys.Discovery.BADGE_IN_WISHLIST,
+                            text = stringResource(Res.string.discovery_badge_in_wishlist),
                             style = LabelBadgeStyle.copy(fontSize = 10.sp),
                             color = StatusEditionFg
                         )
@@ -166,7 +167,7 @@ fun DiscoveredGameCard(
         ) {
             Column {
                 Text(
-                    text = TextKeys.Discovery.EST_MARKET_PRICE,
+                    text = stringResource(Res.string.discovery_est_market_price),
                     style = LabelBadgeStyle.copy(fontSize = 9.sp),
                     color = StatusUnverifiedFg
                 )
@@ -185,7 +186,7 @@ fun DiscoveredGameCard(
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                     modifier = Modifier.height(30.dp)
                 ) {
-                    Text(text = TextKeys.Discovery.ACTION_DOSSIER, style = LabelFilterStyle.copy(fontSize = 11.sp), color = TextPrimary)
+                    Text(text = stringResource(Res.string.discovery_action_dossier), style = LabelFilterStyle.copy(fontSize = 11.sp), color = TextPrimary)
                 }
 
                 if (!game.isAlreadyInWishlist && !game.isAlreadyInCollection) {
@@ -196,7 +197,7 @@ fun DiscoveredGameCard(
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                         modifier = Modifier.height(30.dp)
                     ) {
-                        Text(text = TextKeys.Discovery.ACTION_ADD_WISHLIST, style = LabelFilterStyle.copy(fontSize = 11.sp), color = Color.White)
+                        Text(text = stringResource(Res.string.discovery_action_add_wishlist), style = LabelFilterStyle.copy(fontSize = 11.sp), color = Color.White)
                     }
                 }
             }

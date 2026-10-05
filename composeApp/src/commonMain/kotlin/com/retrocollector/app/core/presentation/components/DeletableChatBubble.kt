@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.domain.model.ChatMessage
 import com.retrocollector.app.core.domain.model.MessageSender
 import com.retrocollector.app.core.presentation.theme.LabelFilterStyle
@@ -23,6 +24,8 @@ import com.retrocollector.app.core.presentation.theme.RetroTactileTheme
 import com.retrocollector.app.core.presentation.theme.StatusRiskFg
 import com.retrocollector.app.core.presentation.theme.TextSecondary
 import org.jetbrains.compose.ui.tooling.preview.Preview
+
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Wraps [GeminiChatBubble] with deletion interaction capabilities:
@@ -39,9 +42,10 @@ fun DeletableChatBubble(
 
     if (showConfirmDialog) {
         TactileConfirmDialog(
-            title = "Delete Message",
-            message = "Are you sure you want to delete this message from the dossier?",
-            confirmLabel = "Delete",
+            title = stringResource(Res.string.chat_delete_message_title),
+            message = stringResource(Res.string.chat_delete_message_confirm),
+            confirmLabel = stringResource(Res.string.common_delete),
+            dismissLabel = stringResource(Res.string.common_cancel),
             isDestructive = true,
             onConfirm = {
                 showConfirmDialog = false
@@ -68,7 +72,7 @@ fun DeletableChatBubble(
                 DropdownMenuItem(
                     text = {
                         Text(
-                            text = "Delete Message",
+                            text = stringResource(Res.string.chat_delete_message_title),
                             style = LabelFilterStyle,
                             color = StatusRiskFg
                         )

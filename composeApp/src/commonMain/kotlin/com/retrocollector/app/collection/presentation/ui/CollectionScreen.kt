@@ -10,14 +10,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.collection.presentation.components.CollectionStatsBar
 import com.retrocollector.app.core.domain.model.*
 import com.retrocollector.app.core.presentation.components.GameListItemRow
 import com.retrocollector.app.core.presentation.components.TacticalEmptyState
-import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.dashboard.presentation.ui.DashboardActions
 import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
+import org.jetbrains.compose.resources.stringResource
 
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -51,7 +52,7 @@ fun CollectionScreen(
         if (state.collectionGames.isEmpty()) {
             TacticalEmptyState(
                 icon = "📦",
-                title = TextKeys.Collection.EMPTY_STATE,
+                title = stringResource(Res.string.collection_empty_state),
                 modifier = Modifier.fillMaxSize()
             )
         } else {

@@ -9,12 +9,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.domain.model.SwissMarketRadar
-import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.core.presentation.util.PriceFormatter
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.ui.text.style.TextOverflow
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -45,7 +46,7 @@ fun SwissMarketRadarView(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = TextKeys.Radar.TITLE,
+                text = stringResource(Res.string.radar_title),
                 style = LabelFilterStyle.copy(fontSize = 11.sp),
                 color = TextSecondary,
                 maxLines = 1,
@@ -62,7 +63,7 @@ fun SwissMarketRadarView(
                         .background(trendColor, RoundedCornerShape(3.dp))
                 )
                 Text(
-                    text = "${radar.trend.uppercase()} TREND",
+                    text = "${radar.trend.uppercase()} ${stringResource(Res.string.radar_trend).uppercase()}",
                     color = trendColor,
                     style = CodeSkuStyle.copy(fontSize = 10.sp),
                     maxLines = 1,
@@ -85,7 +86,7 @@ fun SwissMarketRadarView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${TextKeys.Radar.MEDIAN_90D}:",
+                    text = "${stringResource(Res.string.radar_median_90d)}:",
                     style = BodySm,
                     color = TextSecondary,
                     maxLines = 1,
@@ -106,7 +107,7 @@ fun SwissMarketRadarView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "CIB Range:",
+                    text = "${stringResource(Res.string.radar_historical_range)}:",
                     style = BodySm,
                     color = TextSecondary,
                     maxLines = 1,
@@ -135,7 +136,7 @@ fun SwissMarketRadarView(
                 PaidPriceInput(
                     paidPrice = paidPriceChf,
                     currency = currency,
-                    label = "${TextKeys.Dossier.PAID_PRICE_LABEL}:",
+                    label = "${stringResource(Res.string.dossier_paid_price_label)}:",
                     onPriceSubmitted = onPriceSubmitted
                 )
             }
@@ -144,15 +145,15 @@ fun SwissMarketRadarView(
         // Deal evaluation vs Median (if owned)
         if (isOwned && paidPriceChf != null && median != null && median > 0) {
             val delta = ((paidPriceChf - median) / median) * 100
-            val (dealText, dealColor) = when {
-                delta <= -20 -> Pair("Great Acquisition", StatusEnglishFg)
-                delta <= 0 -> Pair("Good Value", StatusEnglishFg)
-                delta <= 15 -> Pair("Fair Price", StatusEditionFg)
-                else -> Pair("Premium Paid", StatusRiskFg)
+            val (dealRes, dealColor) = when {
+                delta <= -20 -> Pair(Res.string.radar_deal_bargain, StatusEnglishFg)
+                delta <= 0 -> Pair(Res.string.radar_deal_good, StatusEnglishFg)
+                delta <= 15 -> Pair(Res.string.radar_deal_fair, StatusEditionFg)
+                else -> Pair(Res.string.radar_deal_overpriced, StatusRiskFg)
             }
 
             Text(
-                text = "$dealText (${if (delta > 0) "+" else ""}${delta.toInt()}% ${TextKeys.Radar.VS_RICARDO})",
+                text = "${stringResource(dealRes)} (${if (delta > 0) "+" else ""}${delta.toInt()}% ${stringResource(Res.string.radar_vs_ricardo)})",
                 style = LabelFilterStyle.copy(fontSize = 11.sp),
                 color = dealColor,
                 maxLines = 1,

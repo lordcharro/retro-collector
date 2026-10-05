@@ -16,10 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.domain.model.*
 import com.retrocollector.app.core.presentation.components.*
-import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
+import org.jetbrains.compose.resources.stringResource
 import com.retrocollector.app.collection.presentation.ui.CollectionScreen
 import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
 import com.retrocollector.app.discovery.presentation.ui.DiscoveryScreen
@@ -96,10 +97,10 @@ fun MobileFieldDashboardScreen(
                                     strokeWidth = 1.5.dp,
                                     color = StatusEnglishFg
                                 )
-                                Text(text = "SYNCING", style = CodeSkuStyle.copy(fontSize = 10.sp), color = StatusEnglishFg)
+                                Text(text = stringResource(Res.string.dashboard_syncing), style = CodeSkuStyle.copy(fontSize = 10.sp), color = StatusEnglishFg)
                             } else {
                                 Text(text = "🔄", fontSize = 10.sp)
-                                Text(text = "SYNC", style = CodeSkuStyle.copy(fontSize = 10.sp), color = TextSecondary)
+                                Text(text = stringResource(Res.string.dashboard_sync), style = CodeSkuStyle.copy(fontSize = 10.sp), color = TextSecondary)
                             }
                         }
                     }
@@ -128,7 +129,7 @@ fun MobileFieldDashboardScreen(
                 shape = RoundedCornerShape(24.dp),
                 elevation = FloatingActionButtonDefaults.elevation(6.dp)
             ) {
-                Text(text = TextKeys.Dashboard.ACTION_QUICK_SCAN, style = LabelFilterStyle)
+                Text(text = stringResource(Res.string.dashboard_action_quick_scan), style = LabelFilterStyle)
             }
         },
         bottomBar = {
@@ -177,7 +178,7 @@ fun MobileFieldDashboardScreen(
                     query = state.searchQuery,
                     onQueryChange = { actions.onSearchQueryChange(it) },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = TextKeys.Dashboard.SEARCH_PLACEHOLDER,
+                    placeholder = stringResource(Res.string.dashboard_search_placeholder),
                     backgroundColor = SurfaceCard,
                     shape = RoundedCornerShape(8.dp),
                     textStyle = BodyMd.copy(color = TextPrimary),
@@ -307,7 +308,7 @@ fun MobileFieldDashboardScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "${TextKeys.Dashboard.STATS_TRACKED} (${state.games.size})",
+                                text = "${stringResource(Res.string.dashboard_stats_tracked)} (${state.games.size})",
                                 style = HeadlineSm,
                                 color = TextPrimary
                             )
@@ -320,7 +321,7 @@ fun MobileFieldDashboardScreen(
                                         .clickable { actions.onToggleEnglishOnly() }
                                         .padding(horizontal = 6.dp, vertical = 3.dp)
                                 ) {
-                                    Text(text = "✔ EN", style = LabelBadgeStyle, color = StatusEnglishFg)
+                                    Text(text = stringResource(Res.string.dashboard_filter_en_badge), style = LabelBadgeStyle, color = StatusEnglishFg)
                                 }
 
                                 Box(
@@ -330,7 +331,7 @@ fun MobileFieldDashboardScreen(
                                         .clickable { actions.onToggleUskAlerts() }
                                         .padding(horizontal = 6.dp, vertical = 3.dp)
                                 ) {
-                                    Text(text = "🔴 USK", style = LabelBadgeStyle, color = StatusRiskFg)
+                                    Text(text = stringResource(Res.string.dashboard_filter_usk_badge), style = LabelBadgeStyle, color = StatusRiskFg)
                                 }
                             }
                         }
@@ -345,8 +346,8 @@ fun MobileFieldDashboardScreen(
                             if (state.games.isEmpty()) {
                                 TacticalEmptyState(
                                     icon = "🔍",
-                                    title = TextKeys.Dashboard.EMPTY_CATALOG,
-                                    actionLabel = TextKeys.Dashboard.CLEAR_FILTERS,
+                                    title = stringResource(Res.string.dashboard_empty_catalog),
+                                    actionLabel = stringResource(Res.string.dashboard_clear_filters),
                                     onActionClick = actions.onClearFilters,
                                     modifier = Modifier.fillMaxSize()
                                 )

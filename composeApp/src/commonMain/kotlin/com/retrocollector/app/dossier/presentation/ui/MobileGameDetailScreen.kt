@@ -14,11 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.domain.model.CollectionStatus
 import com.retrocollector.app.core.domain.model.GameItem
 import com.retrocollector.app.core.presentation.components.*
-import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
+import org.jetbrains.compose.resources.stringResource
 import com.retrocollector.app.core.domain.model.ChatMessage
 import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.DiscoveredGameItem
@@ -73,7 +74,7 @@ fun MobileGameDetailScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 TextButton(onClick = onBack) {
-                    Text("← " + TextKeys.Navigation.BACK, color = AccentBlue, style = LabelFilterStyle)
+                    Text("← " + stringResource(Res.string.nav_back), color = AccentBlue, style = LabelFilterStyle)
                 }
 
                 var showDeleteConfirm by remember(game.id) { mutableStateOf(false) }
@@ -86,10 +87,10 @@ fun MobileGameDetailScreen(
 
                 if (showDeleteConfirm) {
                     TactileConfirmDialog(
-                        title = TextKeys.Dossier.DELETE_CONFIRM_TITLE,
-                        message = TextKeys.Dossier.DELETE_CONFIRM_MESSAGE,
-                        confirmLabel = TextKeys.Dossier.DELETE_CONFIRM_BUTTON,
-                        dismissLabel = TextKeys.Dossier.DELETE_CANCEL_BUTTON,
+                        title = stringResource(Res.string.dossier_delete_confirm_title),
+                        message = stringResource(Res.string.dossier_delete_confirm_message),
+                        confirmLabel = stringResource(Res.string.dossier_delete_confirm_button),
+                        dismissLabel = stringResource(Res.string.dossier_delete_cancel_button),
                         isDestructive = true,
                         onConfirm = {
                             showDeleteConfirm = false
@@ -185,7 +186,7 @@ fun MobileGameDetailScreen(
                             ) {
                                 Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                                     Text(
-                                        text = TextKeys.Dossier.PAID_PRICE_LABEL,
+                                        text = stringResource(Res.string.dossier_paid_price_label),
                                         style = LabelFilterStyle,
                                         color = StatusEnglishFg
                                     )
@@ -258,14 +259,14 @@ fun MobileGameDetailScreen(
                             modifier = Modifier.padding(14.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(text = TextKeys.Dossier.TITLE, style = HeadlineSm, color = TextPrimary)
+                            Text(text = stringResource(Res.string.dossier_title), style = HeadlineSm, color = TextPrimary)
 
                             if (game.spottedLocation.isNotBlank()) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text(text = TextKeys.Dossier.SPOTTED_LOCATION, style = BodySm, color = TextSecondary)
+                                    Text(text = stringResource(Res.string.dossier_spotted_location), style = BodySm, color = TextSecondary)
                                     Text(text = game.spottedLocation, style = BodySm, color = TextPrimary)
                                 }
                             }
@@ -275,7 +276,7 @@ fun MobileGameDetailScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text(text = TextKeys.Dossier.PRODUCT_CODE, style = BodySm, color = TextSecondary)
+                                    Text(text = stringResource(Res.string.dossier_product_code), style = BodySm, color = TextSecondary)
                                     Text(text = game.productCode, style = CodeSkuStyle, color = TextPrimary)
                                 }
                             }
@@ -285,7 +286,7 @@ fun MobileGameDetailScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text(text = TextKeys.Dossier.BARCODE, style = BodySm, color = TextSecondary)
+                                    Text(text = stringResource(Res.string.dossier_barcode), style = BodySm, color = TextSecondary)
                                     Text(text = game.barcode, style = CodeSkuStyle, color = TextSecondary)
                                 }
                             }
@@ -336,7 +337,7 @@ fun MobileGameDetailScreen(
 
                 // Chat with Gemini Flash
                 item {
-                    Text(text = "💬 " + TextKeys.Dossier.CHAT_TITLE, style = HeadlineSm, color = TextPrimary)
+                    Text(text = "💬 " + stringResource(Res.string.dossier_chat_title), style = HeadlineSm, color = TextPrimary)
                 }
 
                 items(chatMessages, key = { it.id }) { msg ->
@@ -386,7 +387,7 @@ fun MobileGameDetailScreen(
                     TactileTextField(
                         value = followUpQuestion,
                         onValueChange = { followUpQuestion = it },
-                        placeholder = TextKeys.Dossier.CHAT_PLACEHOLDER,
+                        placeholder = stringResource(Res.string.dossier_chat_placeholder),
                         modifier = Modifier.weight(1f),
                         singleLine = true
                     )
@@ -411,7 +412,7 @@ fun MobileGameDetailScreen(
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Text(text = TextKeys.Dossier.CHAT_SEND, style = LabelFilterStyle, color = Color.White)
+                            Text(text = stringResource(Res.string.dossier_chat_send), style = LabelFilterStyle, color = Color.White)
                         }
                     }
                 }

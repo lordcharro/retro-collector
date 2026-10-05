@@ -16,12 +16,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.domain.model.*
 import com.retrocollector.app.core.presentation.components.EnrichmentBadge
 import com.retrocollector.app.core.presentation.components.GameListItemRow
 import com.retrocollector.app.core.presentation.components.TacticalEmptyState
-import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
+import org.jetbrains.compose.resources.stringResource
 import com.retrocollector.app.wishlist.presentation.viewmodel.WishlistUiState
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -61,9 +62,9 @@ fun WishlistScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 val countText = if (state.searchQuery.isNotBlank()) {
-                    "${state.wishlistGames.size}/${state.allWishlistCount} ${TextKeys.Collection.STATS_GAMES}"
+                    "${state.wishlistGames.size}/${state.allWishlistCount} ${stringResource(Res.string.collection_stats_games)}"
                 } else {
-                    "${state.allWishlistCount} ${TextKeys.Collection.STATS_GAMES}"
+                    "${state.allWishlistCount} ${stringResource(Res.string.collection_stats_games)}"
                 }
                 Text(
                     text = countText,
@@ -83,7 +84,7 @@ fun WishlistScreen(
                             strokeWidth = 2.dp
                         )
                         Text(
-                            text = "${TextKeys.Wishlist.ENRICHMENT_BANNER}: $completed/$total",
+                            text = "${stringResource(Res.string.wishlist_enrichment_banner)}: $completed/$total",
                             style = CodeSkuStyle.copy(fontSize = 11.sp),
                             color = ConsoleGamecube
                         )
@@ -100,7 +101,7 @@ fun WishlistScreen(
                 contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp)
             ) {
                 Text(
-                    text = "${TextKeys.Wishlist.IMPORT_BUTTON} 📥",
+                    text = "${stringResource(Res.string.wishlist_import_button)} 📥",
                     style = LabelFilterStyle.copy(fontSize = 12.sp),
                     color = Color.White
                 )
@@ -111,17 +112,17 @@ fun WishlistScreen(
         if (state.allWishlistCount == 0) {
             TacticalEmptyState(
                 icon = "💝",
-                title = TextKeys.Wishlist.EMPTY_STATE,
-                actionLabel = TextKeys.Wishlist.IMPORT_BUTTON,
+                title = stringResource(Res.string.wishlist_empty_state),
+                actionLabel = stringResource(Res.string.wishlist_import_button),
                 onActionClick = onOpenImportDialog,
                 modifier = Modifier.fillMaxSize()
             )
         } else if (state.wishlistGames.isEmpty()) {
             TacticalEmptyState(
                 icon = "🔍",
-                title = TextKeys.Wishlist.EMPTY_SEARCH_TITLE,
-                subtitle = TextKeys.Wishlist.EMPTY_SEARCH_SUBTITLE,
-                actionLabel = TextKeys.Wishlist.CLEAR_SEARCH,
+                title = stringResource(Res.string.wishlist_empty_search_title),
+                subtitle = stringResource(Res.string.wishlist_empty_search_subtitle),
+                actionLabel = stringResource(Res.string.wishlist_clear_search),
                 onActionClick = onClearSearch,
                 modifier = Modifier.fillMaxSize()
             )

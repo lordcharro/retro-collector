@@ -12,12 +12,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.domain.model.ChatMessage
 import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.GameItem
 import com.retrocollector.app.core.domain.model.MessageSender
 import com.retrocollector.app.core.presentation.theme.*
 import org.jetbrains.compose.ui.tooling.preview.Preview
+
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun GeminiChatBubble(
@@ -49,7 +52,7 @@ fun GeminiChatBubble(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "YOU",
+                            text = stringResource(Res.string.chat_sender_you),
                             style = CodeSkuStyle.copy(fontSize = 10.sp),
                             color = TextSecondary
                         )
@@ -73,7 +76,11 @@ fun GeminiChatBubble(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(text = "📷", fontSize = 12.sp)
-                        Text(text = "Attached Spine Photo", style = CodeSkuStyle.copy(fontSize = 11.sp), color = TextSecondary)
+                        Text(
+                            text = stringResource(Res.string.chat_attached_photo),
+                            style = CodeSkuStyle.copy(fontSize = 11.sp),
+                            color = TextSecondary
+                        )
                     }
                 }
             }
@@ -111,7 +118,7 @@ fun GeminiChatBubble(
                                 .background(AccentGreen, RoundedCornerShape(3.dp))
                         )
                         Text(
-                            text = "Gemini Flash Regional Verification",
+                            text = stringResource(Res.string.chat_gemini_verification),
                             style = LabelFilterStyle,
                             color = AccentGreen
                         )
@@ -148,7 +155,7 @@ fun GeminiChatBubble(
                                     .padding(10.dp)
                             ) {
                                 Text(
-                                    text = "⚠️ Censorship or Regional Lock Warning",
+                                    text = stringResource(Res.string.chat_censorship_warning_title),
                                     style = HeadlineSm,
                                     color = StatusRiskFg
                                 )
@@ -173,7 +180,7 @@ fun GeminiChatBubble(
                                     .padding(10.dp)
                             ) {
                                 Text(
-                                    text = "FIELD COLLECTOR VERDICT",
+                                    text = stringResource(Res.string.chat_verdict_title),
                                     style = LabelBadgeStyle,
                                     color = StatusEditionFg
                                 )

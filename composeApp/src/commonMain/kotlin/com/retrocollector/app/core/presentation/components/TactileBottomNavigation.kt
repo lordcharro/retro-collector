@@ -24,9 +24,11 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.domain.model.AppSection
-import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
+import com.retrocollector.app.core.presentation.util.labelRes
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun TactileBottomNavigation(
@@ -57,7 +59,7 @@ fun TactileBottomNavigation(
         ) {
             // 1. Activity (Catalog)
             TactileBottomNavItem(
-                label = AppSection.ACTIVITY.label,
+                label = stringResource(AppSection.ACTIVITY.labelRes),
                 isSelected = activeSection == AppSection.ACTIVITY,
                 badgeCount = 0,
                 badgeBg = Color.Transparent,
@@ -67,7 +69,7 @@ fun TactileBottomNavigation(
 
             // 2. Discover
             TactileBottomNavItem(
-                label = AppSection.DISCOVER.label,
+                label = stringResource(AppSection.DISCOVER.labelRes),
                 isSelected = activeSection == AppSection.DISCOVER,
                 badgeCount = 0,
                 badgeBg = Color.Transparent,
@@ -77,7 +79,7 @@ fun TactileBottomNavigation(
 
             // 3. Wishlist (with badge)
             TactileBottomNavItem(
-                label = AppSection.WISHLIST.label,
+                label = stringResource(AppSection.WISHLIST.labelRes),
                 isSelected = activeSection == AppSection.WISHLIST,
                 badgeCount = wishlistCount,
                 badgeBg = if (LocalTactileColors.current.isDark) Color(0xFF6366F1) else Color(0xFF4F46E5),
@@ -87,7 +89,7 @@ fun TactileBottomNavigation(
 
             // 4. Collection (with badge)
             TactileBottomNavItem(
-                label = AppSection.COLLECTION.label,
+                label = stringResource(AppSection.COLLECTION.labelRes),
                 isSelected = activeSection == AppSection.COLLECTION,
                 badgeCount = collectionCount,
                 badgeBg = if (LocalTactileColors.current.isDark) Color(0xFF3F3F46) else Color(0xFF64748B),
@@ -97,7 +99,7 @@ fun TactileBottomNavigation(
 
             // 5. Settings
             TactileBottomNavItem(
-                label = TextKeys.Navigation.TAB_SETTINGS,
+                label = stringResource(Res.string.nav_settings),
                 isSelected = false,
                 badgeCount = 0,
                 badgeBg = Color.Transparent,

@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Brand & Identity -->
+    <string name="app_name">RetroCollector</string>
+    <string name="app_subtitle">Terminal Rétrogaming Suisse</string>
+    <string name="app_version">v1.0.0 • Clean Architecture</string>
+    <string name="app_tagline">Détection de Langue &amp; Radar du Marché Suisse</string>
+    <string name="app_intelligence_library">BIBLIOTHÈQUE D\'INTELLIGENCE</string>
+    <string name="app_ready">PRÊT</string>
+    <string name="app_field_readiness_title">DISPONIBILITÉ TERRAIN ACTIVE</string>
+    <string name="app_field_readiness_subtitle">Protocole Hors-Ligne &amp; Services Régionaux</string>
+    <string name="app_field_readiness_desc">Calibré pour l\'acquisition de médias rétro physiques suisses et européens.</string>
+
+    <!-- Navigation & Sections -->
+    <string name="nav_activity">Activité</string>
+    <string name="nav_discover">Découvrir</string>
+    <string name="nav_settings">Paramètres</string>
+    <string name="nav_wishlist">Liste d\'Envies</string>
+    <string name="nav_collection">Collection</string>
+    <string name="nav_back">Retour</string>
+
+    <!-- Dashboard & Catalog -->
+    <string name="dashboard_search_placeholder">Rechercher titre, franchise, SKU (ex: DOL-P-GALE) ou code-barres...</string>
+    <string name="dashboard_stats_tracked">Articles Suivis</string>
+    <string name="dashboard_filter_english_only">Compatible Anglais ✅</string>
+    <string name="dashboard_filter_usk_alerts">Alertes USK ⚠️</string>
+    <string name="dashboard_empty_catalog">Aucun jeu ne correspond à vos critères de recherche.</string>
+    <string name="dashboard_clear_filters">Effacer les filtres</string>
+    <string name="dashboard_no_game_selected_title">Aucun jeu sélectionné</string>
+    <string name="dashboard_no_game_selected">Sélectionnez un jeu dans le catalogue pour afficher son dossier et l\'assistant.</string>
+    <string name="dashboard_action_quick_scan">⚡ Scan Rapide</string>
+    <string name="dashboard_action_discover">🧭 Découverte</string>
+    <string name="dashboard_action_import_wishlist">📥 Importer Liste d\'Envies</string>
+    <string name="dashboard_items_count">%1$d articles</string>
+
+    <!-- Swiss Market Radar -->
+    <string name="radar_title">RADAR DU MARCHÉ SUISSE (RICARDO.CH)</string>
+    <string name="radar_asking_price">Prix Demandé / Repéré</string>
+    <string name="radar_median_90d">Médiane 90j Ricardo.ch</string>
+    <string name="radar_historical_range">Fourchette Historique</string>
+    <string name="radar_trend">Tendance</string>
+    <string name="radar_deal_bargain">Bonne Affaire</string>
+    <string name="radar_deal_good">Bonne Offre</string>
+    <string name="radar_deal_fair">Prix Marché Juste</string>
+    <string name="radar_deal_overpriced">Surévalué</string>
+    <string name="radar_vs_ricardo">vs Ricardo.ch</string>
+
+    <!-- SKU Matrix -->
+    <string name="sku_matrix_title">MATRICE RÉGIONALE DES SKUS</string>
+    <string name="sku_this_copy">CETTE ÉDITION</string>
+    <string name="sku_click_to_select">Appuyez sur un SKU pour le définir comme l\'édition active</string>
+    <string name="sku_active_edition">Édition Active</string>
+
+    <!-- Dossier & Assistant -->
+    <string name="dossier_title">DOSSIER DE RENSEIGNEMENT</string>
+    <string name="dossier_spotted_location">Emplacement Repéré</string>
+    <string name="dossier_barcode">Code-barres (EAN-13)</string>
+    <string name="dossier_product_code">Code Produit (SKU)</string>
+    <string name="dossier_chat_title">ASSISTANT RÉTRO GEMINI</string>
+    <string name="dossier_chat_placeholder">Demandez à Gemini des infos sur les révisions, versions non censurées ou prix du marché...</string>
+    <string name="dossier_chat_send">Envoyer</string>
+    <string name="dossier_delete_confirm_title">Supprimer le jeu ?</string>
+    <string name="dossier_delete_confirm_message">Êtes-vous sûr de vouloir supprimer ce jeu de votre collection ? Cette action est irréversible.</string>
+    <string name="dossier_delete_confirm_button">Supprimer</string>
+    <string name="dossier_delete_cancel_button">Annuler</string>
+    <string name="dossier_paid_price_label">Prix d\'Achat</string>
+
+    <!-- Quick Scan & Scanner Dialog -->
+    <string name="scanner_title">Scan Rapide &amp; Vérification</string>
+    <string name="scanner_tab_url">Lien d\'Enchère</string>
+    <string name="scanner_tab_manual">Recherche Manuelle</string>
+    <string name="scanner_url_label">Coller l\'URL Ricardo.ch / Tutti.ch</string>
+    <string name="scanner_url_placeholder">https://www.ricardo.ch/de/a/...</string>
+    <string name="scanner_analyzing">Analyse avec Gemini Flash en cours...</string>
+    <string name="scanner_close">Fermer</string>
+
+    <!-- Settings Dialog -->
+    <string name="settings_title">Paramètres &amp; Intégrations</string>
+    <string name="settings_section_theme">THÈME DE L\'INTERFACE</string>
+    <string name="settings_theme_desc">Mode d\'affichage suisse à fort contraste pour le scouting en plein soleil dans les brocantes.</string>
+    <string name="settings_theme_light_badge">TACTIQUE CLAIR</string>
+    <string name="settings_theme_dark_badge">TACTIQUE SOMBRE</string>
+    <string name="settings_section_language">LANGUE DE L\'INTERFACE</string>
+    <string name="settings_language_desc">Sélectionnez la langue préférée pour le catalogue, l\'analyse de marché et l\'interface.</string>
+    <string name="settings_gemini_api_key_label">Clé d\'API Google Gemini</string>
+    <string name="settings_gemini_api_key_hint">Entrez la clé d\'API (AQ.A... ou AIzaSy...)</string>
+    <string name="settings_gemini_explainer">Utilisé pour l\'OCR en direct et la vérification multilingue européenne (détecte les doublages allemands obligatoires USK et codes UK).</string>
+    <string name="settings_auto_discovery_title">Auto-Découverte au Changement de Filtre</string>
+    <string name="settings_auto_discovery_subtitle">Si désactivé, les requêtes IA ne s\'exécutent qu\'en cliquant sur LANCER ou Entrée, préservant le quota.</string>
+    <string name="settings_auto_discovery_badge">ÉCONOMIE DE QUOTA</string>
+    <string name="settings_auto_similar_games_title">Auto-Récupération des Jeux Similaires</string>
+    <string name="settings_auto_similar_games_subtitle">Si désactivé, les recommandations ne sont chargées que sur demande dans le dossier.</string>
+    <string name="settings_auto_similar_games_badge">ÉCONOMIE DE QUOTA</string>
+    <string name="settings_currency_section">Tarification Régionale &amp; Flux Marché</string>
+    <string name="settings_currency_label">Devise de Base d\'Évaluation</string>
+    <string name="settings_firebase_section">Sync Cloud &amp; Moteur Hors-Ligne</string>
+    <string name="settings_firebase_project_id_label">ID de Projet Firebase</string>
+    <string name="settings_firebase_project_id_hint">ex: retro-collector-swiss</string>
+    <string name="settings_firebase_test_button">Tester la Connexion Firestore</string>
+    <string name="settings_firebase_testing">Connexion à Firestore en cours...</string>
+    <string name="settings_firebase_status_connected">Firestore connecté &amp; synchronisé avec succès !</string>
+    <string name="settings_firebase_status_failed">Échec de connexion à Firestore. Vérifiez l\'ID de projet et les permissions.</string>
+    <string name="settings_firebase_status_no_project">Entrez d\'abord un ID de Projet Firebase.</string>
+    <string name="settings_platforms_section">Plateformes de Consoles Épinglées</string>
+    <string name="settings_platforms_subtitle">Sélectionnez les plateformes que vous collectionnez. Celles ayant des jeux dans la bibliothèque resteront aussi actives.</string>
+    <string name="settings_platforms_select_defaults">Défauts</string>
+    <string name="settings_platforms_pin_all">Tout Épingler</string>
+    <string name="settings_platforms_clear_all">Tout Décocher</string>
+    <string name="settings_save_button">Enregistrer les Paramètres</string>
+    <string name="settings_status_connected">Connexion vérifiée avec succès !</string>
+    <string name="settings_status_failed">Échec du test de connexion. Vérifiez vos identifiants.</string>
+
+    <!-- Collection Status -->
+    <string name="status_owned">En Collection 📦</string>
+    <string name="status_wishlist">Liste d\'Envies 🎯</string>
+    <string name="status_pass">Passer ❌</string>
+
+    <!-- Language Verification -->
+    <string name="lang_full_english_title">Anglais Complet</string>
+    <string name="lang_full_english_desc">Audio &amp; texte entièrement pris en charge en anglais</string>
+    <string name="lang_subtitles_only_title">Sous-titres Uniquement</string>
+    <string name="lang_subtitles_only_desc">Menus/textes en anglais avec audio étranger</string>
+    <string name="lang_german_only_title">Allemand USK Uniquement</string>
+    <string name="lang_german_only_desc">Audio &amp; texte uniquement en allemand (Pas d\'anglais !)</string>
+    <string name="lang_depends_title">Vérifier l\'Édition</string>
+    <string name="lang_depends_desc">Le support des langues varie selon le code SKU régional</string>
+    <string name="lang_unverified_title">Non Vérifié</string>
+    <string name="lang_unverified_desc">Langues audio et texte pas encore vérifiées</string>
+
+    <!-- Console Platforms -->
+
+    <!-- Wishlist Screen & Import -->
+    <string name="wishlist_import_button">📥 Importer</string>
+    <string name="wishlist_import_dialog_title">📥 Importer Liste d\'Envies</string>
+    <string name="wishlist_import_format_hint">Format : titre du jeu, plateforme (une ligne par jeu)</string>
+    <string name="wishlist_import_preview_ready">✅ Prêt à importer</string>
+    <string name="wishlist_import_preview_duplicate">⚠️ Déjà dans la Liste d\'Envies</string>
+    <string name="wishlist_import_preview_invalid">❌ Plateforme invalide</string>
+    <string name="wishlist_import_button_label">Importer les Jeux</string>
+    <string name="wishlist_import_reset_button">Effacer / Nouveau Lot</string>
+    <string name="wishlist_import_finish_button">Terminé</string>
+    <string name="wishlist_import_progress">Enrichissement des jeux par l\'IA...</string>
+    <string name="wishlist_empty_state">Votre liste d\'envies est vide. Importez un CSV ou ajoutez des jeux via le Scan Rapide.</string>
+    <string name="wishlist_empty_search_title">Aucun jeu trouvé dans la Liste d\'Envies</string>
+    <string name="wishlist_empty_search_subtitle">Ajustez vos termes de recherche ou effacez le filtre.</string>
+    <string name="wishlist_clear_search">Effacer la Recherche</string>
+    <string name="wishlist_enrichment_banner">🤖 Enrichissement IA</string>
+
+    <!-- Collection Screen -->
+    <string name="collection_stats_games">Jeux</string>
+    <string name="collection_stats_total_value">Valeur Totale</string>
+    <string name="collection_stats_no_prices">—</string>
+    <string name="collection_empty_state">Aucun jeu dans votre collection. Marquez des jeux comme \'En Collection\' pour les voir ici.</string>
+
+    <!-- Discovery Screen -->
+    <string name="discovery_title">RADAR DE DÉCOUVERTE</string>
+    <string name="discovery_subtitle">Explorez pépites PAL, recommandations par genre et éditions européennes vérifiées</string>
+    <string name="discovery_badge_ai">GEMINI IA</string>
+    <string name="discovery_search_placeholder">Demandez à l\'IA : ex: \'jeux comme Monkey Island\' ou \'FPS tactique sur PS3\'...</string>
+    <string name="discovery_action_run">LANCER 🚀</string>
+    <string name="discovery_all_platforms">Toutes les Consoles</string>
+    <string name="discovery_loading_radar">Consultation des archives rétrogaming PAL de Gemini...</string>
+    <string name="discovery_empty_title">Aucun jeu trouvé pour ces critères.</string>
+    <string name="discovery_empty_subtitle">Choisissez un autre genre ou essayez d\'autres termes de recherche.</string>
+    <string name="discovery_shelf_title">JEUX SIMILAIRES DANS LE GENRE</string>
+    <string name="discovery_shelf_empty">Aucune suggestion supplémentaire disponible pour ce titre.</string>
+    <string name="discovery_shelf_suggestions">SUGGESTIONS</string>
+    <string name="discovery_shelf_ai_scan">Scan IA ⚡</string>
+    <string name="discovery_action_dossier">🔍 Dossier</string>
+    <string name="discovery_action_add_wishlist">💝 + Liste d\'Envies</string>
+    <string name="discovery_badge_in_collection">📦 EN COLLECTION</string>
+    <string name="discovery_badge_in_wishlist">💝 EN LISTE D\'ENVIES</string>
+    <string name="discovery_est_market_price">EST. MARCHÉ CH</string>
+
+    <!-- Duplicate Detection -->
+
+    <!-- Common UI Labels -->
+    <string name="common_delete">Supprimer</string>
+    <string name="common_cancel">Annuler</string>
+
+    <!-- Chat & Dialogue -->
+    <string name="chat_delete_message_title">Supprimer le message</string>
+    <string name="chat_delete_message_confirm">Êtes-vous sûr de vouloir supprimer ce message du dossier ?</string>
+    <string name="chat_sender_you">VOUS</string>
+    <string name="chat_attached_photo">Photo de tranche jointe</string>
+    <string name="chat_gemini_verification">Vérification régionale Gemini Flash</string>
+    <string name="chat_censorship_warning_title">⚠️ Avertissement de Censure ou Verrou Régional</string>
+    <string name="chat_verdict_title">VERDICT DU COLLECTIONNEUR</string>
+
+    <!-- Scanner Additional -->
+    <string name="scanner_desc_url_banner">RetroCollector extrait automatiquement le titre, la description, les photos de l\'annonce et le prix demandé en CHF.</string>
+    <string name="scanner_platform_source_label">PLATEFORME / SOURCE</string>
+    <string name="scanner_asking_price_optional">PRIX DEMANDÉ ESTIMÉ (%1$s) (OPTIONNEL)</string>
+    <string name="scanner_price_placeholder">Laisser vide pour extraire automatiquement de l\'annonce</string>
+    <string name="scanner_action_extracting">Extraction et analyse de l\'annonce en cours...</string>
+    <string name="scanner_action_extract">Extraire et Analyser l\'Annonce</string>
+    <string name="scanner_query_label">TITRE DU JEU, CODE SÉRIE OU CODE-BARRES</string>
+    <string name="scanner_manual_placeholder_full">ex: Tomb Raider PS3, BLES-01780 ou 0045496351052</string>
+    <string name="scanner_link_detected_hint">Lien d\'annonce détecté. RetroCollector téléchargera les photos et détails de l\'annonce.</string>
+    <string name="scanner_photo_optional_label">PHOTO DU DISQUE OU DE LA TRANCHE (OPTIONNEL)</string>
+    <string name="scanner_photo_placeholder">URL de la photo du disque (https://...) ou image Base64</string>
+    <string name="scanner_warn_api_key_in_photo">Il semble que vous ayez collé une clé API ici. Ce champ est réservé aux photos de disque/tranche.</string>
+    <string name="scanner_hint_url_in_photo">Il s\'agit d\'une URL d\'annonce. Passez à l\'onglet \'Lien d\'Enchère\' pour extraire les photos et tous les détails.</string>
+
+    <!-- Discovery Additional -->
+    <string name="discovery_badge_manual_ai">IA MANUELLE (LANCER)</string>
+    <string name="discovery_all_consoles">Toutes les Consoles</string>
+
+    <!-- Wishlist Additional -->
+    <string name="wishlist_import_placeholder">Entrez un jeu par ligne : titre, plateforme</string>
+
+    <!-- Dashboard Additional -->
+    <string name="dashboard_syncing">SYNCHRONISATION</string>
+    <string name="dashboard_sync">SYNC</string>
+    <string name="dashboard_filter_en_badge">✔ EN</string>
+    <string name="dashboard_filter_usk_badge">🔴 USK</string>
+
+    <!-- Settings Additional Sections -->
+    <string name="settings_ai_engine_title">MOTEUR D\'INTELLIGENCE VISUELLE</string>
+    <string name="settings_ai_active_provider">FOURNISSEUR IA ACTIF</string>
+    <string name="settings_ai_gemini_model">MODÈLE GEMINI</string>
+    <string name="settings_ai_claude_model">MODÈLE CLAUDE</string>
+    <string name="settings_ai_anthropic_key">CLÉ D\'API ANTHROPIC</string>
+    <string name="settings_ai_anthropic_desc">Anthropic Claude 3.7 / 3.5 Sonnet offre un OCR de haute précision pour les tranches de rétrogaming européen.</string>
+    <string name="settings_ai_endpoint_url">URL DE BASE DU POINT DE TERMINAISON</string>
+    <string name="settings_ai_model_presets">PRÉSÉLECTIONS &amp; SÉLECTION DE MODÈLES</string>
+    <string name="settings_ai_api_key_bearer">CLÉ D\'API (JETON BEARER)</string>
+    <string name="settings_ai_local_vision_hint">Assurez-vous que votre modèle local prend en charge la vision (VLM) pour l\'inspection des boîtes.</string>
+    <string name="settings_scraper_proxy_title">PROXY D\'EXTRACTION DE PLACE DE MARCHÉ</string>
+    <string name="settings_scraper_cloudflare_bypass">CONTOURNEMENT CLOUDFLARE</string>
+    <string name="settings_scraper_proxy_desc">Contourne les protections anti-bot Cloudflare sur Ricardo.ch et Tutti.ch pour extraire titres, photos et prix en CHF.</string>
+    <string name="settings_scraper_provider_label">FOURNISSEUR DE SERVICE D\'EXTRACTION</string>
+    <string name="settings_scraper_token_label">JETON D\'API SCRAPE.DO</string>
+    <string name="settings_scraper_free_req">1 000 requêtes gratuites/mois</string>
+    <string name="settings_scraper_token_hint">Obtenez votre jeton gratuit depuis le tableau de bord scrape.do. Exécute JS et contourne Cloudflare automatiquement.</string>
+    <string name="settings_scraper_residential_proxy">PROXY RÉSIDENTIEL (SUPER=TRUE)</string>
+    <string name="settings_scraper_residential_hint">Achemine les requêtes via des adresses IP résidentielles pour les captchas difficiles. Augmente le coût de 5 à 25 crédits par requête.</string>
+    <string name="settings_scraper_custom_url">URL DU PROXY PERSONNALISÉ / AUTO-HÉBERGÉ</string>
+    <string name="settings_scraper_unlimited_free">Illimité / Gratuit</string>
+    <string name="settings_scraper_custom_hint">URL de votre point de terminaison curl-cffi ou microservice personnalisé. L\'URL de l\'annonce sera passée en paramètre.</string>
+    <string name="settings_firebase_subtitle">Sync SQLite &amp; Firestore</string>
+    <string name="settings_firebase_desc">Synchronise les acquisitions de jeux vérifiées sur Mac, Android et Web.</string>
+</resources>

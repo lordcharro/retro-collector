@@ -15,8 +15,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.retrocollector.app.core.presentation.text.TextKeys
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.presentation.theme.*
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -24,7 +25,7 @@ fun TactileSearchField(
     query: String,
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    placeholder: String = TextKeys.Dashboard.SEARCH_PLACEHOLDER,
+    placeholder: String = stringResource(Res.string.dashboard_search_placeholder),
     onSearchSubmit: ((String) -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
     searchIcon: String = "🔍",

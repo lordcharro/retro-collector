@@ -11,11 +11,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.GameItem
-import com.retrocollector.app.core.presentation.text.TextKeys
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.core.presentation.util.PriceFormatter
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
@@ -51,7 +52,7 @@ fun CollectionStatsBar(
         ) {
             Text(text = "📦", fontSize = 14.sp)
             Text(
-                text = "${games.size} ${TextKeys.Collection.STATS_GAMES}",
+                text = "${games.size} ${stringResource(Res.string.collection_stats_games)}",
                 style = HeadlineSm,
                 color = TextPrimary
             )
@@ -71,13 +72,13 @@ fun CollectionStatsBar(
                 )
             } else {
                 Text(
-                    text = "$currency ${TextKeys.Collection.STATS_NO_PRICES}",
+                    text = "$currency ${stringResource(Res.string.collection_stats_no_prices)}",
                     style = CodePriceStyle.copy(fontSize = 14.sp),
                     color = StatusUnverifiedFg
                 )
             }
             Text(
-                text = TextKeys.Collection.STATS_TOTAL_VALUE,
+                text = stringResource(Res.string.collection_stats_total_value),
                 style = LabelBadgeStyle.copy(fontSize = 10.sp),
                 color = StatusUnverifiedFg
             )

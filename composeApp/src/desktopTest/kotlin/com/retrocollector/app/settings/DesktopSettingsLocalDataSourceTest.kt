@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 import com.retrocollector.app.settings.domain.model.AiProvider
+import com.retrocollector.app.settings.domain.model.AppLanguage
+import com.retrocollector.app.settings.domain.model.AppSettings
+import kotlinx.serialization.json.Json
 
 class DesktopSettingsLocalDataSourceTest {
 
@@ -24,7 +27,8 @@ class DesktopSettingsLocalDataSourceTest {
             localAiBaseUrl = "http://localhost:11434/v1",
             localAiModel = "llama3.2-vision",
             defaultCurrency = "EUR",
-            selectedPlatformFilter = ConsolePlatform.GAMECUBE
+            selectedPlatformFilter = ConsolePlatform.GAMECUBE,
+            appLanguage = AppLanguage.PORTUGUESE
         )
 
         dataSource.saveSettings(testSettings)
@@ -40,8 +44,38 @@ class DesktopSettingsLocalDataSourceTest {
         assertEquals("llama3.2-vision", loaded.localAiModel)
         assertEquals("EUR", loaded.defaultCurrency)
         assertEquals(ConsolePlatform.GAMECUBE, loaded.selectedPlatformFilter)
+        assertEquals(AppLanguage.PORTUGUESE, loaded.appLanguage)
 
         // Restaurar estado
         dataSource.saveSettings(original)
+    }
+
+    @Test
+    fun `deserializing legacy settings json without appLanguage defaults to English`() {
+        val legacyJson = """
+            {
+                "geminiApiKey": "old_key",
+                "defaultCurrency": "CHF"
+            }
+        """.trimIndent()
+        val json = Json { ignoreUnknownKeys = true }
+        val settings = json.decodeFromString<AppSettings>(legacyJson)
+        assertEquals(AppLanguage.ENGLISH, settings.appLanguage)
+        assertEquals("old_key", settings.geminiApiKey)
+        assertEquals("CHF", settings.defaultCurrency)
+    }
+
+    @Test
+    fun `deserializing settings with explicit language preserves language`() {
+        val jsonWithLang = """
+            {
+                "appLanguage": "PORTUGUESE",
+                "defaultCurrency": "EUR"
+            }
+        """.trimIndent()
+        val json = Json { ignoreUnknownKeys = true }
+        val settings = json.decodeFromString<AppSettings>(jsonWithLang)
+        assertEquals(AppLanguage.PORTUGUESE, settings.appLanguage)
+        assertEquals("EUR", settings.defaultCurrency)
     }
 }

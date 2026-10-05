@@ -141,6 +141,10 @@ compose.desktop {
     }
 }
 
+compose.resources {
+    packageOfResClass = "com.retrocollector.app.generated.resources"
+}
+
 detekt {
     buildUponDefaultConfig = true
     allRules = false
@@ -179,4 +183,21 @@ tasks.withType<Test> {
 dependencies {
     debugImplementation(compose.uiTooling)
 }
+
+val syncComposeResourcesToAndroid by tasks.registering(Copy::class) {
+    val srcDir = layout.buildDirectory.dir("generated/compose/resourceGenerator/assembledResources/desktopMain/composeResources")
+    from(srcDir)
+    into(layout.projectDirectory.dir("src/androidMain/assets/composeResources"))
+    doLast {
+        copy {
+            from(srcDir)
+            into(layout.projectDirectory.dir("src/androidMain/resources/composeResources"))
+        }
+    }
+}
+
+tasks.matching { it.name.contains("DesktopMainResources", ignoreCase = true) || it.name == "copyDebugComposeResourcesToAndroidAssets" }.configureEach {
+    finalizedBy(syncComposeResourcesToAndroid)
+}
+
 
