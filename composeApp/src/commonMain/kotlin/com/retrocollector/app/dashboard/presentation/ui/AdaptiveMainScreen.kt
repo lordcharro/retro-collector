@@ -46,7 +46,7 @@ fun AdaptiveMainScreen(
         dashboardViewModel.effects.collectLatest { effect ->
             when (effect) {
                 is DashboardEffect.ShowToast -> {
-                    snackbarHostState.showSnackbar(effect.message)
+                    snackbarHostState.showSnackbar(effect.message.asStringAsync())
                 }
                 is DashboardEffect.NavigateToGameDetail -> {
                     dashboardViewModel.openMobileDetail(effect.game)

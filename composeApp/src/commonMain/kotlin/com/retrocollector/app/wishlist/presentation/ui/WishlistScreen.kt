@@ -153,7 +153,7 @@ fun WishlistScreen(
                                             .padding(horizontal = 6.dp, vertical = 3.dp)
                                     ) {
                                         Text(
-                                            text = "🔄 Retry",
+                                            text = "🔄 " + stringResource(Res.string.common_retry),
                                             style = LabelBadgeStyle.copy(fontSize = 10.sp),
                                             color = StatusRiskFg
                                         )

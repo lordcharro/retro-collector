@@ -131,7 +131,7 @@ fun DiscoveredGameCard(
                 ) {
                     Text(text = "✨", fontSize = 11.sp)
                     Text(
-                        text = game.modernPortDetails ?: "Modern Port / Remaster Available",
+                        text = game.modernPortDetails ?: stringResource(Res.string.discovery_modern_port_available),
                         style = CodeSkuStyle.copy(fontSize = 11.sp),
                         color = AccentBlue,
                         maxLines = 1,

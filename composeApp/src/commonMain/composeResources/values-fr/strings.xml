@@ -22,6 +22,9 @@
     <!-- Dashboard & Catalog -->
     <string name="dashboard_search_placeholder">Rechercher titre, franchise, SKU (ex: DOL-P-GALE) ou code-barres...</string>
     <string name="dashboard_stats_tracked">Articles Suivis</string>
+    <string name="dashboard_filter_all">TOUS</string>
+    <string name="dashboard_platform_filter">FILTRE DE PLATEFORME</string>
+    <string name="dashboard_index_label">INDICE :</string>
     <string name="dashboard_filter_english_only">Compatible Anglais ✅</string>
     <string name="dashboard_filter_usk_alerts">Alertes USK ⚠️</string>
     <string name="dashboard_empty_catalog">Aucun jeu ne correspond à vos critères de recherche.</string>
@@ -64,6 +67,8 @@
     <string name="dossier_delete_confirm_button">Supprimer</string>
     <string name="dossier_delete_cancel_button">Annuler</string>
     <string name="dossier_paid_price_label">Prix d\'Achat</string>
+    <string name="dossier_paid_price_desc">Coût d\'acquisition pour le ROI de la collection</string>
+    <string name="dossier_context">Contexte : %1$s (%2$s)</string>
 
     <!-- Quick Scan & Scanner Dialog -->
     <string name="scanner_title">Scan Rapide &amp; Vérification</string>
@@ -240,4 +245,41 @@
     <string name="settings_scraper_custom_hint">URL de votre point de terminaison curl-cffi ou microservice personnalisé. L\'URL de l\'annonce sera passée en paramètre.</string>
     <string name="settings_firebase_subtitle">Sync SQLite &amp; Firestore</string>
     <string name="settings_firebase_desc">Synchronise les acquisitions de jeux vérifiées sur Mac, Android et Web.</string>
+
+    <string name="toast_edition_sku_set">SKU de l'édition défini sur %s</string>
+    <string name="toast_offer_saved">Offre de %s enregistrée.</string>
+    <string name="toast_offer_deleted">Offre supprimée.</string>
+    <string name="toast_added_to_collection">"%s" ajouté à la Collection !</string>
+    <string name="toast_game_removed">Jeu supprimé avec succès.</string>
+    <string name="toast_firebase_not_configured">ID de projet Firebase non configuré dans les Paramètres</string>
+    <string name="toast_cloud_sync_completed">Synchronisation cloud terminée !</string>
+    <string name="toast_sync_error">Erreur de synchronisation : %s</string>
+    <string name="toast_message_deleted">Message supprimé.</string>
+    <string name="toast_analysis_completed">Analyse terminée avec succès !</string>
+    <string name="toast_analysis_error">Erreur d'analyse : %s</string>
+    <string name="common_none">aucun</string>
+    <string name="common_retry">Réessayer</string>
+    <string name="common_sync_error_default">Erreur de synchronisation</string>
+    <string name="common_analysis_error_default">Erreur d'analyse</string>
+    <string name="wishlist_enrichment_pending">En attente</string>
+    <string name="wishlist_enrichment_running">Enrichissement</string>
+    <string name="wishlist_enrichment_ready">Prêt</string>
+    <string name="wishlist_enrichment_failed">Échoué</string>
+    <string name="settings_enter_api_key">Veuillez saisir une clé API pour %s.</string>
+    <string name="settings_testing_provider">Test de connexion à %s...</string>
+    <string name="settings_timeout_ai">Délai de connexion dépassé (12s). Vérifiez le point de terminaison et le réseau.</string>
+    <string name="settings_timeout_firebase">Délai de connexion dépassé (12s). Vérifiez l'ID du projet.</string>
+    <string name="settings_ai_local_url">URL DU SERVEUR OLLAMA / LM STUDIO LOCAL</string>
+    <string name="settings_ai_local_presets">MODÈLES DE VISION LOCAUX PRÉDÉFINIS</string>
+    <string name="settings_ai_local_model_hint">Balise du modèle (ex. llama3.2-vision, qwen2.5-vl:7b)</string>
+    <string name="settings_ai_local_privacy">Inférence 100% privée et hors ligne.</string>
+    <string name="settings_ai_custom_desc">Compatible avec OpenAI, OpenRouter, DeepSeek et les points de terminaison de chat standards.</string>
+    <string name="settings_testing_button">⏳ Test en cours...</string>
+    <string name="settings_test_provider_button">⚡ TESTER %s</string>
+    <string name="settings_scraper_token_placeholder">Collez votre jeton d'API Scrape.do ici...</string>
+    <string name="settings_currency_active_index">%s (Indice Actif)</string>
+    <string name="discovery_switch_port">Portage Switch</string>
+    <string name="discovery_modern_port_available">Portage / Remaster moderne disponible</string>
+    <string name="dossier_market_verdict">VERDICT DU MARCHÉ</string>
+    <string name="dossier_analyzing_verification">Gemini analyse la vérification régionale...</string>
 </resources>

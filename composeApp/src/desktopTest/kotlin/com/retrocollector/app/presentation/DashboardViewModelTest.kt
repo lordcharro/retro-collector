@@ -9,6 +9,8 @@ import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardEffect
 import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardViewModel
 import com.retrocollector.app.discovery.domain.usecase.GetSimilarGamesUseCase
 import com.retrocollector.app.dossier.domain.usecase.SendFollowUpChatUseCase
+import com.retrocollector.app.core.presentation.util.UiText
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.scanner.domain.usecase.AnalyzeGameWithGeminiUseCase
 import com.retrocollector.app.settings.domain.model.AppSettings
 import com.retrocollector.app.settings.domain.usecase.UpdateSettingsUseCase
@@ -394,7 +396,7 @@ class DashboardViewModelTest {
         assertEquals("msg_2", viewModel.uiState.value.activeChatMessages.first().id)
         assertEquals(1, repository.getChatMessagesForGame(sampleGame.id).size)
         assertEquals("msg_2", repository.getChatMessagesForGame(sampleGame.id).first().id)
-        assertTrue(effects.any { it is DashboardEffect.ShowToast && it.message == "Message deleted." })
+        assertTrue(effects.any { it is DashboardEffect.ShowToast && (it.message as? UiText.Resource)?.res == Res.string.toast_message_deleted })
 
         job.cancel()
     }

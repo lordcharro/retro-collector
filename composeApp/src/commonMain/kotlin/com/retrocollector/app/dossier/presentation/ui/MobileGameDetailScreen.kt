@@ -191,7 +191,7 @@ fun MobileGameDetailScreen(
                                         color = StatusEnglishFg
                                     )
                                     Text(
-                                        text = "Acquisition cost for collection ROI",
+                                        text = stringResource(Res.string.dossier_paid_price_desc),
                                         style = BodySm.copy(fontSize = 11.sp),
                                         color = TextSecondary
                                     )
@@ -314,7 +314,7 @@ fun MobileGameDetailScreen(
                                         .padding(10.dp)
                                 ) {
                                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        Text(text = "MARKET VERDICT", style = LabelFilterStyle, color = AccentBlue)
+                                        Text(text = stringResource(Res.string.dossier_market_verdict), style = LabelFilterStyle, color = AccentBlue)
                                         Text(text = game.collectorVerdict, style = BodySm, color = TextPrimary)
                                     }
                                 }
@@ -362,7 +362,7 @@ fun MobileGameDetailScreen(
                                 strokeWidth = 2.dp
                             )
                             Text(
-                                text = "Gemini is analyzing regional verification...",
+                                text = stringResource(Res.string.dossier_analyzing_verification),
                                 style = BodySm.copy(fontSize = 12.sp),
                                 color = StatusEnglishFg
                             )

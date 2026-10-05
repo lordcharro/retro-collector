@@ -253,13 +253,15 @@ fun SettingsDialog(
                         }
 
                         if (currentProvider != AiProvider.LOCAL_OLLAMA && currentKey.isBlank()) {
-                            testStatusMessage = "Please enter an API key for ${currentProvider.displayName}."
+                            coroutineScope.launch {
+                                testStatusMessage = getString(Res.string.settings_enter_api_key, currentProvider.displayName)
+                            }
                             return@SettingsAiEngineSection
                         }
 
                         coroutineScope.launch {
                             isTestingAi = true
-                            testStatusMessage = "Testing ${currentProvider.displayName} connection..."
+                            testStatusMessage = getString(Res.string.settings_testing_provider, currentProvider.displayName)
                             try {
                                 withTimeoutOrNull(12_000) {
                                     if (onTestAiConnection != null) {
@@ -288,7 +290,7 @@ fun SettingsDialog(
                                         testStatusMessage = getString(Res.string.settings_status_connected)
                                     }
                                 } ?: run {
-                                    testStatusMessage = "Connection timed out (12s). Check endpoint & network."
+                                    testStatusMessage = getString(Res.string.settings_timeout_ai)
                                 }
                             } catch (e: Exception) {
                                 testStatusMessage = e.message ?: getString(Res.string.settings_status_failed)
@@ -340,7 +342,7 @@ fun SettingsDialog(
                                                 )
                                             }
                                         } ?: run {
-                                            firestoreStatusMessage = "Connection timed out (12s). Check Project ID."
+                                            firestoreStatusMessage = getString(Res.string.settings_timeout_firebase)
                                         }
                                     } catch (e: Exception) {
                                         firestoreStatusMessage = e.message ?: getString(Res.string.settings_firebase_status_failed)

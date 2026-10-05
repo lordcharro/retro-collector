@@ -12,6 +12,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.retrocollector.app.core.domain.model.EnrichmentStatus
 import com.retrocollector.app.core.presentation.theme.*
+import com.retrocollector.app.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
@@ -24,10 +26,10 @@ fun EnrichmentBadge(
     modifier: Modifier = Modifier
 ) {
     val style = when (status) {
-        EnrichmentStatus.PENDING -> EnrichmentStyle("⏳", "Pending", EnrichmentPendingBg, EnrichmentPendingFg)
-        EnrichmentStatus.ENRICHING -> EnrichmentStyle("🔄", "Enriching", EnrichmentRunningBg, EnrichmentRunningFg)
-        EnrichmentStatus.COMPLETE -> EnrichmentStyle("✅", "Ready", StatusEnglishBg, StatusEnglishFg)
-        EnrichmentStatus.FAILED -> EnrichmentStyle("❌", "Failed", StatusRiskBg, StatusRiskFg)
+        EnrichmentStatus.PENDING -> EnrichmentStyle("⏳", stringResource(Res.string.wishlist_enrichment_pending), EnrichmentPendingBg, EnrichmentPendingFg)
+        EnrichmentStatus.ENRICHING -> EnrichmentStyle("🔄", stringResource(Res.string.wishlist_enrichment_running), EnrichmentRunningBg, EnrichmentRunningFg)
+        EnrichmentStatus.COMPLETE -> EnrichmentStyle("✅", stringResource(Res.string.wishlist_enrichment_ready), StatusEnglishBg, StatusEnglishFg)
+        EnrichmentStatus.FAILED -> EnrichmentStyle("❌", stringResource(Res.string.wishlist_enrichment_failed), StatusRiskBg, StatusRiskFg)
     }
 
     Row(

@@ -22,6 +22,9 @@
     <!-- Dashboard & Catalog -->
     <string name="dashboard_search_placeholder">Search title, franchise, SKU (e.g. DOL-P-GALE), or barcode...</string>
     <string name="dashboard_stats_tracked">Tracked Items</string>
+    <string name="dashboard_filter_all">ALL</string>
+    <string name="dashboard_platform_filter">PLATFORM FILTER</string>
+    <string name="dashboard_index_label">INDEX:</string>
     <string name="dashboard_filter_english_only">English Friendly ✅</string>
     <string name="dashboard_filter_usk_alerts">USK Alerts ⚠️</string>
     <string name="dashboard_empty_catalog">No games found matching your search criteria.</string>
@@ -64,6 +67,8 @@
     <string name="dossier_delete_confirm_button">Delete</string>
     <string name="dossier_delete_cancel_button">Cancel</string>
     <string name="dossier_paid_price_label">Purchase Price</string>
+    <string name="dossier_paid_price_desc">Acquisition cost for collection ROI</string>
+    <string name="dossier_context">Context: %1$s (%2$s)</string>
 
     <!-- Quick Scan & Scanner Dialog -->
     <string name="scanner_title">Quick Scan &amp; Verification</string>
@@ -240,4 +245,41 @@
     <string name="settings_scraper_custom_hint">URL of your curl-cffi or custom microservice endpoint. The listing URL will be passed via query parameter.</string>
     <string name="settings_firebase_subtitle">SQLite &amp; Firestore Sync</string>
     <string name="settings_firebase_desc">Synchronizes verified game acquisitions across Mac, Android, and Web.</string>
+
+    <string name="toast_edition_sku_set">Edition SKU set to %s</string>
+    <string name="toast_offer_saved">Offer from %s saved.</string>
+    <string name="toast_offer_deleted">Offer deleted.</string>
+    <string name="toast_added_to_collection">Added "%s" to Collection!</string>
+    <string name="toast_game_removed">Game removed successfully.</string>
+    <string name="toast_firebase_not_configured">Firebase Project ID not configured in Settings</string>
+    <string name="toast_cloud_sync_completed">Cloud sync completed!</string>
+    <string name="toast_sync_error">Sync error: %s</string>
+    <string name="toast_message_deleted">Message deleted.</string>
+    <string name="toast_analysis_completed">Analysis completed successfully!</string>
+    <string name="toast_analysis_error">Analysis error: %s</string>
+    <string name="common_none">none</string>
+    <string name="common_retry">Retry</string>
+    <string name="common_sync_error_default">Sync error</string>
+    <string name="common_analysis_error_default">Analysis error</string>
+    <string name="wishlist_enrichment_pending">Pending</string>
+    <string name="wishlist_enrichment_running">Enriching</string>
+    <string name="wishlist_enrichment_ready">Ready</string>
+    <string name="wishlist_enrichment_failed">Failed</string>
+    <string name="settings_enter_api_key">Please enter an API key for %s.</string>
+    <string name="settings_testing_provider">Testing %s connection...</string>
+    <string name="settings_timeout_ai">Connection timed out (12s). Check endpoint &amp; network.</string>
+    <string name="settings_timeout_firebase">Connection timed out (12s). Check Project ID.</string>
+    <string name="settings_ai_local_url">LOCAL OLLAMA / LM STUDIO SERVER URL</string>
+    <string name="settings_ai_local_presets">LOCAL VISION MODEL PRESETS</string>
+    <string name="settings_ai_local_model_hint">Model tag (e.g. llama3.2-vision, qwen2.5-vl:7b)</string>
+    <string name="settings_ai_local_privacy">100% private and offline inference.</string>
+    <string name="settings_ai_custom_desc">Compatible with OpenAI, OpenRouter, DeepSeek, and standard chat completion endpoints.</string>
+    <string name="settings_testing_button">⏳ Testing...</string>
+    <string name="settings_test_provider_button">⚡ TEST %s</string>
+    <string name="settings_scraper_token_placeholder">Paste your Scrape.do API Token here...</string>
+    <string name="settings_currency_active_index">%s (Active Index)</string>
+    <string name="discovery_switch_port">Switch Port</string>
+    <string name="discovery_modern_port_available">Modern Port / Remaster Available</string>
+    <string name="dossier_market_verdict">MARKET VERDICT</string>
+    <string name="dossier_analyzing_verification">Gemini is analyzing regional verification...</string>
 </resources>

@@ -3,6 +3,7 @@ package com.retrocollector.app.dashboard.presentation.viewmodel
 import androidx.compose.runtime.Immutable
 import com.retrocollector.app.core.domain.model.*
 import com.retrocollector.app.core.domain.repository.IGameRepository
+import com.retrocollector.app.core.presentation.util.UiText
 import com.retrocollector.app.dashboard.domain.model.DashboardFilterCriteria
 import com.retrocollector.app.dashboard.domain.usecase.DeleteGameUseCase
 import com.retrocollector.app.dashboard.domain.usecase.GetDashboardGamesUseCase
@@ -10,6 +11,7 @@ import com.retrocollector.app.dashboard.domain.usecase.SaveGameUseCase
 import com.retrocollector.app.discovery.domain.usecase.GetSimilarGamesUseCase
 import com.retrocollector.app.dossier.domain.usecase.DeleteChatMessageUseCase
 import com.retrocollector.app.dossier.domain.usecase.SendFollowUpChatUseCase
+import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.scanner.domain.usecase.AnalyzeGameWithGeminiUseCase
 import com.retrocollector.app.settings.domain.model.AiProvider
 import com.retrocollector.app.settings.domain.model.AppSettings
@@ -216,21 +218,22 @@ class DashboardViewModel(
             } else state
         }
         scope.launch {
-            _effects.send(DashboardEffect.ShowToast("Edition SKU set to ${cleanCode ?: "none"}"))
+            val codeStr = cleanCode ?: "none"
+            _effects.send(DashboardEffect.ShowToast(UiText(Res.string.toast_edition_sku_set, codeStr)))
         }
     }
 
     fun addOrUpdateOffer(game: GameItem, offer: com.retrocollector.app.core.domain.model.GameOffer) {
         repository.addOrUpdateOffer(game.id, offer)
         scope.launch {
-            _effects.send(DashboardEffect.ShowToast("Offer from ${offer.source} saved."))
+            _effects.send(DashboardEffect.ShowToast(UiText(Res.string.toast_offer_saved, offer.source)))
         }
     }
 
     fun deleteOffer(game: GameItem, offerId: String) {
         repository.deleteOffer(game.id, offerId)
         scope.launch {
-            _effects.send(DashboardEffect.ShowToast("Offer deleted."))
+            _effects.send(DashboardEffect.ShowToast(UiText(Res.string.toast_offer_deleted)))
         }
     }
 
@@ -242,7 +245,7 @@ class DashboardViewModel(
     ) {
         repository.convertOfferToOwned(game.id, offerId, finalPrice, condition)
         scope.launch {
-            _effects.send(DashboardEffect.ShowToast("Added \"${game.title}\" to Collection!"))
+            _effects.send(DashboardEffect.ShowToast(UiText(Res.string.toast_added_to_collection, game.title)))
         }
     }
 
@@ -256,7 +259,7 @@ class DashboardViewModel(
             )
         }
         scope.launch {
-            _effects.send(DashboardEffect.ShowToast("Game removed successfully."))
+            _effects.send(DashboardEffect.ShowToast(UiText(Res.string.toast_game_removed)))
         }
     }
 
@@ -328,7 +331,7 @@ class DashboardViewModel(
         val projectId = repository.settings.value.firebaseProjectId.trim()
         if (projectId.isBlank()) {
             scope.launch {
-                _effects.send(DashboardEffect.ShowToast("Firebase Project ID not configured in Settings", isError = true))
+                _effects.send(DashboardEffect.ShowToast(UiText(Res.string.toast_firebase_not_configured), isError = true))
             }
             return
         }
@@ -339,11 +342,11 @@ class DashboardViewModel(
                 _uiState.update { it.copy(isSyncing = false) }
                 result.fold(
                     onSuccess = {
-                        _effects.send(DashboardEffect.ShowToast("Cloud sync completed!"))
+                        _effects.send(DashboardEffect.ShowToast(UiText(Res.string.toast_cloud_sync_completed)))
                     },
                     onFailure = { err ->
                         val msg = err.message ?: "Sync error"
-                        _effects.send(DashboardEffect.ShowToast("Sync error: $msg", isError = true))
+                        _effects.send(DashboardEffect.ShowToast(UiText(Res.string.toast_sync_error, msg), isError = true))
                     }
                 )
             } catch (e: kotlinx.coroutines.CancellationException) {
@@ -351,7 +354,7 @@ class DashboardViewModel(
             } catch (e: Throwable) {
                 _uiState.update { it.copy(isSyncing = false) }
                 val msg = e.message ?: "Sync error"
-                _effects.send(DashboardEffect.ShowToast("Sync error: $msg", isError = true))
+                _effects.send(DashboardEffect.ShowToast(UiText(Res.string.toast_sync_error, msg), isError = true))
             }
         }
     }
@@ -417,7 +420,7 @@ class DashboardViewModel(
         }
         deleteChatMessageUseCase(messageId)
         scope.launch {
-            _effects.send(DashboardEffect.ShowToast("Message deleted."))
+            _effects.send(DashboardEffect.ShowToast(UiText(Res.string.toast_message_deleted)))
         }
     }
 
@@ -439,11 +442,11 @@ class DashboardViewModel(
                     _effects.send(DashboardEffect.ScanCompleted(gameItem))
                     _effects.send(DashboardEffect.NavigateToGameDetail(gameItem))
                 }
-                _effects.send(DashboardEffect.ShowToast("Analysis completed successfully!"))
+                _effects.send(DashboardEffect.ShowToast(UiText(Res.string.toast_analysis_completed)))
             }.onFailure { err ->
                 val msg = err.message ?: "Analysis error"
                 _uiState.update { it.copy(isAnalyzing = false, scanErrorMessage = msg) }
-                _effects.send(DashboardEffect.ShowToast("Analysis error: $msg", isError = true))
+                _effects.send(DashboardEffect.ShowToast(UiText(Res.string.toast_analysis_error, msg), isError = true))
             }
         }
     }

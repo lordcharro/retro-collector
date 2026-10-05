@@ -628,7 +628,7 @@ fun SettingsAiEngineSection(
                             }
                         )
                         Text(
-                            text = "Compatible with OpenAI, OpenRouter, DeepSeek, and standard chat completion endpoints.",
+                            text = stringResource(Res.string.settings_ai_custom_desc),
                             style = BodySm.copy(fontSize = 11.sp),
                             color = TextSecondary
                         )
@@ -637,7 +637,7 @@ fun SettingsAiEngineSection(
 
                 AiProvider.LOCAL_OLLAMA -> {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(text = "LOCAL OLLAMA / LM STUDIO SERVER URL", style = LabelFilterStyle, color = TextPrimary)
+                        Text(text = stringResource(Res.string.settings_ai_local_url), style = LabelFilterStyle, color = TextPrimary)
                         TactileTextField(
                             value = localAiBaseUrl,
                             onValueChange = onLocalAiBaseUrlChange,
@@ -650,7 +650,7 @@ fun SettingsAiEngineSection(
                     }
 
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(text = "LOCAL VISION MODEL PRESETS", style = LabelFilterStyle, color = TextPrimary)
+                        Text(text = stringResource(Res.string.settings_ai_local_presets), style = LabelFilterStyle, color = TextPrimary)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -681,14 +681,14 @@ fun SettingsAiEngineSection(
                         TactileTextField(
                             value = selectedLocalAiModel,
                             onValueChange = onLocalAiModelChange,
-                            placeholder = "Model tag (e.g. llama3.2-vision, qwen2.5-vl:7b)",
+                            placeholder = stringResource(Res.string.settings_ai_local_model_hint),
                             textStyle = CodeSkuStyle.copy(color = TextPrimary),
                             placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg),
                             backgroundColor = SurfaceCard,
                             modifier = Modifier.fillMaxWidth()
                         )
                         Text(
-                            text = "100% private and offline inference. " + stringResource(Res.string.settings_ai_local_vision_hint),
+                            text = "${stringResource(Res.string.settings_ai_local_privacy)} ${stringResource(Res.string.settings_ai_local_vision_hint)}",
                             style = BodySm.copy(fontSize = 11.sp),
                             color = TextSecondary
                         )
@@ -710,7 +710,11 @@ fun SettingsAiEngineSection(
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = if (isTestingAi) "⏳ Testing..." else "⚡ TEST ${selectedAiProvider.displayName.uppercase()}",
+                        text = if (isTestingAi) {
+                            stringResource(Res.string.settings_testing_button)
+                        } else {
+                            stringResource(Res.string.settings_test_provider_button, selectedAiProvider.displayName.uppercase())
+                        },
                         style = LabelFilterStyle,
                         color = TextPrimary
                     )
@@ -880,7 +884,7 @@ fun SettingsMarketplaceSection(
             ) {
                 Text(text = stringResource(Res.string.settings_currency_label), style = LabelFilterStyle, color = TextPrimary)
                 Text(
-                    text = "$selectedCurrency (Active Index)",
+                    text = stringResource(Res.string.settings_currency_active_index, selectedCurrency),
                     style = CodeSkuStyle.copy(fontSize = 11.sp),
                     color = StatusEnglishFg
                 )
@@ -1017,7 +1021,7 @@ fun SettingsMarketplaceSection(
                                     text = provider.displayName,
                                     style = LabelFilterStyle.copy(fontSize = 11.sp),
                                     color = if (isSelected) TextPrimary else TextSecondary
-                                )
+                                    )
                             }
                         }
                     }
@@ -1046,7 +1050,7 @@ fun SettingsMarketplaceSection(
                                 TactileTextField(
                                     value = scrapeDoKey,
                                     onValueChange = onScrapeDoKeyChange,
-                                    placeholder = "Paste your Scrape.do API Token here...",
+                                    placeholder = stringResource(Res.string.settings_scraper_token_placeholder),
                                     textStyle = CodeSkuStyle.copy(color = TextPrimary, fontSize = 11.sp),
                                     placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg, fontSize = 11.sp),
                                     backgroundColor = SurfaceCard,
@@ -1208,7 +1212,11 @@ fun SettingsFirebaseSection(
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = if (isTestingFirestore) "⏳ Testing..." else "⚡ " + stringResource(Res.string.settings_firebase_test_button).uppercase(),
+                        text = if (isTestingFirestore) {
+                            stringResource(Res.string.settings_testing_button)
+                        } else {
+                            "⚡ " + stringResource(Res.string.settings_firebase_test_button).uppercase()
+                        },
                         style = LabelFilterStyle,
                         color = TextPrimary
                     )

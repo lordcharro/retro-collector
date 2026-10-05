@@ -183,7 +183,7 @@ fun DesktopWorkstationScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "PLATFORM FILTER",
+                        text = stringResource(Res.string.dashboard_platform_filter),
                         style = LabelFilterStyle.copy(fontSize = 11.sp),
                         color = StatusUnverifiedFg
                     )
@@ -302,7 +302,7 @@ fun DesktopWorkstationScreen(
                             horizontalArrangement = Arrangement.spacedBy(5.dp)
                         ) {
                             Text(
-                                text = "INDEX:",
+                                text = stringResource(Res.string.dashboard_index_label),
                                 style = LabelBadgeStyle.copy(fontSize = 10.sp),
                                 color = StatusUnverifiedFg
                             )
@@ -335,14 +335,14 @@ fun DesktopWorkstationScreen(
                                     color = StatusEnglishFg
                                 )
                                 Text(
-                                    text = "Syncing...",
+                                    text = stringResource(Res.string.dashboard_syncing),
                                     style = LabelBadgeStyle.copy(fontSize = 11.sp),
                                     color = StatusEnglishFg
                                 )
                             } else {
                                 Text(text = "🔄", fontSize = 11.sp)
                                 Text(
-                                    text = "Sync",
+                                    text = stringResource(Res.string.dashboard_sync),
                                     style = LabelFilterStyle.copy(fontSize = 11.sp),
                                     color = if (state.settings.firebaseProjectId.isNotBlank()) TextPrimary else TextSecondary
                                 )
@@ -403,7 +403,7 @@ fun DesktopWorkstationScreen(
                                             .padding(horizontal = 8.dp, vertical = 5.dp)
                                     ) {
                                         Text(
-                                            text = "ALL",
+                                            text = stringResource(Res.string.dashboard_filter_all),
                                             style = LabelFilterStyle,
                                             color = if (isAllSelected) Color.White else TextPrimary,
                                             maxLines = 1,
@@ -812,7 +812,7 @@ fun DesktopWorkstationScreen(
                                                     strokeWidth = 2.dp
                                                 )
                                                 Text(
-                                                    text = "Gemini is analyzing regional verification...",
+                                                    text = stringResource(Res.string.dossier_analyzing_verification),
                                                     style = BodySm.copy(fontSize = 12.sp),
                                                     color = StatusEnglishFg
                                                 )
@@ -835,7 +835,7 @@ fun DesktopWorkstationScreen(
                                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                                     ) {
                                         Text(
-                                            text = "Context: ${game.title} (${game.productCode ?: "PAL"})",
+                                            text = stringResource(Res.string.dossier_context, game.title, game.productCode ?: "PAL"),
                                             style = CodeSkuStyle.copy(fontSize = 11.sp),
                                             color = StatusUnverifiedFg
                                         )

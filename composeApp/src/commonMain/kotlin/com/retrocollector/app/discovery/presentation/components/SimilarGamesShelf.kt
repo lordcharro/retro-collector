@@ -146,7 +146,7 @@ fun SimilarGamesShelf(
 
                         if (!simGame.modernPortDetails.isNullOrBlank()) {
                             Text(
-                                text = "✨ Switch Port",
+                                text = "✨ " + stringResource(Res.string.discovery_switch_port),
                                 style = CodeSkuStyle.copy(fontSize = 9.sp),
                                 color = AccentBlue
                             )
@@ -171,7 +171,7 @@ fun SimilarGamesShelf(
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
                                     Text(
-                                        text = "+ Wish",
+                                        text = stringResource(Res.string.discovery_action_add_wishlist),
                                         style = LabelBadgeStyle.copy(fontSize = 9.sp),
                                         color = Color.White
                                     )
