@@ -244,17 +244,15 @@ fun DesktopWorkstationScreen(
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Box(modifier = Modifier.size(6.dp).background(StatusEnglishFg, RoundedCornerShape(3.dp)))
-                        Text(text = stringResource(Res.string.app_tagline), style = CodeSkuStyle.copy(fontSize = 10.sp), color = StatusUnverifiedFg)
-                    }
-                    Text(text = stringResource(Res.string.app_ready), style = LabelBadgeStyle.copy(fontSize = 10.sp), color = StatusEnglishFg)
+                    Box(modifier = Modifier.size(6.dp).background(StatusEnglishFg, RoundedCornerShape(3.dp)))
+                    Text(
+                        text = "RetroCollector v1.0.0",
+                        style = CodeSkuStyle.copy(fontSize = 10.sp),
+                        color = StatusUnverifiedFg
+                    )
                 }
             }
         }

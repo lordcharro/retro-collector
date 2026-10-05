@@ -58,6 +58,8 @@ fun RetroTactileTheme(
     val tactileColors = if (isDark) TactileDarkColors else TactileLightColors
     val m3Colors = if (isDark) M3DarkColorScheme else M3LightColorScheme
 
+    com.retrocollector.app.core.presentation.util.PlatformSystemBars(isDark = isDark)
+
     CompositionLocalProvider(
         LocalTactileColors provides tactileColors
     ) {

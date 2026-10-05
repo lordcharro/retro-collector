@@ -63,19 +63,24 @@ fun MobileGameDetailScreen(
         modifier = modifier.fillMaxSize(),
         containerColor = SurfaceBase,
         topBar = {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(54.dp)
                     .background(SurfaceCard)
-                    .border(BorderStroke(1.dp, BorderSubtle))
-                    .padding(horizontal = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .statusBarsPadding()
             ) {
-                TextButton(onClick = onBack) {
-                    Text("← " + stringResource(Res.string.nav_back), color = AccentBlue, style = LabelFilterStyle)
-                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                        .border(BorderStroke(1.dp, BorderSubtle))
+                        .padding(horizontal = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextButton(onClick = onBack) {
+                        Text("← " + stringResource(Res.string.nav_back), color = AccentBlue, style = LabelFilterStyle)
+                    }
 
                 var showDeleteConfirm by remember(game.id) { mutableStateOf(false) }
 
@@ -102,7 +107,8 @@ fun MobileGameDetailScreen(
                 }
             }
         }
-    ) { paddingValues ->
+    }
+) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

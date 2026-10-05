@@ -246,17 +246,17 @@
     <string name="settings_firebase_subtitle">Sincronização SQLite e Firestore</string>
     <string name="settings_firebase_desc">Sincroniza aquisições de jogos verificadas entre Mac, Android e Web.</string>
 
-    <string name="toast_edition_sku_set">SKU da edição definido para %s</string>
-    <string name="toast_offer_saved">Oferta de %s guardada.</string>
+    <string name="toast_edition_sku_set">SKU da edição definido para %1$s</string>
+    <string name="toast_offer_saved">Oferta de %1$s guardada.</string>
     <string name="toast_offer_deleted">Oferta eliminada.</string>
-    <string name="toast_added_to_collection">Adicionado "%s" à Coleção!</string>
+    <string name="toast_added_to_collection">Adicionado "%1$s" à Coleção!</string>
     <string name="toast_game_removed">Jogo removido com sucesso.</string>
     <string name="toast_firebase_not_configured">ID do Projeto Firebase não configurado nas Definições</string>
     <string name="toast_cloud_sync_completed">Sincronização na nuvem concluída!</string>
-    <string name="toast_sync_error">Erro de sincronização: %s</string>
+    <string name="toast_sync_error">Erro de sincronização: %1$s</string>
     <string name="toast_message_deleted">Mensagem eliminada.</string>
     <string name="toast_analysis_completed">Análise concluída com sucesso!</string>
-    <string name="toast_analysis_error">Erro de análise: %s</string>
+    <string name="toast_analysis_error">Erro de análise: %1$s</string>
     <string name="common_none">nenhum</string>
     <string name="common_retry">Tentar novamente</string>
     <string name="common_sync_error_default">Erro de sincronização</string>
@@ -265,8 +265,8 @@
     <string name="wishlist_enrichment_running">A enriquecer</string>
     <string name="wishlist_enrichment_ready">Pronto</string>
     <string name="wishlist_enrichment_failed">Falhou</string>
-    <string name="settings_enter_api_key">Por favor, introduza uma chave de API para %s.</string>
-    <string name="settings_testing_provider">A testar a ligação a %s...</string>
+    <string name="settings_enter_api_key">Por favor, introduza uma chave de API para %1$s.</string>
+    <string name="settings_testing_provider">A testar a ligação a %1$s...</string>
     <string name="settings_timeout_ai">Tempo limite de ligação excedido (12s). Verifique o endpoint e a rede.</string>
     <string name="settings_timeout_firebase">Tempo limite de ligação excedido (12s). Verifique o ID do Projeto.</string>
     <string name="settings_ai_local_url">URL DO SERVIDOR OLLAMA / LM STUDIO LOCAL</string>
@@ -275,9 +275,9 @@
     <string name="settings_ai_local_privacy">Inferência 100% privada e offline.</string>
     <string name="settings_ai_custom_desc">Compatível com OpenAI, OpenRouter, DeepSeek e endpoints padrão de chat completion.</string>
     <string name="settings_testing_button">⏳ A testar...</string>
-    <string name="settings_test_provider_button">⚡ TESTAR %s</string>
+    <string name="settings_test_provider_button">⚡ TESTAR %1$s</string>
     <string name="settings_scraper_token_placeholder">Cole o seu Token de API Scrape.do aqui...</string>
-    <string name="settings_currency_active_index">%s (Índice Ativo)</string>
+    <string name="settings_currency_active_index">%1$s (Índice Ativo)</string>
     <string name="discovery_switch_port">Port Switch</string>
     <string name="discovery_modern_port_available">Port / Remaster Moderno Disponível</string>
     <string name="dossier_market_verdict">VEREDITO DE MERCADO</string>

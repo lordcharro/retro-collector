@@ -51,15 +51,20 @@ fun MobileFieldDashboardScreen(
         modifier = modifier.fillMaxSize(),
         containerColor = SurfaceBase,
         topBar = {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(54.dp)
                     .background(SurfaceBase.copy(alpha = 0.9f))
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .statusBarsPadding()
             ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -120,8 +125,9 @@ fun MobileFieldDashboardScreen(
                     }
                 }
             }
-        },
-        floatingActionButton = {
+        }
+    },
+    floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { actions.onOpenScanDialog() },
                 containerColor = ConsoleGamecube,

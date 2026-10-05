@@ -246,17 +246,17 @@
     <string name="settings_firebase_subtitle">SQLite &amp; Firestore Sync</string>
     <string name="settings_firebase_desc">Synchronizes verified game acquisitions across Mac, Android, and Web.</string>
 
-    <string name="toast_edition_sku_set">Edition SKU set to %s</string>
-    <string name="toast_offer_saved">Offer from %s saved.</string>
+    <string name="toast_edition_sku_set">Edition SKU set to %1$s</string>
+    <string name="toast_offer_saved">Offer from %1$s saved.</string>
     <string name="toast_offer_deleted">Offer deleted.</string>
-    <string name="toast_added_to_collection">Added "%s" to Collection!</string>
+    <string name="toast_added_to_collection">Added "%1$s" to Collection!</string>
     <string name="toast_game_removed">Game removed successfully.</string>
     <string name="toast_firebase_not_configured">Firebase Project ID not configured in Settings</string>
     <string name="toast_cloud_sync_completed">Cloud sync completed!</string>
-    <string name="toast_sync_error">Sync error: %s</string>
+    <string name="toast_sync_error">Sync error: %1$s</string>
     <string name="toast_message_deleted">Message deleted.</string>
     <string name="toast_analysis_completed">Analysis completed successfully!</string>
-    <string name="toast_analysis_error">Analysis error: %s</string>
+    <string name="toast_analysis_error">Analysis error: %1$s</string>
     <string name="common_none">none</string>
     <string name="common_retry">Retry</string>
     <string name="common_sync_error_default">Sync error</string>
@@ -265,8 +265,8 @@
     <string name="wishlist_enrichment_running">Enriching</string>
     <string name="wishlist_enrichment_ready">Ready</string>
     <string name="wishlist_enrichment_failed">Failed</string>
-    <string name="settings_enter_api_key">Please enter an API key for %s.</string>
-    <string name="settings_testing_provider">Testing %s connection...</string>
+    <string name="settings_enter_api_key">Please enter an API key for %1$s.</string>
+    <string name="settings_testing_provider">Testing %1$s connection...</string>
     <string name="settings_timeout_ai">Connection timed out (12s). Check endpoint &amp; network.</string>
     <string name="settings_timeout_firebase">Connection timed out (12s). Check Project ID.</string>
     <string name="settings_ai_local_url">LOCAL OLLAMA / LM STUDIO SERVER URL</string>
@@ -275,9 +275,9 @@
     <string name="settings_ai_local_privacy">100% private and offline inference.</string>
     <string name="settings_ai_custom_desc">Compatible with OpenAI, OpenRouter, DeepSeek, and standard chat completion endpoints.</string>
     <string name="settings_testing_button">⏳ Testing...</string>
-    <string name="settings_test_provider_button">⚡ TEST %s</string>
+    <string name="settings_test_provider_button">⚡ TEST %1$s</string>
     <string name="settings_scraper_token_placeholder">Paste your Scrape.do API Token here...</string>
-    <string name="settings_currency_active_index">%s (Active Index)</string>
+    <string name="settings_currency_active_index">%1$s (Active Index)</string>
     <string name="discovery_switch_port">Switch Port</string>
     <string name="discovery_modern_port_available">Modern Port / Remaster Available</string>
     <string name="dossier_market_verdict">MARKET VERDICT</string>
