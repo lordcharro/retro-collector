@@ -119,10 +119,23 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "RetroCollector"
             packageVersion = "1.0.0"
+            description = "RetroCollector - Swiss & European Retro Video Game Price & Condition Tracker"
+            copyright = "© 2026 RetroCollector"
+            vendor = "RetroCollector"
+
+            modules(
+                "java.net.http",
+                "java.instrument",
+                "java.management",
+                "jdk.unsupported",
+                "java.naming",
+                "java.xml"
+            )
 
             macOS {
                 iconFile.set(project.file("src/desktopMain/resources/app_icon.icns"))
                 bundleID = "com.retrocollector.app"
+                dockName = "RetroCollector"
             }
         }
     }

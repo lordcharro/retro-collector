@@ -13,11 +13,12 @@ import java.awt.Taskbar
 import javax.imageio.ImageIO
 
 fun main() {
+    System.setProperty("apple.awt.application.name", "RetroCollector")
+    System.setProperty("apple.awt.application.appearance", "system")
     Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
         System.err.println("Uncaught exception on thread ${thread.name}: ${throwable.message}")
         throwable.printStackTrace()
     }
-    System.setProperty("apple.awt.application.appearance", "system")
     setupMacDockIcon()
 
     application {

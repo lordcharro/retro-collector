@@ -7,10 +7,10 @@
 
 ## 🔴 Critical / Broken
 
-- [ ] **macOS app name shows "java" in the menu bar and Dock**
-  - Root cause: the `packageName` in `compose.desktop.application` is set but the JVM process name defaults to `java` when running via `./gradlew :composeApp:run`.
-  - Fix: set `-Dapple.awt.application.name=RetroCollector` in the JVM args in `Main.kt`, or build the native `.app` bundle via `./gradlew :composeApp:createDistributable` and run from there.
-  - File: [`composeApp/build.gradle.kts`](composeApp/build.gradle.kts), [`Main.kt`](composeApp/src/desktopMain/kotlin/com/retrocollector/app/Main.kt)
+- [x] **macOS app name shows "java" in the menu bar and Dock**
+  - Configured `nativeDistributions.macOS.dockName = "RetroCollector"`, `bundleID`, and icon assets in [`composeApp/build.gradle.kts`](composeApp/build.gradle.kts).
+  - Note: Raw `./gradlew :composeApp:run` launches unbundled `/bin/java` directly, which the macOS kernel/Dock identifies as "java". Launching the packaged native bundle via `./gradlew :composeApp:runDistributable` or `make run-app` reads `Info.plist` and displays "RetroCollector" with proper icon and menu bar branding.
+  - File: [`composeApp/build.gradle.kts`](composeApp/build.gradle.kts), [`Main.kt`](composeApp/src/desktopMain/kotlin/com/retrocollector/app/Main.kt), [`Makefile`](Makefile)
 
 - [ ] **Firestore access is unauthenticated (relies on "test mode")**
   - `FirestoreService` hits the REST API with no auth token; Firestore test mode expires after 30 days and is publicly writable.

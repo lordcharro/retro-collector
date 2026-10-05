@@ -6,7 +6,7 @@
 JAVA_HOME ?= $(shell /usr/libexec/java_home -v 21 2>/dev/null || echo "/Users/ivolopes/Library/Java/JavaVirtualMachines/jbr-21.0.11/Contents/Home")
 GRADLE = JAVA_HOME="$(JAVA_HOME)" ./gradlew
 
-.PHONY: help check detekt lint test test-arch build run-desktop clean
+.PHONY: help check detekt lint test test-arch build run-desktop run-app package-app package-dmg clean
 
 ## 📖 help: Show this help message
 help:
@@ -48,6 +48,24 @@ check: detekt test test-arch
 run-desktop:
 	@echo "==> Launching Desktop application..."
 	$(GRADLE) :composeApp:run
+
+## 🍎 run-app: Launch packaged native app (shows RetroCollector in Dock & Menu Bar)
+run-app:
+	@echo "==> Launching native Desktop bundle..."
+	$(GRADLE) :composeApp:runDistributable
+
+## 📦 package-app: Build standalone macOS .app bundle
+package-app:
+	@echo "==> Building standalone .app bundle..."
+	$(GRADLE) :composeApp:createDistributable
+	@echo "==> App created at: composeApp/build/compose/binaries/main/app/RetroCollector.app"
+
+## 💿 package-dmg: Build installable macOS .dmg disk image
+package-dmg:
+	@echo "==> Building installer .dmg..."
+	$(GRADLE) :composeApp:packageDmg
+	@echo "==> DMG created at: composeApp/build/compose/binaries/main/dmg/"
+
 
 ## 🔨 build: Build all targets
 build:
