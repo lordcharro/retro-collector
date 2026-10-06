@@ -18,7 +18,7 @@ import com.retrocollector.app.settings.domain.model.AppSettings
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.getString
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun SettingsDialog(

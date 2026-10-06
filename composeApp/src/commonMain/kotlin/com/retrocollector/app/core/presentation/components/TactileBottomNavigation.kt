@@ -205,13 +205,13 @@ fun ActivityNavIcon(color: Color, modifier: Modifier = Modifier) {
         val path = Path().apply {
             moveTo(w * 0.28f, h * 0.22f)
             lineTo(w * 0.18f, h * 0.22f)
-            quadraticBezierTo(w * 0.12f, h * 0.22f, w * 0.12f, h * 0.32f)
+            quadraticTo(w * 0.12f, h * 0.22f, w * 0.12f, h * 0.32f)
             lineTo(w * 0.12f, h * 0.86f)
-            quadraticBezierTo(w * 0.12f, h * 0.94f, w * 0.20f, h * 0.94f)
+            quadraticTo(w * 0.12f, h * 0.94f, w * 0.20f, h * 0.94f)
             lineTo(w * 0.80f, h * 0.94f)
-            quadraticBezierTo(w * 0.88f, h * 0.94f, w * 0.88f, h * 0.86f)
+            quadraticTo(w * 0.88f, h * 0.94f, w * 0.88f, h * 0.86f)
             lineTo(w * 0.88f, h * 0.32f)
-            quadraticBezierTo(w * 0.88f, h * 0.22f, w * 0.82f, h * 0.22f)
+            quadraticTo(w * 0.88f, h * 0.22f, w * 0.82f, h * 0.22f)
             lineTo(w * 0.72f, h * 0.22f)
         }
         drawPath(path, color, style = stroke)
@@ -220,9 +220,9 @@ fun ActivityNavIcon(color: Color, modifier: Modifier = Modifier) {
         val clipPath = Path().apply {
             moveTo(w * 0.34f, h * 0.22f)
             lineTo(w * 0.34f, h * 0.12f)
-            quadraticBezierTo(w * 0.34f, h * 0.06f, w * 0.42f, h * 0.06f)
+            quadraticTo(w * 0.34f, h * 0.06f, w * 0.42f, h * 0.06f)
             lineTo(w * 0.58f, h * 0.06f)
-            quadraticBezierTo(w * 0.66f, h * 0.06f, w * 0.66f, h * 0.12f)
+            quadraticTo(w * 0.66f, h * 0.06f, w * 0.66f, h * 0.12f)
             lineTo(w * 0.66f, h * 0.22f)
             close()
         }

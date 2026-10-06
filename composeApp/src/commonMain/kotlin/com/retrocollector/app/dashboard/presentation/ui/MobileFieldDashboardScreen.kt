@@ -27,7 +27,7 @@ import com.retrocollector.app.discovery.presentation.ui.DiscoveryScreen
 import com.retrocollector.app.discovery.presentation.viewmodel.DiscoveryUiState
 import com.retrocollector.app.wishlist.presentation.ui.WishlistScreen
 import com.retrocollector.app.wishlist.presentation.viewmodel.WishlistUiState
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun MobileFieldDashboardScreen(

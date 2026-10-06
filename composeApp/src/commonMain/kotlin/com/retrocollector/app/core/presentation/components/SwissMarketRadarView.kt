@@ -16,7 +16,7 @@ import com.retrocollector.app.core.presentation.util.PriceFormatter
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.ui.text.style.TextOverflow
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

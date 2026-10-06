@@ -33,7 +33,7 @@ import com.retrocollector.app.core.presentation.components.TactileSearchField
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.discovery.presentation.components.DiscoveredGameCard
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 
 @Suppress("LongParameterList")
 @Composable

@@ -11,6 +11,5 @@ class RetroCollectorApplication : Application() {
 
     companion object {
         var appContext: Context? = null
-            internal set
     }
 }

@@ -22,6 +22,7 @@ import com.retrocollector.app.core.presentation.util.setAppLocale
 
 @Composable
 fun App() {
+    @Suppress("DEPRECATION")
     KoinApplication(application = { modules(appModules) }) {
         val dashboardViewModel = koinInject<DashboardViewModel>()
         val discoveryViewModel = koinInject<DiscoveryViewModel>()

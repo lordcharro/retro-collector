@@ -22,7 +22,7 @@ import com.retrocollector.app.core.domain.model.GameItem
 import com.retrocollector.app.core.domain.model.LanguageStatus
 import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.core.presentation.util.PriceFormatter
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun GameListItemRow(

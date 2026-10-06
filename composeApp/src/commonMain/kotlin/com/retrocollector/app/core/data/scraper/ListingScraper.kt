@@ -12,7 +12,8 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import io.ktor.http.encodeURLQueryComponent
 import io.ktor.http.isSuccess
-import io.ktor.util.encodeBase64
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -339,7 +340,8 @@ class ListingScraper(
             }
             if (response.status.isSuccess()) {
                 val bytes = response.body<ByteArray>()
-                val base64 = bytes.encodeBase64()
+                @OptIn(ExperimentalEncodingApi::class)
+                val base64 = Base64.Default.encode(bytes)
                 val mime = response.contentType()?.let { "${it.contentType}/${it.contentSubtype}" } ?: "image/jpeg"
                 "data:$mime;base64,$base64"
             } else null

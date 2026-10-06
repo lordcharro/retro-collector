@@ -46,15 +46,16 @@ Covers **30 consoles across 5 ecosystems** — Nintendo, PlayStation, Xbox, Sega
 ## 🚀 Supported Platforms (3-in-1 Shared Codebase)
 
 1. **📱 Android (`:androidApp`)**
-   - Install the debug APK directly: `composeApp/build/outputs/apk/debug/composeApp-debug.apk`
+   - Install the debug APK directly: `androidApp/build/outputs/apk/debug/androidApp-debug.apk`
    - Integrated with the Android Share menu (`ACTION_SEND`): share a Ricardo.ch or Tutti.ch listing directly into the app.
 
 2. **💻 Desktop macOS (`:desktopApp`)**
-   - UberJar built at: `composeApp/build/compose/jars/RetroCollector-macos-x64-1.0.0.jar`
-   - Run with: `./gradlew :composeApp:run`
+   - Standalone app bundle: `make package-app` or `./gradlew :composeApp:createDistributable`
+   - Run with: `make run-desktop` or `./gradlew :composeApp:run`
 
 3. **🌐 WebAssembly (Wasm) & Docker on Synology NAS (`:wasmJs`)**
-   - High-performance Wasm build via Skiko / Canvas.
+   - High-performance Wasm build via Skiko / Canvas (`ComposeViewport`).
+   - Run dev server with live reload: `make run-web` or `./gradlew :composeApp:wasmJsBrowserDevelopmentRun`
    - Ready-to-use Docker setup for Synology Container Manager in `docker/docker-compose.yml` and `docker/nginx.conf`.
 
 ---
@@ -77,28 +78,73 @@ Covers **30 consoles across 5 ecosystems** — Nintendo, PlayStation, Xbox, Sega
 
 Run the native window app:
 ```bash
-./gradlew :composeApp:run
+make run-desktop
+# or: ./gradlew :composeApp:run
 ```
-Or run the JAR directly:
+Or launch the packaged native app bundle:
 ```bash
-java -jar "composeApp/build/compose/jars/RetroCollector-macos-x64-1.0.0.jar"
+make run-app
+# or: ./gradlew :composeApp:runDistributable
 ```
 
 ### 2. Android
 
-Install the debug APK via adb:
+Build and install the debug APK via adb:
 ```bash
-adb install -r "composeApp/build/outputs/apk/debug/composeApp-debug.apk"
+./gradlew :androidApp:assembleDebug
+adb install -r "androidApp/build/outputs/apk/debug/androidApp-debug.apk"
 ```
-Or open this project in **Android Studio** and select the `composeApp` run target for your device or emulator.
+Or open this project in **Android Studio** and select the `:androidApp` run target for your device or emulator.
 
-### 3. Synology NAS (Docker)
+### 3. Web App (Kotlin/Wasm in Browser)
+
+RetroCollector compiles to WebAssembly (`wasmJs`) using Compose Multiplatform.
+
+> 💡 **Browser Compatibility Notice**:
+> Kotlin/Wasm requires a browser supporting **WebAssembly Garbage Collection (WasmGC)**:
+> - **Google Chrome** (v119+) — *Recommended on macOS Monterey*
+> - **Firefox** (v120+) — *Supported*
+> - **Safari** (v18.2+ on macOS 14+ / iOS 18+) — *Older Safari versions on macOS 12 Monterey do not support WasmGC by default.*
+
+#### Development Mode (Live Reload Server)
+Start the Webpack development server:
+```bash
+make run-web
+# or: ./gradlew :composeApp:wasmJsBrowserDevelopmentRun
+```
+Then open the app in **Google Chrome** or your default browser:
+```bash
+make open-web
+# or: open -a "Google Chrome" http://localhost:8080
+```
+
+#### Production Mode (Optimized)
+Run with Binaryen (`wasm-opt`) optimization enabled (~5 MB Wasm bundle):
+```bash
+make run-web-prod
+# or: ./gradlew :composeApp:wasmJsBrowserProductionRun
+```
+
+#### Build Static Distribution for Web Hosting
+Build the static website files:
+```bash
+make package-web
+# or: ./gradlew :composeApp:wasmJsBrowserDistribution
+```
+The deployable static bundle will be generated at `composeApp/build/dist/wasmJs/productionExecutable/`. You can preview it with any local HTTP server:
+```bash
+python3 -m http.server 8080 -d composeApp/build/dist/wasmJs/productionExecutable
+open -a "Google Chrome" http://localhost:8080
+```
+
+### 4. Synology NAS (Docker)
 
 The `docker/` folder contains everything needed to serve the WebAssembly build:
 
 1. Build the Wasm distribution on your Mac:
    ```bash
-   ./gradlew :composeApp:wasmJsBrowserDistribution
+   make package-web
+   # or: ./gradlew :composeApp:wasmJsBrowserDistribution
    ```
 2. Copy the generated `dist` folder to your Synology.
 3. Start the container in **Synology Container Manager**:

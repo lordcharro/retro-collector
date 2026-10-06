@@ -24,7 +24,7 @@ import com.retrocollector.app.core.presentation.theme.LabelFilterStyle
 import com.retrocollector.app.core.presentation.theme.RetroTactileTheme
 import com.retrocollector.app.core.presentation.theme.TextPrimary
 import com.retrocollector.app.core.presentation.theme.TextSecondary
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun TacticalEmptyState(

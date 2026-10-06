@@ -6,7 +6,8 @@ import com.retrocollector.app.core.data.datasource.StitchGeminiStructuredVerdict
 import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.DiscoveredGameItem
 import com.retrocollector.app.core.domain.model.LanguageStatus
-import io.ktor.util.decodeBase64Bytes
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlinx.serialization.json.Json
 
 object AiResponseParser {
@@ -93,7 +94,8 @@ object AiResponseParser {
             return null
         }
         return try {
-            val bytes = clean.decodeBase64Bytes()
+            @OptIn(ExperimentalEncodingApi::class)
+            val bytes = Base64.Default.decode(clean)
             if (bytes.isNotEmpty()) clean else null
         } catch (_: Exception) {
             null

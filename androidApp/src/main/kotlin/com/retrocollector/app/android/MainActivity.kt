@@ -1,9 +1,11 @@
-package com.retrocollector.app
+package com.retrocollector.app.android
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.retrocollector.app.App
+import com.retrocollector.app.RetroCollectorApplication
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -24,7 +24,7 @@ import com.retrocollector.app.core.presentation.components.TacticalEmptyState
 import com.retrocollector.app.core.presentation.theme.*
 import org.jetbrains.compose.resources.stringResource
 import com.retrocollector.app.wishlist.presentation.viewmodel.WishlistUiState
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 
 /**
  * Wishlist Screen — tactical list of desired games with support

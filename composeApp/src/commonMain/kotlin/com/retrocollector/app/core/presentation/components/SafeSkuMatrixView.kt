@@ -23,7 +23,7 @@ import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.domain.model.SkuInfo
 import com.retrocollector.app.core.presentation.theme.*
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

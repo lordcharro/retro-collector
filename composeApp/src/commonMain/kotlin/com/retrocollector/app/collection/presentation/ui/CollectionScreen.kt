@@ -20,7 +20,7 @@ import com.retrocollector.app.dashboard.presentation.ui.DashboardActions
 import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
 import org.jetbrains.compose.resources.stringResource
 
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 
 /**
  * Personal collection screen — tactical list of OWNED games

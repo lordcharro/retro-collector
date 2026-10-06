@@ -28,7 +28,7 @@ import com.retrocollector.app.core.domain.model.MessageSender
 import com.retrocollector.app.core.domain.model.SkuInfo
 import com.retrocollector.app.core.domain.model.SwissMarketRadar
 import com.retrocollector.app.discovery.presentation.components.SimilarGamesShelf
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun MobileGameDetailScreen(

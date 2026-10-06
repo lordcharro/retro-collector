@@ -9,7 +9,7 @@ import com.retrocollector.app.settings.domain.model.AppLanguage
 import java.util.Locale
 
 actual fun setAppLocale(language: AppLanguage) {
-    val locale = Locale(language.code)
+    val locale = Locale.forLanguageTag(language.code)
     Locale.setDefault(locale)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         LocaleList.setDefault(LocaleList(locale))

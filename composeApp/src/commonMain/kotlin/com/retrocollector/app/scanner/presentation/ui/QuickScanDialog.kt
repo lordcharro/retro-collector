@@ -18,6 +18,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.retrocollector.app.generated.resources.*
 import com.retrocollector.app.core.presentation.components.TactileTextField
 import com.retrocollector.app.core.presentation.theme.*
+import androidx.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.resources.stringResource
 
 private enum class QuickScanTab(val icon: String) {
@@ -410,7 +411,7 @@ fun QuickScanDialog(
     }
 }
 
-@org.jetbrains.compose.ui.tooling.preview.Preview
+@Preview
 @Composable
 fun QuickScanDialogPreview() {
     RetroTactileTheme {

@@ -2,7 +2,8 @@ package com.retrocollector.app
 
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.awt.ComposeWindow
-import androidx.compose.ui.res.painterResource
+import org.jetbrains.compose.resources.painterResource
+import com.retrocollector.app.generated.resources.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
@@ -32,7 +33,7 @@ fun main() {
             onCloseRequest = ::exitApplication,
             title = "Retro Collector - Language & Region Tracker (CH/EU)",
             state = windowState,
-            icon = painterResource("app_icon.png")
+            icon = painterResource(Res.drawable.app_icon)
         ) {
             window.minimumSize = Dimension(1024, 680)
             configureMacWindow(window)

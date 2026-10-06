@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.retrocollector.app.core.domain.model.CollectionStatus
 import com.retrocollector.app.core.presentation.theme.*
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun CollectionStatusSelector(

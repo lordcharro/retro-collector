@@ -18,7 +18,7 @@ import com.retrocollector.app.core.domain.model.ConsolePlatform
 import com.retrocollector.app.core.domain.model.GameItem
 import com.retrocollector.app.core.domain.model.MessageSender
 import com.retrocollector.app.core.presentation.theme.*
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 
 import org.jetbrains.compose.resources.stringResource
 

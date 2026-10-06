@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.androidKotlinMultiplatformLibrary)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlinxSerialization)
@@ -12,7 +12,10 @@ plugins {
 }
 
 kotlin {
-    androidTarget {
+    android {
+        namespace = "com.retrocollector.app"
+        compileSdk = 37
+        minSdk = 26
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
         }
@@ -35,7 +38,8 @@ kotlin {
         val desktopMain = getByName("desktopMain")
 
         androidMain.dependencies {
-            implementation(compose.preview)
+            implementation(libs.compose.ui.tooling.preview)
+            implementation(libs.compose.ui.tooling)
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.appcompat)
             implementation(libs.androidx.core.ktx)
@@ -48,7 +52,7 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.ui)
             implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
+            implementation(libs.compose.ui.tooling.preview)
 
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
@@ -84,32 +88,7 @@ kotlin {
     }
 }
 
-extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
-    namespace = "com.retrocollector.app"
-    compileSdk = 37
 
-    defaultConfig {
-        applicationId = "com.retrocollector.app"
-        minSdk = 26
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-}
 
 compose.desktop {
     application {
@@ -180,9 +159,7 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-dependencies {
-    debugImplementation(compose.uiTooling)
-}
+
 
 val syncComposeResourcesToAndroid = tasks.register<Copy>("syncComposeResourcesToAndroid") {
     val srcDir = layout.buildDirectory.dir("generated/compose/resourceGenerator/assembledResources/desktopMain/composeResources")

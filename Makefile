@@ -6,7 +6,7 @@
 JAVA_HOME ?= $(shell /usr/libexec/java_home -v 21 2>/dev/null || echo "/Users/ivolopes/Library/Java/JavaVirtualMachines/jbr-21.0.11/Contents/Home")
 GRADLE = JAVA_HOME="$(JAVA_HOME)" ./gradlew
 
-.PHONY: help check detekt lint test test-arch build run-desktop run-app package-app package-dmg clean
+.PHONY: help check detekt lint test test-arch build run-desktop run-app package-app package-dmg run-web open-web run-web-prod package-web clean
 
 ## 📖 help: Show this help message
 help:
@@ -18,6 +18,10 @@ help:
 	@echo "  make test-arch     Run Konsist clean architecture validation tests"
 	@echo "  make check         Run both linting (detekt) and all unit tests"
 	@echo "  make run-desktop   Launch RetroCollector Desktop application"
+	@echo "  make run-web       Launch Web application dev server (Kotlin/Wasm)"
+	@echo "  make open-web      Open Web application in browser (Chrome/Firefox)"
+	@echo "  make run-web-prod  Launch production-optimized Web application"
+	@echo "  make package-web   Build static Web distribution bundle"
 	@echo "  make build         Build all targets"
 	@echo "  make clean         Clean Gradle build caches and outputs"
 	@echo ""
@@ -66,6 +70,26 @@ package-dmg:
 	$(GRADLE) :composeApp:packageDmg
 	@echo "==> DMG created at: composeApp/build/compose/binaries/main/dmg/"
 
+## 🌐 run-web: Launch Web application dev server with live reload (Kotlin/Wasm)
+run-web:
+	@echo "==> Launching Web application dev server (Kotlin/Wasm)..."
+	@echo "==> Serving at http://localhost:8080 (Requires Chrome 119+, Firefox 120+, or Safari 18.2+ with WasmGC)"
+	$(GRADLE) :composeApp:wasmJsBrowserDevelopmentRun
+
+## 🌐 open-web: Open running Web app in Google Chrome or default browser
+open-web:
+	@open -a "Google Chrome" http://localhost:8080 2>/dev/null || open -a Firefox http://localhost:8080 2>/dev/null || open http://localhost:8080
+
+## ⚡ run-web-prod: Launch production-optimized Web application locally
+run-web-prod:
+	@echo "==> Launching production-optimized Web application..."
+	$(GRADLE) :composeApp:wasmJsBrowserProductionRun
+
+## 📦 package-web: Build static Web distribution bundle for deployment
+package-web:
+	@echo "==> Building Web distribution..."
+	$(GRADLE) :composeApp:wasmJsBrowserDistribution
+	@echo "==> Distribution created at: composeApp/build/dist/wasmJs/productionExecutable/"
 
 ## 🔨 build: Build all targets
 build:
