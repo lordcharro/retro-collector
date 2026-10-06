@@ -32,6 +32,7 @@ data class DiscoveredGameItem(
             franchiseName = franchiseName,
             platform = platform,
             releaseYear = releaseYear,
+            description = recommendationReason,
             productCode = safeSkus.firstOrNull()?.code,
             askingPriceChf = estimatedPriceChf,
             targetPriceChf = targetPrice ?: estimatedPriceChf,

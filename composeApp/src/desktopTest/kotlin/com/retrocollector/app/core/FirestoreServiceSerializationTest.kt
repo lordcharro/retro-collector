@@ -240,6 +240,9 @@ class FirestoreServiceSerializationTest {
             franchiseName = "Monkey Island",
             platform = ConsolePlatform.PS3,
             releaseYear = "2010",
+            description = "Canonical synopsis of Monkey Island 2 with Guybrush Threepwood.",
+            coverImageUrl = "https://example.com/cover.jpg",
+            spineImageUrl = "https://example.com/spine.jpg",
             productCode = "BLES-01124",
             barcode = "5021290056152",
             spottedLocation = "Ricardo.ch",
@@ -285,6 +288,9 @@ class FirestoreServiceSerializationTest {
         assertEquals(originalGame.franchiseName, parsed.franchiseName)
         assertEquals(originalGame.platform, parsed.platform)
         assertEquals(originalGame.releaseYear, parsed.releaseYear)
+        assertEquals(originalGame.description, parsed.description)
+        assertEquals(originalGame.coverImageUrl, parsed.coverImageUrl)
+        assertEquals(originalGame.spineImageUrl, parsed.spineImageUrl)
         assertEquals(originalGame.productCode, parsed.productCode)
         assertEquals(originalGame.barcode, parsed.barcode)
         assertEquals(originalGame.spottedLocation, parsed.spottedLocation)

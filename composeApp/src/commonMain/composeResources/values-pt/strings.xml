@@ -69,6 +69,12 @@
     <string name="dossier_paid_price_label">Preço de Compra</string>
     <string name="dossier_paid_price_desc">Custo de aquisição para ROI da coleção</string>
     <string name="dossier_context">Contexto: %1$s (%2$s)</string>
+    <string name="dossier_overview_label">VISÃO GERAL</string>
+    <string name="dossier_read_more">Ler mais</string>
+    <string name="dossier_show_less">Mostrar menos</string>
+    <string name="dossier_spine_label">LOMBADA</string>
+    <string name="dossier_target_sku">SKU ALVO</string>
+    <string name="dossier_pal_edition_badge">Edição PAL %1$s</string>
 
     <!-- Quick Scan & Scanner Dialog -->
     <string name="scanner_title">Verificação Rápida &amp; Análise</string>

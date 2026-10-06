@@ -69,6 +69,12 @@
     <string name="dossier_paid_price_label">Prix d\'Achat</string>
     <string name="dossier_paid_price_desc">Coût d\'acquisition pour le ROI de la collection</string>
     <string name="dossier_context">Contexte : %1$s (%2$s)</string>
+    <string name="dossier_overview_label">APERÇU</string>
+    <string name="dossier_read_more">Lire plus</string>
+    <string name="dossier_show_less">Réduire</string>
+    <string name="dossier_spine_label">TRANCHE</string>
+    <string name="dossier_target_sku">SKU CIBLE</string>
+    <string name="dossier_pal_edition_badge">Édition PAL %1$s</string>
 
     <!-- Quick Scan & Scanner Dialog -->
     <string name="scanner_title">Scan Rapide &amp; Vérification</string>

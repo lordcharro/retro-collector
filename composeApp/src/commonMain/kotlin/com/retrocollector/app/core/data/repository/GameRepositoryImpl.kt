@@ -286,9 +286,16 @@ class GameRepositoryImpl(
         var price = currentPrice
         var image = currentImage
         val extraImages = mutableListOf<String>()
+        var scrapedCoverUrl: String? = null
+        var scrapedSpineUrl: String? = null
+        var scrapedDesc: String? = null
 
         val currentSettings = _settings.value
         listingScraper.fetchListing(listingUrl, currentSettings).onSuccess { listing ->
+            scrapedCoverUrl = listing.imageUrls.firstOrNull()
+            scrapedSpineUrl = if (listing.imageUrls.size > 1) listing.imageUrls[1] else null
+            scrapedDesc = listing.description.takeIf { it.isNotBlank() }
+
             if (query == listingUrl || query.isBlank()) {
                 val listingId = listing.listingId ?: listingScraper.extractListingId(listingUrl)
                 if (listing.isTitleExtracted && !listing.title.startsWith("${listing.sourcePlatform} Listing")) {
@@ -317,7 +324,18 @@ class GameRepositoryImpl(
                 }
             }
         }
-        return ResolvedScanInput(query, image, location, price, listingUrl, extraImages)
+        return ResolvedScanInput(
+            query = query,
+            imageBase64 = image,
+            location = location,
+            price = price,
+            listingUrl = listingUrl,
+            imagesBase64 = extraImages,
+            scrapedCoverImageUrl = scrapedCoverUrl,
+            scrapedSpineImageUrl = scrapedSpineUrl,
+            scrapedDescription = scrapedDesc,
+            rawImageInput = currentImage
+        )
     }
 
     private suspend fun resolveListingInput(
@@ -327,7 +345,14 @@ class GameRepositoryImpl(
         askingPriceChf: Double?
     ): ResolvedScanInput {
         val foundUrl = findListingUrl(query, imageBase64)
-        var result = ResolvedScanInput(query, imageBase64, spottedLocation, askingPriceChf, foundUrl)
+        var result = ResolvedScanInput(
+            query = query,
+            imageBase64 = imageBase64,
+            location = spottedLocation,
+            price = askingPriceChf,
+            listingUrl = foundUrl,
+            rawImageInput = imageBase64
+        )
 
         if (_settings.value.isScraperEnabled) {
             val listingUrl = foundUrl
@@ -380,12 +405,25 @@ class GameRepositoryImpl(
             )
         } else emptyList()
 
+        val coverImg = resolved.scrapedCoverImageUrl
+            ?: resolved.rawImageInput?.takeIf { it.startsWith("http://") || it.startsWith("https://") }
+            ?: v.canonicalCoverImageUrl
+
+        val spineImg = resolved.scrapedSpineImageUrl
+
+        val finalDescription = v.description.ifBlank {
+            resolved.scrapedDescription.orEmpty()
+        }
+
         return GameItem(
             id = "game_${v.title.filter { it.isLetterOrDigit() }.lowercase()}_${platform.id}",
             title = v.title.ifBlank { "Analyzed Game" },
             franchiseName = v.franchise,
             platform = platform,
             releaseYear = v.releaseYear,
+            description = finalDescription,
+            coverImageUrl = coverImg,
+            spineImageUrl = spineImg,
             productCode = v.productCode,
             barcode = v.barcode,
             spottedLocation = resolved.location.ifBlank { "Field / Online" },
@@ -412,7 +450,11 @@ class GameRepositoryImpl(
         val location: String,
         val price: Double?,
         val listingUrl: String? = null,
-        val imagesBase64: List<String> = emptyList()
+        val imagesBase64: List<String> = emptyList(),
+        val scrapedCoverImageUrl: String? = null,
+        val scrapedSpineImageUrl: String? = null,
+        val scrapedDescription: String? = null,
+        val rawImageInput: String? = null
     )
 
     override suspend fun sendFollowUpChat(
@@ -618,6 +660,8 @@ class GameRepositoryImpl(
                 franchiseName = "Resident Evil",
                 platform = ConsolePlatform.GAMECUBE,
                 releaseYear = "2005",
+                description = "Special Agent Leon S. Kennedy is dispatched to a secluded European village to rescue the U.S. President's kidnapped daughter, confronting parasitic horrors in a genre-defining survival action landmark.",
+                coverImageUrl = "https://images.igdb.com/igdb/image/upload/t_cover_big/co1x7h.jpg",
                 productCode = "DOL-P-G4BE",
                 barcode = "045496392345",
                 spottedLocation = "Brockenhaus Bern",
@@ -686,6 +730,8 @@ class GameRepositoryImpl(
                 franchiseName = "The Legend of Zelda",
                 platform = ConsolePlatform.GAMECUBE,
                 releaseYear = "2003",
+                description = "Set on a vast ocean archipelago, Link embarks on a seafaring quest with the King of Red Lions to rescue his sister Aryll and restore the lost kingdom of Hyrule.",
+                coverImageUrl = "https://images.igdb.com/igdb/image/upload/t_cover_big/co20q3.jpg",
                 productCode = "DOL-P-GZLP",
                 barcode = "045496391234",
                 spottedLocation = "Ricardo.ch",
@@ -717,6 +763,8 @@ class GameRepositoryImpl(
                 franchiseName = "Super Mario",
                 platform = ConsolePlatform.GAMECUBE,
                 releaseYear = "2002",
+                description = "Mario journeys to tropical Isle Delfino for vacation, only to be framed for polluting the paradise and tasked with cleaning the island using Professor E. Gadd's FLUDD water cannon.",
+                coverImageUrl = "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tca.jpg",
                 productCode = "DOL-P-GMSP",
                 spottedLocation = "Basel Flohmarkt",
                 askingPriceChf = 50.0,
@@ -740,6 +788,8 @@ class GameRepositoryImpl(
                 franchiseName = "Metroid",
                 platform = ConsolePlatform.GAMECUBE,
                 releaseYear = "2003",
+                description = "Intergalactic bounty hunter Samus Aran investigates Space Pirate biological experiments with Phazon on the desolate, subterranean world of Tallon IV.",
+                coverImageUrl = "https://images.igdb.com/igdb/image/upload/t_cover_big/co1w6k.jpg",
                 productCode = "DOL-P-GM8P",
                 spottedLocation = "Brocki Zurich",
                 askingPriceChf = 40.0,
@@ -766,6 +816,8 @@ class GameRepositoryImpl(
                 franchiseName = "Eternal Darkness",
                 platform = ConsolePlatform.GAMECUBE,
                 releaseYear = "2002",
+                description = "A groundbreaking psychological horror journey following Alexandra Roivas across twelve centuries as she investigates her grandfather's brutal death and battles ancient cosmic entities.",
+                coverImageUrl = "https://images.igdb.com/igdb/image/upload/t_cover_big/co20pn.jpg",
                 productCode = "DOL-P-GEDP",
                 spottedLocation = "Anibis.ch Lot",
                 askingPriceChf = 65.0,
@@ -799,6 +851,8 @@ class GameRepositoryImpl(
                 franchiseName = "Fallout",
                 platform = ConsolePlatform.PS3,
                 releaseYear = "2008",
+                description = "A post-apocalyptic action RPG set in the radioactive ruins of Washington D.C., following the Lone Wanderer's search for their father across the Capital Wasteland.",
+                coverImageUrl = "https://images.igdb.com/igdb/image/upload/t_cover_big/co1re9.jpg",
                 productCode = "BLES-00561",
                 spottedLocation = "Ricardo.ch",
                 askingPriceChf = 15.0,
@@ -828,6 +882,8 @@ class GameRepositoryImpl(
                 franchiseName = "Metal Gear",
                 platform = ConsolePlatform.PS3,
                 releaseYear = "2008",
+                description = "Solid Snake embarks on a final covert mission in war-torn Middle Eastern and European proxy battlefields to assassinate Liquid Ocelot and dismantle the SOP system.",
+                coverImageUrl = "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r8c.jpg",
                 productCode = "BLES-00246",
                 spottedLocation = "Ricardo.ch",
                 askingPriceChf = 12.0,
@@ -852,6 +908,8 @@ class GameRepositoryImpl(
                 franchiseName = "Super Mario",
                 platform = ConsolePlatform.N64,
                 releaseYear = "1997",
+                description = "Nintendo's landmark 3D platformer where Mario infiltrates Princess Peach's castle, diving through magical paintings to recover Power Stars from Bowser.",
+                coverImageUrl = "https://images.igdb.com/igdb/image/upload/t_cover_big/co1x7d.jpg",
                 productCode = "NUS-NSMP-EUR",
                 spottedLocation = "Ricardo.ch",
                 askingPriceChf = 35.0,

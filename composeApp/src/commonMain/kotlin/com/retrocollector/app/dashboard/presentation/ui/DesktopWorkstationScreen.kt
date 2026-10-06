@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,12 +26,14 @@ import com.retrocollector.app.core.presentation.theme.*
 import com.retrocollector.app.core.presentation.util.labelRes
 import org.jetbrains.compose.resources.stringResource
 import com.retrocollector.app.collection.presentation.ui.CollectionScreen
+import com.retrocollector.app.dossier.presentation.components.TactileGameDossierMediaHeader
 import com.retrocollector.app.dashboard.presentation.viewmodel.DashboardUiState
 import com.retrocollector.app.discovery.presentation.components.SimilarGamesShelf
 import com.retrocollector.app.discovery.presentation.ui.DiscoveryScreen
 import com.retrocollector.app.discovery.presentation.viewmodel.DiscoveryUiState
 import com.retrocollector.app.wishlist.presentation.ui.WishlistScreen
 import com.retrocollector.app.wishlist.presentation.viewmodel.WishlistUiState
+import com.retrocollector.app.offers.presentation.components.StoreOffersSection
 import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -43,9 +46,9 @@ fun DesktopWorkstationScreen(
     modifier: Modifier = Modifier
 ) {
     var followUpQuestion by remember { mutableStateOf("") }
-    var editingOffer by remember { mutableStateOf<com.retrocollector.app.core.domain.model.GameOffer?>(null) }
+    var editingOffer by remember { mutableStateOf<GameOffer?>(null) }
     var isAddOfferOpen by remember { mutableStateOf(false) }
-    var acquisitionOffer by remember { mutableStateOf<com.retrocollector.app.core.domain.model.GameOffer?>(null) }
+    var acquisitionOffer by remember { mutableStateOf<GameOffer?>(null) }
     var isAcquisitionOpen by remember { mutableStateOf(false) }
 
     val activePlatforms = remember(state.games, state.settings.pinnedPlatformIds) {
@@ -651,156 +654,214 @@ fun DesktopWorkstationScreen(
                                     }
                                 }
 
-                                // Tactical Dossier Section: SKU Matrix and Market Radar
-                                Column(
+                                val dossierListState = rememberLazyListState()
+
+                                LaunchedEffect(game.id) {
+                                    dossierListState.scrollToItem(0)
+                                }
+
+                                LaunchedEffect(state.activeChatMessages.size, state.isAnalyzing) {
+                                    if (state.activeChatMessages.isNotEmpty() || state.isAnalyzing) {
+                                        val totalCount = dossierListState.layoutInfo.totalItemsCount
+                                        if (totalCount > 0) {
+                                            dossierListState.animateScrollToItem(totalCount - 1)
+                                        }
+                                    }
+                                }
+
+                                LazyColumn(
+                                    state = dossierListState,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .background(SurfaceCard.copy(alpha = 0.5f))
-                                        .border(BorderStroke(1.dp, BorderSubtle))
-                                        .padding(14.dp),
-                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                        .weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                                    contentPadding = PaddingValues(bottom = 12.dp)
                                 ) {
-                                    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-                                        val currentCurrency = state.settings.defaultCurrency.ifBlank { "CHF" }
-                                        if (maxWidth >= 520.dp) {
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                 SafeSkuMatrixView(
-                                                    safeSkus = game.safeSkus,
-                                                    riskySkus = game.riskySkus,
-                                                    activeSkuCode = game.productCode,
-                                                    onSelectSku = { skuCode ->
-                                                        actions.onUpdateProductCode(game, skuCode)
-                                                    },
-                                                    modifier = Modifier.weight(1f)
-                                                )
+                                    // Tactical Dossier Media Header (Box Art, Spine, Edition, Synopsis)
+                                    item(key = "media_header") {
+                                        TactileGameDossierMediaHeader(
+                                            game = game,
+                                            showTitle = false,
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                                        )
+                                    }
 
-                                                game.marketRadar?.let { radar ->
-                                                    SwissMarketRadarView(
-                                                        radar = radar,
-                                                        currency = currentCurrency,
-                                                        paidPriceChf = game.paidPriceChf,
-                                                        isOwned = game.collectionStatus == CollectionStatus.OWNED,
-                                                        onPriceSubmitted = { parsed ->
-                                                            actions.onUpdatePaidPrice(game, parsed)
-                                                        },
-                                                        modifier = Modifier.weight(1f)
-                                                    )
-                                                }
-
-                                                if (game.marketRadar == null && game.collectionStatus == CollectionStatus.OWNED) {
+                                    // Tactical Dossier Section: SKU Matrix and Market Radar
+                                    item(key = "sku_matrix_and_radar") {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 16.dp)
+                                                .background(SurfaceCard.copy(alpha = 0.5f))
+                                                .border(BorderStroke(1.dp, BorderSubtle))
+                                                .padding(14.dp),
+                                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                                        ) {
+                                            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                                                val currentCurrency = state.settings.defaultCurrency.ifBlank { "CHF" }
+                                                if (maxWidth >= 520.dp) {
                                                     Row(
-                                                        modifier = Modifier.weight(1f),
-                                                        verticalAlignment = Alignment.CenterVertically,
-                                                        horizontalArrangement = Arrangement.End
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                                        verticalAlignment = Alignment.CenterVertically
                                                     ) {
-                                                        PaidPriceInput(
-                                                            paidPrice = game.paidPriceChf,
-                                                            currency = currentCurrency,
-                                                            label = "${stringResource(Res.string.dossier_paid_price_label)}:",
-                                                            onPriceSubmitted = { parsed ->
-                                                                actions.onUpdatePaidPrice(game, parsed)
-                                                            }
+                                                         SafeSkuMatrixView(
+                                                            safeSkus = game.safeSkus,
+                                                            riskySkus = game.riskySkus,
+                                                            activeSkuCode = game.productCode,
+                                                            onSelectSku = { skuCode ->
+                                                                actions.onUpdateProductCode(game, skuCode)
+                                                            },
+                                                            modifier = Modifier.weight(1f)
                                                         )
+
+                                                        game.marketRadar?.let { radar ->
+                                                            SwissMarketRadarView(
+                                                                radar = radar,
+                                                                currency = currentCurrency,
+                                                                paidPriceChf = game.paidPriceChf,
+                                                                isOwned = game.collectionStatus == CollectionStatus.OWNED,
+                                                                onPriceSubmitted = { parsed ->
+                                                                    actions.onUpdatePaidPrice(game, parsed)
+                                                                },
+                                                                modifier = Modifier.weight(1f)
+                                                            )
+                                                        }
+
+                                                        if (game.marketRadar == null && game.collectionStatus == CollectionStatus.OWNED) {
+                                                            Row(
+                                                                modifier = Modifier.weight(1f),
+                                                                verticalAlignment = Alignment.CenterVertically,
+                                                                horizontalArrangement = Arrangement.End
+                                                            ) {
+                                                                PaidPriceInput(
+                                                                    paidPrice = game.paidPriceChf,
+                                                                    currency = currentCurrency,
+                                                                    label = "${stringResource(Res.string.dossier_paid_price_label)}:",
+                                                                    onPriceSubmitted = { parsed ->
+                                                                        actions.onUpdatePaidPrice(game, parsed)
+                                                                    }
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                                } else {
+                                                    Column(
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                                                    ) {
+                                                        SafeSkuMatrixView(
+                                                            safeSkus = game.safeSkus,
+                                                            riskySkus = game.riskySkus,
+                                                            activeSkuCode = game.productCode,
+                                                            onSelectSku = { skuCode ->
+                                                                actions.onUpdateProductCode(game, skuCode)
+                                                            },
+                                                            modifier = Modifier.fillMaxWidth()
+                                                        )
+
+                                                        game.marketRadar?.let { radar ->
+                                                            SwissMarketRadarView(
+                                                                radar = radar,
+                                                                currency = currentCurrency,
+                                                                paidPriceChf = game.paidPriceChf,
+                                                                isOwned = game.collectionStatus == CollectionStatus.OWNED,
+                                                                onPriceSubmitted = { parsed ->
+                                                                    actions.onUpdatePaidPrice(game, parsed)
+                                                                },
+                                                                modifier = Modifier.fillMaxWidth()
+                                                            )
+                                                        }
+
+                                                        if (game.marketRadar == null && game.collectionStatus == CollectionStatus.OWNED) {
+                                                            PaidPriceInput(
+                                                                paidPrice = game.paidPriceChf,
+                                                                currency = currentCurrency,
+                                                                label = "${stringResource(Res.string.dossier_paid_price_label)}:",
+                                                                onPriceSubmitted = { parsed ->
+                                                                    actions.onUpdatePaidPrice(game, parsed)
+                                                                }
+                                                            )
+                                                        }
                                                     }
                                                 }
                                             }
-                                        } else {
-                                            Column(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                                            ) {
-                                                SafeSkuMatrixView(
-                                                    safeSkus = game.safeSkus,
-                                                    riskySkus = game.riskySkus,
-                                                    activeSkuCode = game.productCode,
-                                                    onSelectSku = { skuCode ->
-                                                        actions.onUpdateProductCode(game, skuCode)
-                                                    },
-                                                    modifier = Modifier.fillMaxWidth()
-                                                )
+                                        }
+                                    }
 
-                                                game.marketRadar?.let { radar ->
-                                                    SwissMarketRadarView(
-                                                        radar = radar,
-                                                        currency = currentCurrency,
-                                                        paidPriceChf = game.paidPriceChf,
-                                                        isOwned = game.collectionStatus == CollectionStatus.OWNED,
-                                                        onPriceSubmitted = { parsed ->
-                                                            actions.onUpdatePaidPrice(game, parsed)
-                                                        },
-                                                        modifier = Modifier.fillMaxWidth()
-                                                    )
+                                    // Stores & Live Offers Section
+                                    item(key = "store_offers") {
+                                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                            val currentCurrency = state.settings.defaultCurrency.ifBlank { "CHF" }
+                                            StoreOffersSection(
+                                                offers = game.offers,
+                                                currency = currentCurrency,
+                                                isCompactLayout = false,
+                                                onAddOfferClick = { isAddOfferOpen = true },
+                                                onEditOfferClick = { offer -> editingOffer = offer },
+                                                onDeleteOfferClick = { offer -> actions.onDeleteOffer(game, offer.id) },
+                                                onMarkAsBoughtClick = { offer ->
+                                                    acquisitionOffer = offer
+                                                    isAcquisitionOpen = true
                                                 }
+                                            )
+                                        }
+                                    }
 
-                                                if (game.marketRadar == null && game.collectionStatus == CollectionStatus.OWNED) {
-                                                    PaidPriceInput(
-                                                        paidPrice = game.paidPriceChf,
-                                                        currency = currentCurrency,
-                                                        label = "${stringResource(Res.string.dossier_paid_price_label)}:",
-                                                        onPriceSubmitted = { parsed ->
-                                                            actions.onUpdatePaidPrice(game, parsed)
-                                                        }
+                                    // Shelf of Similar Games / Same Genre
+                                    item(key = "similar_games") {
+                                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                            SimilarGamesShelf(
+                                                similarGames = state.similarGamesForActiveGame,
+                                                isLoading = state.isSimilarGamesLoading,
+                                                currency = state.settings.defaultCurrency.ifBlank { "CHF" },
+                                                onSelectGame = { actions.onOpenDiscoveredDossier(it) },
+                                                onAddToWishlist = { actions.onAddDiscoveredToWishlist(it) },
+                                                onRefreshSimilarGames = { actions.onLoadSimilarGames(game) }
+                                            )
+                                        }
+                                    }
+
+                                    // Contextual Gemini Conversation Header
+                                    if (state.activeChatMessages.isNotEmpty() || state.isAnalyzing) {
+                                        item(key = "chat_header") {
+                                            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                                ) {
+                                                    Text(
+                                                        text = "💬 " + stringResource(Res.string.dossier_chat_title),
+                                                        style = HeadlineSm.copy(fontSize = 13.sp),
+                                                        color = TextPrimary
+                                                    )
+                                                    HorizontalDivider(
+                                                        modifier = Modifier.weight(1f),
+                                                        color = BorderSubtle,
+                                                        thickness = 1.dp
                                                     )
                                                 }
                                             }
                                         }
                                     }
-                                }
 
-                                // Stores & Live Offers Section
-                                Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                                    val currentCurrency = state.settings.defaultCurrency.ifBlank { "CHF" }
-                                    com.retrocollector.app.offers.presentation.components.StoreOffersSection(
-                                        offers = game.offers,
-                                        currency = currentCurrency,
-                                        isCompactLayout = false,
-                                        onAddOfferClick = { isAddOfferOpen = true },
-                                        onEditOfferClick = { offer -> editingOffer = offer },
-                                        onDeleteOfferClick = { offer -> actions.onDeleteOffer(game, offer.id) },
-                                        onMarkAsBoughtClick = { offer ->
-                                            acquisitionOffer = offer
-                                            isAcquisitionOpen = true
-                                        }
-                                    )
-                                }
-
-                                // Shelf of Similar Games / Same Genre
-                                Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                                    SimilarGamesShelf(
-                                        similarGames = state.similarGamesForActiveGame,
-                                        isLoading = state.isSimilarGamesLoading,
-                                        currency = state.settings.defaultCurrency.ifBlank { "CHF" },
-                                        onSelectGame = { actions.onOpenDiscoveredDossier(it) },
-                                        onAddToWishlist = { actions.onAddDiscoveredToWishlist(it) },
-                                        onRefreshSimilarGames = { actions.onLoadSimilarGames(game) }
-                                    )
-                                }
-
-                                // Contextual Gemini Conversation List
-                                LazyColumn(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .weight(1f)
-                                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
+                                    // Contextual Gemini Conversation List
                                     items(state.activeChatMessages, key = { it.id }) { msg ->
-                                        DeletableChatBubble(
-                                            message = msg,
-                                            onDeleteMessage = actions.onDeleteChatMessage
-                                        )
+                                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                            DeletableChatBubble(
+                                                message = msg,
+                                                onDeleteMessage = actions.onDeleteChatMessage
+                                            )
+                                        }
                                     }
-        
+
                                     if (state.isAnalyzing) {
                                         item(key = "loading_typing_bubble") {
                                             Row(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .padding(vertical = 6.dp),
+                                                    .padding(horizontal = 16.dp, vertical = 6.dp),
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                                             ) {

@@ -46,6 +46,7 @@ object LegacyFirestoreDocumentParser {
             val status = CollectionStatus.fromString(statusStr)
             val franchiseName = doc.fields["franchiseName"]?.get("stringValue")?.jsonPrimitive?.content.orEmpty()
             val releaseYear = doc.fields["releaseYear"]?.get("stringValue")?.jsonPrimitive?.content.orEmpty()
+            val description = doc.fields["description"]?.get("stringValue")?.jsonPrimitive?.content.orEmpty()
             val coverImageUrl = doc.fields["coverImageUrl"]?.get("stringValue")?.jsonPrimitive?.content
             val spineImageUrl = doc.fields["spineImageUrl"]?.get("stringValue")?.jsonPrimitive?.content
             val productCode = doc.fields["productCode"]?.get("stringValue")?.jsonPrimitive?.content
@@ -72,6 +73,7 @@ object LegacyFirestoreDocumentParser {
                 franchiseName = franchiseName,
                 platform = platform,
                 releaseYear = releaseYear,
+                description = description,
                 coverImageUrl = coverImageUrl,
                 spineImageUrl = spineImageUrl,
                 productCode = productCode,

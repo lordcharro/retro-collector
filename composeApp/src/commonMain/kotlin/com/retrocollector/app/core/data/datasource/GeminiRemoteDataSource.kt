@@ -25,6 +25,8 @@ data class StitchGeminiStructuredVerdict(
     val franchise: String = "",
     val platform: String = "GAMECUBE",
     val releaseYear: String = "",
+    val description: String = "",
+    val canonicalCoverImageUrl: String? = null,
     val productCode: String? = null,
     val barcode: String? = null,
     val languageStatus: String = "UNVERIFIED", // FULL_ENGLISH, SUBS_ONLY, GERMAN_ONLY, EDITION_NOTICE

@@ -81,6 +81,7 @@ class FirestoreService(
             val enrichmentStatus = EnrichmentStatus.fromString(enrichmentStr)
             val franchiseName = doc.fields["franchiseName"]?.get("stringValue")?.jsonPrimitive?.content.orEmpty()
             val releaseYear = doc.fields["releaseYear"]?.get("stringValue")?.jsonPrimitive?.content.orEmpty()
+            val description = doc.fields["description"]?.get("stringValue")?.jsonPrimitive?.content.orEmpty()
             val coverImageUrl = doc.fields["coverImageUrl"]?.get("stringValue")?.jsonPrimitive?.content
             val spineImageUrl = doc.fields["spineImageUrl"]?.get("stringValue")?.jsonPrimitive?.content
             val productCode = doc.fields["productCode"]?.get("stringValue")?.jsonPrimitive?.content
@@ -118,6 +119,7 @@ class FirestoreService(
                 franchiseName = franchiseName,
                 platform = platform,
                 releaseYear = releaseYear,
+                description = description,
                 coverImageUrl = coverImageUrl,
                 spineImageUrl = spineImageUrl,
                 productCode = productCode,
@@ -409,6 +411,9 @@ class FirestoreService(
         }
         if (game.releaseYear.isNotBlank()) {
             put("releaseYear", buildJsonObject { put("stringValue", game.releaseYear) })
+        }
+        if (game.description.isNotBlank()) {
+            put("description", buildJsonObject { put("stringValue", game.description) })
         }
         game.productCode?.let { put("productCode", buildJsonObject { put("stringValue", it) }) }
         game.barcode?.let { put("barcode", buildJsonObject { put("stringValue", it) }) }

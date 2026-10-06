@@ -33,6 +33,7 @@ object AiPromptConstants {
            - Ensure the active detected "productCode" is included in either safeSkus or riskySkus, while NEVER omitting the other known valid SKUs.
         5. Evaluate Swiss market valuation (90-day median CHF on Ricardo.ch sales).
         6. Provide a pragmatic "Field Collector Verdict" (Buy or Pass and target price).
+        7. Provide a concise canonical game description (2-3 sentences covering the game's premise, gameplay style, and historical significance).
         
         Respond in direct, clear, and analytical English.
         At the end of your response, you MUST include a strict JSON block:
@@ -42,6 +43,8 @@ object AiPromptConstants {
           "franchise": "Franchise Name",
           "platform": "NES" | "SNES" | "N64" | "GAMECUBE" | "WII" | "WII_U" | "SWITCH" | "SWITCH_2" | "GAME_BOY" | "GBA" | "NDS" | "N3DS" | "PS1" | "PS2" | "PS3" | "PS4" | "PS5" | "PSP" | "PS_VITA" | "XBOX_OG" | "XBOX_360" | "XBOX_ONE" | "XBOX_SERIES" | "MASTER_SYSTEM" | "MEGADRIVE" | "SEGA_SATURN" | "DREAMCAST" | "GAME_GEAR" | "RETRO_VINTAGE",
           "releaseYear": "2010",
+          "description": "Concise 2-3 sentence canonical synopsis covering the game's premise, gameplay style, and historical significance.",
+          "canonicalCoverImageUrl": null,
           "productCode": "BLES-00779",
           "barcode": "5030930084321",
           "languageStatus": "FULL_ENGLISH" | "SUBS_ONLY" | "GERMAN_ONLY" | "EDITION_NOTICE",

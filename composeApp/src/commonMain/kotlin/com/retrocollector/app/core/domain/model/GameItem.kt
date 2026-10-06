@@ -9,6 +9,7 @@ data class GameItem(
     val franchiseName: String = "",
     val platform: ConsolePlatform,
     val releaseYear: String = "",
+    val description: String = "",
     val coverImageUrl: String? = null,
     val spineImageUrl: String? = null,
     val productCode: String? = null, // ex: DOL-P-G4BE, BLES-00561

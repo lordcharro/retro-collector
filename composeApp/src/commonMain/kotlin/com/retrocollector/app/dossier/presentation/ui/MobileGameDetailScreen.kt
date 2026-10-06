@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,7 +28,9 @@ import com.retrocollector.app.core.domain.model.LanguageStatus
 import com.retrocollector.app.core.domain.model.MessageSender
 import com.retrocollector.app.core.domain.model.SkuInfo
 import com.retrocollector.app.core.domain.model.SwissMarketRadar
+import com.retrocollector.app.dossier.presentation.components.TactileGameDossierMediaHeader
 import com.retrocollector.app.discovery.presentation.components.SimilarGamesShelf
+import com.retrocollector.app.offers.presentation.components.StoreOffersSection
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -109,59 +112,37 @@ fun MobileGameDetailScreen(
         }
     }
 ) { paddingValues ->
+        val listState = rememberLazyListState()
+
+        LaunchedEffect(chatMessages.size, isAnalyzing) {
+            if (chatMessages.isNotEmpty() || isAnalyzing) {
+                val totalCount = listState.layoutInfo.totalItemsCount
+                if (totalCount > 0) {
+                    listState.animateScrollToItem(totalCount - 1)
+                }
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
             LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 14.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(vertical = 12.dp)
             ) {
-                // Game Title & Platform Header
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Text(
-                            text = game.title,
-                            style = HeadlineMd,
-                            color = TextPrimary,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            PlatformBadge(platform = game.platform)
-                            if (game.releaseYear.isNotBlank()) {
-                                Text(
-                                    text = "•  ${game.releaseYear}",
-                                    style = BodySm,
-                                    color = TextSecondary
-                                )
-                            }
-                            if (game.spottedLocation.isNotBlank()) {
-                                Text(
-                                    text = "•  ${game.spottedLocation}",
-                                    style = CodeSkuStyle.copy(fontSize = 11.sp),
-                                    color = StatusUnverifiedFg,
-                                    maxLines = 1,
-                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                                )
-                            }
-                        }
-                    }
+                // Game Dossier Media Header (Cover Photo, Identity, Description)
+                item(key = "media_header") {
+                    TactileGameDossierMediaHeader(game = game)
                 }
 
                 // Collection Status (Wishlist, Owned, Pass)
-                item {
+                item(key = "status_selector") {
                     CollectionStatusSelector(
                         currentStatus = game.collectionStatus,
                         onStatusSelect = { newStatus ->
@@ -178,7 +159,7 @@ fun MobileGameDetailScreen(
 
                 // Purchase Price Field (when Owned)
                 if (game.collectionStatus == CollectionStatus.OWNED) {
-                    item {
+                    item(key = "paid_price") {
                         Surface(
                             shape = RoundedCornerShape(6.dp),
                             color = SurfaceCard,
@@ -213,13 +194,13 @@ fun MobileGameDetailScreen(
                 }
 
                 // Banner de Status de Idioma
-                item {
+                item(key = "language_risk") {
                     LanguageRiskBadge(status = game.languageStatus, showDescription = true)
                 }
 
                 // Swiss Market Radar
                 if (game.marketRadar != null) {
-                    item {
+                    item(key = "market_radar") {
                         SwissMarketRadarView(
                             radar = game.marketRadar,
                             currency = currency
@@ -228,8 +209,8 @@ fun MobileGameDetailScreen(
                 }
 
                 // Stores & Live Offers Section
-                item {
-                    com.retrocollector.app.offers.presentation.components.StoreOffersSection(
+                item(key = "store_offers") {
+                    StoreOffersSection(
                         offers = game.offers,
                         currency = currency,
                         isCompactLayout = true,
@@ -244,7 +225,7 @@ fun MobileGameDetailScreen(
                 }
 
                 // Safe vs Risky SKU Matrix
-                item {
+                item(key = "sku_matrix") {
                     SafeSkuMatrixView(
                         safeSkus = game.safeSkus,
                         riskySkus = game.riskySkus,
@@ -254,7 +235,7 @@ fun MobileGameDetailScreen(
                 }
 
                 // Game Technical Details
-                item {
+                item(key = "technical_details") {
                     Surface(
                         shape = RoundedCornerShape(6.dp),
                         color = SurfaceCard,
@@ -330,7 +311,7 @@ fun MobileGameDetailScreen(
                 }
 
                 // Shelf of Similar Games
-                item {
+                item(key = "similar_games") {
                     SimilarGamesShelf(
                         similarGames = similarGames,
                         isLoading = isSimilarGamesLoading,
@@ -342,7 +323,7 @@ fun MobileGameDetailScreen(
                 }
 
                 // Chat with Gemini Flash
-                item {
+                item(key = "chat_title") {
                     Text(text = "💬 " + stringResource(Res.string.dossier_chat_title), style = HeadlineSm, color = TextPrimary)
                 }
 
