@@ -96,13 +96,16 @@
   - The Wasm target currently has no persistent settings — every browser reload starts fresh.
   - Fix: use `kotlinx.browser.localStorage` (available in `wasmJsMain`) to persist the `AppSettings` JSON.
 
-- [ ] **AI-generated game description and cover image**
-  - Games added manually or via CSV enrichment currently have no description text or cover image.
-  - Missing:
-    - [ ] Extend `GeminiRemoteDataSource` to return a short game description (2–3 sentences on gameplay, genre, and why it's a PAL collector pick) as part of the structured verdict
-    - [ ] Fetch a cover image: either ask Gemini to return a known image URL, or query a public API (e.g. [IGDB](https://www.igdb.com/api) or [TheGamesDB](https://thegamesdb.net/)) using the title + platform
-    - [ ] Store the result in `GameItem.coverImageUrl` and display it in the dossier header and game list card
-  - File: [`GeminiRemoteDataSource.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/datasource/GeminiRemoteDataSource.kt), [`GameItem.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/domain/model/GameItem.kt)
+- [x] **AI-generated game description and cover image**
+  - Games scraped from marketplaces or entered manually now feature seller photo preservation, canonical box art fallback, and an AI-generated synopsis.
+  - Implemented:
+    - [x] Extended `GameItem`, `DiscoveredGameItem`, and Firestore REST serialization with `description: String = ""` and preserved `coverImageUrl: String?`.
+    - [x] Updated Gemini verification prompt (`AiPromptConstants.kt`, item 7) to extract a 2–3 sentence gameplay and collector synopsis (`description`) and canonical cover art fallback (`coverImageUrl`).
+    - [x] Preserved real seller listing photos as primary cover art, fallback to canonical web art if absent, and placeholder cartridge monogram if both fail.
+    - [x] Integrated Coil 3 (`coil-compose`, `coil-network-ktor3`) in `TactileGameDossierMediaHeader.kt` with box art preview, spine alignment macro, tactical fallback monogram, and expandable synopsis with custom line clamp.
+    - [x] Converted desktop inspection pane and mobile detail views to full-page scrollable `LazyColumn` with pinned headers, pinned chat composers, and intelligent auto-scroll on new messages.
+    - [x] Strict `@compose-skill` compliance: extracted CMP string resources across English, Portuguese, German, and French, with stable keys across lazy items.
+  - Files: [`GameItem.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/domain/model/GameItem.kt), [`GeminiRemoteDataSource.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/datasource/GeminiRemoteDataSource.kt), [`AiPromptConstants.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/datasource/ai/AiPromptConstants.kt), [`FirestoreService.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/firestore/FirestoreService.kt), [`TactileGameDossierMediaHeader.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/dossier/presentation/components/TactileGameDossierMediaHeader.kt), [`DesktopWorkstationScreen.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/dashboard/presentation/ui/DesktopWorkstationScreen.kt), [`MobileGameDetailScreen.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/dashboard/presentation/ui/MobileGameDetailScreen.kt)
 
 - [ ] **Error handling UX**
   - Network errors from Gemini and Firestore bubble up as plain text in a snackbar.
