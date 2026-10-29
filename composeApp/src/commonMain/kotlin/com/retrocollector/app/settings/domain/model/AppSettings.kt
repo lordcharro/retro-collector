@@ -64,6 +64,8 @@ data class AppSettings(
     val themeMode: ThemeMode = ThemeMode.DARK,
     val appLanguage: AppLanguage = AppLanguage.ENGLISH
 ) {
+    val hasFirebaseAuthConfig: Boolean get() = firebaseProjectId.isNotBlank() && firebaseApiKey.isNotBlank()
+
     fun isPlatformPinned(platform: ConsolePlatform): Boolean =
         pinnedPlatformIds.any { it.equals(platform.id, ignoreCase = true) }
 

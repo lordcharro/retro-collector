@@ -26,6 +26,7 @@ interface IGameRepository {
     fun deleteChatMessage(messageId: String) {}
     fun updateSettings(settings: AppSettings)
     suspend fun syncFromFirestore(): Result<Unit>
+    suspend fun testFirestoreConnection(projectId: String, apiKey: String = ""): Result<String> = Result.success("OK")
     suspend fun testAiConnection(
         provider: com.retrocollector.app.settings.domain.model.AiProvider,
         apiKey: String,

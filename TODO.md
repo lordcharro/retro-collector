@@ -12,10 +12,11 @@
   - Note: Raw `./gradlew :composeApp:run` launches unbundled `/bin/java` directly, which the macOS kernel/Dock identifies as "java". Launching the packaged native bundle via `./gradlew :composeApp:runDistributable` or `make run-app` reads `Info.plist` and displays "RetroCollector" with proper icon and menu bar branding.
   - File: [`composeApp/build.gradle.kts`](composeApp/build.gradle.kts), [`Main.kt`](composeApp/src/desktopMain/kotlin/com/retrocollector/app/Main.kt), [`Makefile`](Makefile)
 
-- [ ] **Firestore access is unauthenticated (relies on "test mode")**
-  - `FirestoreService` hits the REST API with no auth token; Firestore test mode expires after 30 days and is publicly writable.
-  - Fix: implement proper [Firestore Security Rules](https://firebase.google.com/docs/firestore/security/get-started) (see `schema.md`) and/or add Firebase Auth so only the owner can read/write.
-  - File: [`FirestoreService.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/firestore/FirestoreService.kt)
+- [x] **Firestore access is unauthenticated (relies on "test mode")**
+  - Hardened Firestore Security Rules (`firestore.rules`) with strict schema validation, enum constraints, payload size limits, and `isAuthenticated()` gating (`request.auth != null`).
+  - Implemented multiplatform `FirebaseAuthService` (Firebase Auth REST API Anonymous token minting & auto-refresh) and attached `Authorization: Bearer <idToken>` in `FirestoreService`.
+  - Added Firebase Web API Key configuration field and authenticated connection verification in Settings dialog.
+  - File: [`firestore.rules`](firestore.rules), [`FirebaseAuthService.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/firestore/FirebaseAuthService.kt), [`FirestoreService.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/core/data/firestore/FirestoreService.kt), [`SettingsDialog.kt`](composeApp/src/commonMain/kotlin/com/retrocollector/app/settings/presentation/ui/SettingsDialog.kt)
 
 ---
 

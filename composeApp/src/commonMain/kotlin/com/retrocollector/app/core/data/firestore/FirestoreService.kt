@@ -6,6 +6,7 @@ import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.Serializable
@@ -32,21 +33,40 @@ class FirestoreService(
                 isLenient = true
             })
         }
-    }
+    },
+    private val authService: FirebaseAuthService = FirebaseAuthService()
 ) {
     private val json = Json {
         ignoreUnknownKeys = true
         isLenient = true
     }
 
-    suspend fun getGames(projectId: String): Result<List<GameItem>> {
+    private suspend fun resolveAuthToken(apiKey: String?): String? {
+        if (apiKey.isNullOrBlank()) return null
+        val tokenResult = authService.getIdToken(apiKey)
+        tokenResult.onFailure {
+            println("FirestoreService: Failed to resolve Firebase Auth ID token: ${it.message}")
+        }
+        return tokenResult.getOrNull()
+    }
+
+    private fun HttpRequestBuilder.attachAuthHeader(token: String?) {
+        if (!token.isNullOrBlank()) {
+            header(HttpHeaders.Authorization, "Bearer $token")
+        }
+    }
+
+    suspend fun getGames(projectId: String, apiKey: String? = null): Result<List<GameItem>> {
         if (projectId.isBlank()) {
             return Result.failure(IllegalArgumentException("Firebase Project ID is not configured"))
         }
 
         return try {
+            val token = resolveAuthToken(apiKey)
             val url = "https://firestore.googleapis.com/v1/projects/$projectId/databases/(default)/documents/games"
-            val response: FirestoreListResponse = client.get(url).body()
+            val response: FirestoreListResponse = client.get(url) {
+                attachAuthHeader(token)
+            }.body()
             val games = response.documents?.mapNotNull { doc ->
                 parseGameFromDocFields(doc)
             }.orEmpty()
@@ -511,53 +531,78 @@ class FirestoreService(
         }
     }
 
-    suspend fun saveGame(projectId: String, game: GameItem): Result<Boolean> {
+    suspend fun saveGame(projectId: String, game: GameItem, apiKey: String? = null): Result<Boolean> {
         if (projectId.isBlank()) {
             return Result.failure(IllegalArgumentException("Firebase Project ID is not configured"))
         }
 
         return try {
+            val token = resolveAuthToken(apiKey)
             val docId = game.id.ifBlank { "game_${game.title.filter { it.isLetterOrDigit() }.lowercase()}" }
             val url = "https://firestore.googleapis.com/v1/projects/$projectId/databases/(default)/documents/games/$docId"
             val body = buildGameDocumentBody(game)
 
             val response = client.patch(url) {
                 contentType(ContentType.Application.Json)
+                attachAuthHeader(token)
                 setBody(body)
             }
 
-            Result.success(response.status.isSuccess())
+            if (!response.status.isSuccess()) {
+                val errorBody = response.bodyAsText()
+                println("FirestoreService.saveGame failed for $docId [HTTP ${response.status}]: $errorBody")
+                return Result.failure(Exception("Firestore saveGame failed [${response.status}]: $errorBody"))
+            }
+
+            println("FirestoreService.saveGame succeeded for $docId [HTTP ${response.status}]")
+            Result.success(true)
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
         } catch (e: Exception) {
+            println("FirestoreService.saveGame exception for ${game.id}: ${e.message}")
             Result.failure(e)
         }
     }
 
-    suspend fun deleteGame(projectId: String, gameId: String): Result<Boolean> {
+    suspend fun deleteGame(projectId: String, gameId: String, apiKey: String? = null): Result<Boolean> {
         if (projectId.isBlank()) {
             return Result.failure(IllegalArgumentException("Firebase Project ID is not configured"))
         }
 
         return try {
+            val token = resolveAuthToken(apiKey)
             val url = "https://firestore.googleapis.com/v1/projects/$projectId/databases/(default)/documents/games/$gameId"
-            val response = client.delete(url)
-            Result.success(response.status.isSuccess())
+            val response = client.delete(url) {
+                attachAuthHeader(token)
+            }
+
+            if (!response.status.isSuccess()) {
+                val errorBody = response.bodyAsText()
+                println("FirestoreService.deleteGame failed for $gameId [HTTP ${response.status}]: $errorBody")
+                return Result.failure(Exception("Firestore deleteGame failed [${response.status}]: $errorBody"))
+            }
+
+            println("FirestoreService.deleteGame succeeded for $gameId [HTTP ${response.status}]")
+            Result.success(true)
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
         } catch (e: Exception) {
+            println("FirestoreService.deleteGame exception for $gameId: ${e.message}")
             Result.failure(e)
         }
     }
 
-    suspend fun getChatMessages(projectId: String): Result<List<ChatMessage>> {
+    suspend fun getChatMessages(projectId: String, apiKey: String? = null): Result<List<ChatMessage>> {
         if (projectId.isBlank()) {
             return Result.failure(IllegalArgumentException("Firebase Project ID is not configured"))
         }
 
         return try {
+            val token = resolveAuthToken(apiKey)
             val url = "https://firestore.googleapis.com/v1/projects/$projectId/databases/(default)/documents/chat_threads"
-            val response: FirestoreListResponse = client.get(url).body()
+            val response: FirestoreListResponse = client.get(url) {
+                attachAuthHeader(token)
+            }.body()
             val messages = response.documents?.mapNotNull { doc ->
                 if (doc.fields.containsKey("data")) {
                     LegacyFirestoreDocumentParser.parseLegacyChatMessage(doc, json)
@@ -594,12 +639,13 @@ class FirestoreService(
         }
     }
 
-    suspend fun saveChatMessage(projectId: String, message: ChatMessage): Result<Boolean> {
+    suspend fun saveChatMessage(projectId: String, message: ChatMessage, apiKey: String? = null): Result<Boolean> {
         if (projectId.isBlank()) {
             return Result.failure(IllegalArgumentException("Firebase Project ID is not configured"))
         }
 
         return try {
+            val token = resolveAuthToken(apiKey)
             val docId = message.id.ifBlank { "msg_${message.timestamp}" }
             val url = "https://firestore.googleapis.com/v1/projects/$projectId/databases/(default)/documents/chat_threads/$docId"
 
@@ -630,29 +676,50 @@ class FirestoreService(
 
             val response = client.patch(url) {
                 contentType(ContentType.Application.Json)
+                attachAuthHeader(token)
                 setBody(body)
             }
 
-            Result.success(response.status.isSuccess())
+            if (!response.status.isSuccess()) {
+                val errorBody = response.bodyAsText()
+                println("FirestoreService.saveChatMessage failed for ${message.id} [HTTP ${response.status}]: $errorBody")
+                return Result.failure(Exception("Firestore saveChatMessage failed [${response.status}]: $errorBody"))
+            }
+
+            println("FirestoreService.saveChatMessage succeeded for ${message.id} [HTTP ${response.status}]")
+            Result.success(true)
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
         } catch (e: Exception) {
+            println("FirestoreService.saveChatMessage exception for ${message.id}: ${e.message}")
             Result.failure(e)
         }
     }
 
-    suspend fun deleteChatMessage(projectId: String, messageId: String): Result<Boolean> {
+    suspend fun deleteChatMessage(projectId: String, messageId: String, apiKey: String? = null): Result<Boolean> {
         if (projectId.isBlank()) {
             return Result.failure(IllegalArgumentException("Firebase Project ID is not configured"))
         }
 
         return try {
+            val token = resolveAuthToken(apiKey)
             val url = "https://firestore.googleapis.com/v1/projects/$projectId/databases/(default)/documents/chat_threads/$messageId"
-            val response = client.delete(url)
-            Result.success(response.status.isSuccess())
+            val response = client.delete(url) {
+                attachAuthHeader(token)
+            }
+
+            if (!response.status.isSuccess()) {
+                val errorBody = response.bodyAsText()
+                println("FirestoreService.deleteChatMessage failed for $messageId [HTTP ${response.status}]: $errorBody")
+                return Result.failure(Exception("Firestore deleteChatMessage failed [${response.status}]: $errorBody"))
+            }
+
+            println("FirestoreService.deleteChatMessage succeeded for $messageId [HTTP ${response.status}]")
+            Result.success(true)
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
         } catch (e: Exception) {
+            println("FirestoreService.deleteChatMessage exception for $messageId: ${e.message}")
             Result.failure(e)
         }
     }

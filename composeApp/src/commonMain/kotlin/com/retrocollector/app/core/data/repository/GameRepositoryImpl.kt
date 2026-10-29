@@ -69,9 +69,15 @@ class GameRepositoryImpl(
 
         // Background synchronization with Firestore if project ID is configured
         val projectId = _settings.value.firebaseProjectId.trim()
+        val apiKey = _settings.value.firebaseApiKey.trim()
         if (projectId.isNotBlank()) {
             scope.launch {
-                firestoreService.saveGame(projectId, game)
+                val result = firestoreService.saveGame(projectId, game, apiKey)
+                result.onSuccess {
+                    println("GameRepositoryImpl.upsertGame: Successfully synced '${game.title}' (${game.id}) to Firestore")
+                }.onFailure { error ->
+                    println("GameRepositoryImpl.upsertGame: FAILED to sync '${game.title}' (${game.id}) to Firestore: ${error.message}")
+                }
             }
         }
     }
@@ -79,9 +85,15 @@ class GameRepositoryImpl(
     override fun deleteGame(id: String) {
         _games.value = _games.value.filter { it.id != id }
         val projectId = _settings.value.firebaseProjectId.trim()
+        val apiKey = _settings.value.firebaseApiKey.trim()
         if (projectId.isNotBlank()) {
             scope.launch {
-                firestoreService.deleteGame(projectId, id)
+                val result = firestoreService.deleteGame(projectId, id, apiKey)
+                result.onSuccess {
+                    println("GameRepositoryImpl.deleteGame: Successfully deleted $id from Firestore")
+                }.onFailure { error ->
+                    println("GameRepositoryImpl.deleteGame: FAILED to delete $id from Firestore: ${error.message}")
+                }
             }
         }
     }
@@ -151,9 +163,15 @@ class GameRepositoryImpl(
 
         // Background synchronization with Firestore if project ID is configured
         val projectId = _settings.value.firebaseProjectId.trim()
+        val apiKey = _settings.value.firebaseApiKey.trim()
         if (projectId.isNotBlank()) {
             scope.launch {
-                firestoreService.saveChatMessage(projectId, message)
+                val result = firestoreService.saveChatMessage(projectId, message, apiKey)
+                result.onSuccess {
+                    println("GameRepositoryImpl.addChatMessage: Successfully synced message ${message.id} to Firestore")
+                }.onFailure { error ->
+                    println("GameRepositoryImpl.addChatMessage: FAILED to sync message ${message.id} to Firestore: ${error.message}")
+                }
             }
         }
     }
@@ -165,20 +183,28 @@ class GameRepositoryImpl(
 
         // Background synchronization with Firestore if project ID is configured
         val projectId = _settings.value.firebaseProjectId.trim()
+        val apiKey = _settings.value.firebaseApiKey.trim()
         if (projectId.isNotBlank()) {
             scope.launch {
-                firestoreService.deleteChatMessage(projectId, messageId)
+                val result = firestoreService.deleteChatMessage(projectId, messageId, apiKey)
+                result.onSuccess {
+                    println("GameRepositoryImpl.deleteChatMessage: Successfully deleted message $messageId from Firestore")
+                }.onFailure { error ->
+                    println("GameRepositoryImpl.deleteChatMessage: FAILED to delete message $messageId from Firestore: ${error.message}")
+                }
             }
         }
     }
 
     override fun updateSettings(settings: AppSettings) {
         val previousProjectId = _settings.value.firebaseProjectId.trim()
+        val previousApiKey = _settings.value.firebaseApiKey.trim()
         _settings.value = settings
         settingsLocalDataSource.saveSettings(settings)
 
         val newProjectId = settings.firebaseProjectId.trim()
-        if (newProjectId.isNotBlank() && newProjectId != previousProjectId) {
+        val newApiKey = settings.firebaseApiKey.trim()
+        if (newProjectId.isNotBlank() && (newProjectId != previousProjectId || newApiKey != previousApiKey)) {
             scope.launch {
                 syncFromFirestore()
             }
@@ -187,9 +213,10 @@ class GameRepositoryImpl(
 
     override suspend fun syncFromFirestore(): Result<Unit> {
         val projectId = _settings.value.firebaseProjectId.trim()
+        val apiKey = _settings.value.firebaseApiKey.trim()
         if (projectId.isBlank()) return Result.success(Unit)
 
-        val gamesResult = firestoreService.getGames(projectId)
+        val gamesResult = firestoreService.getGames(projectId, apiKey)
         gamesResult.onSuccess { remoteGames ->
             if (remoteGames.isNotEmpty()) {
                 val localMap = _games.value.associateBy { it.id }.toMutableMap()
@@ -197,10 +224,24 @@ class GameRepositoryImpl(
                     localMap[remote.id] = remote
                 }
                 _games.value = localMap.values.toList()
+
+                // Check for local-only games that might have failed to sync earlier and re-sync them
+                val remoteIds = remoteGames.map { it.id }.toSet()
+                val unsyncedLocalGames = localMap.values.filter { it.id !in remoteIds }
+                if (unsyncedLocalGames.isNotEmpty()) {
+                    scope.launch {
+                        unsyncedLocalGames.forEach { unsynced ->
+                            println("Firestore sync: attempting to re-sync local game '${unsynced.title}' (${unsynced.id})")
+                            firestoreService.saveGame(projectId, unsynced, apiKey)
+                        }
+                    }
+                }
             }
+        }.onFailure { error ->
+            println("GameRepositoryImpl.syncFromFirestore: Failed to fetch games: ${error.message}")
         }
 
-        val chatsResult = firestoreService.getChatMessages(projectId)
+        val chatsResult = firestoreService.getChatMessages(projectId, apiKey)
         chatsResult.onSuccess { remoteChats ->
             if (remoteChats.isNotEmpty()) {
                 val localMap = _chatMessages.value.associateBy { it.id }.toMutableMap()
@@ -209,12 +250,30 @@ class GameRepositoryImpl(
                 }
                 _chatMessages.value = localMap.values.sortedBy { it.timestamp }
             }
+        }.onFailure { error ->
+            println("GameRepositoryImpl.syncFromFirestore: Failed to fetch chats: ${error.message}")
         }
 
         return if (gamesResult.isSuccess || chatsResult.isSuccess) {
             Result.success(Unit)
         } else {
             gamesResult.map { }
+        }
+    }
+
+    override suspend fun testFirestoreConnection(projectId: String, apiKey: String): Result<String> {
+        val trimmedProject = projectId.trim()
+        if (trimmedProject.isBlank()) {
+            return Result.failure(IllegalArgumentException("Enter a Firebase Project ID first."))
+        }
+        val trimmedKey = apiKey.trim()
+        val result = firestoreService.getGames(trimmedProject, trimmedKey)
+        return result.map { games ->
+            if (trimmedKey.isNotBlank()) {
+                "Firestore connected & authenticated successfully! (${games.size} games found)"
+            } else {
+                "Firestore connected successfully! (${games.size} games found)"
+            }
         }
     }
 

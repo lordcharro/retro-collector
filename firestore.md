@@ -42,6 +42,7 @@ Each document represents a physical game — whether owned, on the wishlist, act
 | `franchiseName` | `string` | — | Franchise or series name | `"Super Smash Bros."` |
 | `platform` | `string` | ✅ | Platform code (see allowed values below) | `"gamecube"` |
 | `releaseYear` | `string` | — | European / regional release year | `"2002"` |
+| `description` | `string` | — | Collector synopsis & gameplay overview | `"A tactical action-horror classic..."` |
 | `coverImageUrl` | `string` | — | URL of the front cover image | `"https://.../cover.jpg"` |
 | `spineImageUrl` | `string` | — | URL of the spine photo showing the serial code | `"https://.../spine.jpg"` |
 | `productCode` | `string` | — | Physical product code (spine/disc) | `"DOL-P-GALE"` |
@@ -295,55 +296,11 @@ Add these in the **Firestore Console → Indexes → Composite** tab:
 
 ## 🔒 Security Rules (`firestore.rules`)
 
-Paste these into **Firestore Console → Rules** to protect your database and enforce data integrity.
+The production-grade security rules are defined in [`firestore.rules`](file:///Users/ivolopes/development/physical%20disk%20follow/firestore.rules).
+Paste them into **Firestore Console → Rules** to protect your database, enforce strict schema validation, and restrict access to authenticated clients.
 
-> These rules allow any client to read and write — suitable for a personal single-user setup. Once Firebase Auth is integrated, replace `if true` with `if request.auth != null` to restrict access to authenticated users only.
+> **Production Setup**:
+> 1. In **Firebase Console → Authentication → Sign-in method**, enable **Anonymous**.
+> 2. Copy the **Web API Key** from **Project Settings → General** into RetroCollector's **Settings > Firebase Web API Key**.
+> 3. Paste and publish [`firestore.rules`](file:///Users/ivolopes/development/physical%20disk%20follow/firestore.rules) in the Firestore Console. All read/write requests will now require `request.auth != null`.
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-
-    // Helper: strict type validation for game documents
-    function isValidGame(doc) {
-      return doc.title is string
-          && doc.title.size() > 0
-          && doc.title.size() <= 200
-          && doc.platform is string
-          && doc.platform in [
-            'nes', 'snes', 'n64', 'gamecube', 'wii', 'wii_u', 'switch', 'switch_2',
-            'game_boy', 'gba', 'nds', 'n3ds',
-            'ps1', 'ps2', 'ps3', 'ps4', 'ps5', 'psp', 'ps_vita',
-            'xbox_og', 'xbox_360', 'xbox_one', 'xbox_series',
-            'master_system', 'megadrive', 'sega_saturn', 'dreamcast', 'game_gear',
-            'retro_vintage'
-          ]
-          && doc.status is string
-          && doc.status in ['WISHLIST', 'OWNED', 'PASS']
-          && (doc.updatedAt is int || doc.updatedAt is timestamp);
-    }
-
-    // 1. games collection — open read/write with type validation
-    match /games/{gameId} {
-      allow read: if true;
-      allow create, update: if isValidGame(request.resource.data);
-      allow delete: if true;
-    }
-
-    // 2. chat_threads collection — Gemini assistant messages
-    match /chat_threads/{messageId} {
-      allow read: if true;
-      allow create, update: if request.resource.data.text is string
-                            && request.resource.data.text.size() <= 20000
-                            && request.resource.data.sender is string
-                            && request.resource.data.sender in ['USER', 'GEMINI'];
-      allow delete: if true;
-    }
-
-    // 3. Block any other collection or path not defined above
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}
-```

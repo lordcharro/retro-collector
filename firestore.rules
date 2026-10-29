@@ -1,0 +1,245 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model — RetroCollector Cloud Sync
+// ===============================================================
+//
+// Architectural Boundaries:
+//   - Cloud Firestore is EXCLUSIVELY dedicated to `/games` and `/chat_threads`.
+//   - Application Settings (`AppSettings`) are strictly local and MUST NEVER
+//     be stored in or accessed from Cloud Firestore.
+//   - All other collections and document paths are denied by default.
+//
+// Collection: games
+// Document ID: {gameId}
+// Required Fields:
+//   - id: string (1..150 chars, immutable, must equal {gameId}) - Unique game identifier
+//   - title: string (1..200 chars) - Official game title
+//   - platform: string (enum of valid ConsolePlatform.id values) - Target console platform
+//   - status: string (enum: WISHLIST, OWNED, PASS) - Root indexed collection status
+//   - collectionStatus: string (enum: WISHLIST, OWNED, PASS) - Collection state
+//   - enrichmentStatus: string (enum: PENDING, ENRICHING, COMPLETE, FAILED) - AI enrichment state
+//   - languageStatus: string (enum: FULL_ENGLISH, SUBS_ONLY, GERMAN_ONLY, EDITION_NOTICE, UNVERIFIED)
+//   - updatedAt: int (>= 0) or timestamp - Last updated epoch ms or timestamp
+// Optional Fields:
+//   - franchiseName, releaseYear, description (<= 5000 chars), productCode, barcode,
+//     spottedLocation, askingPriceChf (>= 0), targetPriceChf (>= 0), paidPriceChf (>= 0),
+//     acquiredCondition (CIB, BOXED, LOOSE), censorshipWarning (<= 2000 chars),
+//     collectorVerdict (<= 5000 chars), personalNotes (<= 5000 chars), listingUrl (<= 2048 chars),
+//     coverImageUrl (<= 2048 chars), spineImageUrl (<= 2048 chars), languageAudio (<= 30 items),
+//     languageSubtitles (<= 30 items), safeSkus (<= 50 items), riskySkus (<= 50 items),
+//     marketRadar (map <= 10 keys), offersCount (>= 0), bestOfferStore, bestOfferPriceChf (>= 0),
+//     offers (<= 100 items), similarGames (<= 50 items), data (<= 100000 chars)
+//
+// Collection: chat_threads
+// Document ID: {messageId}
+// Required Fields:
+//   - id: string (1..150 chars, immutable, must equal {messageId}) - Unique message identifier
+//   - contextId: string (1..150 chars, immutable) - Associated game/inspection context ID
+//   - sender: string (enum: USER, GEMINI, immutable) - Message author role
+//   - text: string (0..20000 chars) - Message body
+//   - timestamp: int (>= 0) or timestamp - Message creation time in epoch ms or timestamp
+// Optional Fields:
+//   - imageBase64: string (0..1048576 chars) - Optional base64-encoded inspection thumbnail
+//   - data: string (0..100000 chars) - Legacy backwards-compatibility payload
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Authentication Gate
+    // ===============================================================
+
+    // Production mode requires a valid Firebase Auth token (`request.auth != null`).
+    //
+    // NOTE FOR SINGLE-USER / MIGRATION:
+    // - To lock access strictly to a single owner account, replace with:
+    //     return request.auth != null && request.auth.uid == 'YOUR_OWNER_UID';
+    // - During local/personal testing prior to Phase 02 client Auth token attachment,
+    //   a personal instance can temporarily toggle this helper, but production
+    //   deployments MUST enforce `request.auth != null`.
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // ===============================================================
+    // Domain Validators (Inline evaluation — avoids Firestore's 20-function-call limit)
+    // ===============================================================
+
+    function isValidGame(gameId) {
+      let data = request.resource.data;
+      let keys = data.keys();
+      let validStatuses = ['WISHLIST', 'OWNED', 'PASS'];
+
+      return keys.hasAll([
+            'id',
+            'title',
+            'platform',
+            'status',
+            'collectionStatus',
+            'enrichmentStatus',
+            'languageStatus',
+            'updatedAt'
+          ])
+          && keys.hasOnly([
+            'id',
+            'title',
+            'platform',
+            'status',
+            'collectionStatus',
+            'enrichmentStatus',
+            'languageStatus',
+            'updatedAt',
+            'franchiseName',
+            'releaseYear',
+            'description',
+            'productCode',
+            'barcode',
+            'spottedLocation',
+            'askingPriceChf',
+            'targetPriceChf',
+            'paidPriceChf',
+            'acquiredCondition',
+            'censorshipWarning',
+            'collectorVerdict',
+            'personalNotes',
+            'listingUrl',
+            'coverImageUrl',
+            'spineImageUrl',
+            'languageAudio',
+            'languageSubtitles',
+            'safeSkus',
+            'riskySkus',
+            'marketRadar',
+            'offersCount',
+            'bestOfferStore',
+            'bestOfferPriceChf',
+            'offers',
+            'similarGames',
+            'data'
+          ])
+          && data.id is string
+          && data.id == gameId
+          && data.id.size() >= 1
+          && data.id.size() <= 150
+          && data.title is string
+          && data.title.size() >= 1
+          && data.title.size() <= 200
+          && data.platform is string
+          && data.platform in [
+            'nes', 'snes', 'n64', 'gamecube', 'wii', 'wii_u', 'switch', 'switch_2',
+            'game_boy', 'gba', 'nds', 'n3ds',
+            'ps1', 'ps2', 'ps3', 'ps4', 'ps5', 'psp', 'ps_vita',
+            'xbox_og', 'xbox_360', 'xbox_one', 'xbox_series',
+            'master_system', 'megadrive', 'sega_saturn', 'dreamcast', 'game_gear',
+            'retro_vintage'
+          ]
+          && data.status is string
+          && data.status in validStatuses
+          && data.collectionStatus is string
+          && data.collectionStatus in validStatuses
+          && data.enrichmentStatus is string
+          && data.enrichmentStatus in ['PENDING', 'ENRICHING', 'COMPLETE', 'FAILED']
+          && data.languageStatus is string
+          && data.languageStatus in [
+            'FULL_ENGLISH',
+            'SUBS_ONLY',
+            'GERMAN_ONLY',
+            'EDITION_NOTICE',
+            'UNVERIFIED'
+          ]
+          && ((data.updatedAt is int && data.updatedAt >= 0) || data.updatedAt is timestamp)
+          && data.get('description', '').size() <= 5000
+          && data.get('collectorVerdict', '').size() <= 5000
+          && data.get('personalNotes', '').size() <= 5000
+          && data.get('censorshipWarning', '').size() <= 2000
+          && data.get('listingUrl', '').size() <= 2048
+          && data.get('coverImageUrl', '').size() <= 2048
+          && data.get('spineImageUrl', '').size() <= 2048
+          && data.get('data', '').size() <= 100000
+          && data.get('acquiredCondition', 'CIB') in ['CIB', 'BOXED', 'LOOSE']
+          && data.get('askingPriceChf', 0) >= 0
+          && data.get('targetPriceChf', 0) >= 0
+          && data.get('paidPriceChf', 0) >= 0
+          && data.get('bestOfferPriceChf', 0) >= 0
+          && data.get('offersCount', 0) >= 0
+          && data.get('offers', []).size() <= 100
+          && data.get('similarGames', []).size() <= 50
+          && data.get('safeSkus', []).size() <= 50
+          && data.get('riskySkus', []).size() <= 50
+          && data.get('marketRadar', {}).size() <= 10;
+    }
+
+    function isValidChatMessage(messageId) {
+      let data = request.resource.data;
+      let keys = data.keys();
+
+      return keys.hasAll([
+            'id',
+            'contextId',
+            'sender',
+            'text',
+            'timestamp'
+          ])
+          && keys.hasOnly([
+            'id',
+            'contextId',
+            'sender',
+            'text',
+            'timestamp',
+            'imageBase64',
+            'data'
+          ])
+          && data.id is string
+          && data.id == messageId
+          && data.id.size() >= 1
+          && data.id.size() <= 150
+          && data.contextId is string
+          && data.contextId.size() >= 1
+          && data.contextId.size() <= 150
+          && data.sender is string
+          && data.sender in ['USER', 'GEMINI']
+          && data.text is string
+          && data.text.size() <= 20000
+          && ((data.timestamp is int && data.timestamp >= 0) || data.timestamp is timestamp)
+          && data.get('imageBase64', '').size() <= 1048576
+          && data.get('data', '').size() <= 100000;
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // 1. `/games/{gameId}` — Physical game catalogue, wishlist, and hunting items
+    match /games/{gameId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+                    && isValidGame(gameId);
+      allow update: if isAuthenticated()
+                    && isValidGame(gameId)
+                    && resource.data.get('id', gameId) == gameId;
+      allow delete: if isAuthenticated();
+    }
+
+    // 2. `/chat_threads/{messageId}` — Contextual Gemini assistant messages
+    match /chat_threads/{messageId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+                    && isValidChatMessage(messageId);
+      allow update: if isAuthenticated()
+                    && isValidChatMessage(messageId)
+                    && resource.data.get('id', messageId) == messageId
+                    && resource.data.get('contextId', request.resource.data.contextId) == request.resource.data.contextId
+                    && resource.data.get('sender', request.resource.data.sender) == request.resource.data.sender;
+      allow delete: if isAuthenticated();
+    }
+
+    // 3. Default Deny — Explicitly reject all other collections and paths
+    // (including any accidental attempt to sync local-only `AppSettings`)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

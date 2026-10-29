@@ -251,6 +251,9 @@
     <string name="settings_scraper_custom_hint">URL de votre point de terminaison curl-cffi ou microservice personnalisé. L\'URL de l\'annonce sera passée en paramètre.</string>
     <string name="settings_firebase_subtitle">Sync SQLite &amp; Firestore</string>
     <string name="settings_firebase_desc">Synchronise les acquisitions de jeux vérifiées sur Mac, Android et Web.</string>
+    <string name="settings_firebase_api_key_label">Clé API Web Firebase (Auth Production)</string>
+    <string name="settings_firebase_api_key_hint">AIzaSy...</string>
+    <string name="settings_firebase_api_key_desc">Permet un accès sécurisé et authentifié à Firestore en production. Activez l\'authentification anonyme dans la console Firebase.</string>
 
     <string name="toast_edition_sku_set">SKU de l'édition défini sur %1$s</string>
     <string name="toast_offer_saved">Offre de %1$s enregistrée.</string>

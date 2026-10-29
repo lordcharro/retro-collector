@@ -27,7 +27,7 @@ fun SettingsDialog(
     onDismiss: () -> Unit,
     onTestAiConnection: ((AiProvider, String, String, String?, (Result<String>) -> Unit) -> Unit)? = null,
     onTestGeminiConnection: ((String, String, (Result<String>) -> Unit) -> Unit)? = null,
-    onTestFirestoreConnection: ((String, (Result<String>) -> Unit) -> Unit)? = null,
+    onTestFirestoreConnection: ((String, String, (Result<String>) -> Unit) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var selectedThemeMode by remember { mutableStateOf(settings.themeMode) }
@@ -43,6 +43,7 @@ fun SettingsDialog(
     var localAiBaseUrl by remember { mutableStateOf(settings.localAiBaseUrl.ifBlank { "http://localhost:11434/v1" }) }
     var selectedLocalAiModel by remember { mutableStateOf(settings.localAiModel.ifBlank { "llama3.2-vision" }) }
     var firebaseProjectId by remember { mutableStateOf(settings.firebaseProjectId) }
+    var firebaseApiKey by remember { mutableStateOf(settings.firebaseApiKey) }
     var selectedCurrency by remember { mutableStateOf(settings.defaultCurrency.ifBlank { "CHF" }) }
     var isScraperEnabled by remember { mutableStateOf(settings.isScraperEnabled) }
     var scraperProvider by remember { mutableStateOf(settings.scraperProvider) }
@@ -117,6 +118,7 @@ fun SettingsDialog(
         localAiBaseUrl = localAiBaseUrl.trim(),
         localAiModel = selectedLocalAiModel.trim(),
         firebaseProjectId = firebaseProjectId.trim(),
+        firebaseApiKey = firebaseApiKey.trim(),
         defaultCurrency = selectedCurrency,
         isScraperEnabled = isScraperEnabled,
         scraperProvider = scraperProvider,
@@ -320,18 +322,21 @@ fun SettingsDialog(
                 SettingsFirebaseSection(
                     firebaseProjectId = firebaseProjectId,
                     onFirebaseProjectIdChange = { firebaseProjectId = it },
+                    firebaseApiKey = firebaseApiKey,
+                    onFirebaseApiKeyChange = { firebaseApiKey = it },
                     isTestingFirestore = isTestingFirestore,
                     firestoreStatusMessage = firestoreStatusMessage,
                     onTestFirestore = {
-                        val trimmed = firebaseProjectId.trim()
-                        if (trimmed.isNotBlank()) {
+                        val trimmedProject = firebaseProjectId.trim()
+                        val trimmedApiKey = firebaseApiKey.trim()
+                        if (trimmedProject.isNotBlank()) {
                             if (onTestFirestoreConnection != null) {
                                 coroutineScope.launch {
                                     isTestingFirestore = true
                                     firestoreStatusMessage = getString(Res.string.settings_firebase_testing)
                                     try {
                                         withTimeoutOrNull(12_000) {
-                                            onTestFirestoreConnection(trimmed) { result ->
+                                            onTestFirestoreConnection(trimmedProject, trimmedApiKey) { result ->
                                                 result.fold(
                                                     onSuccess = { msg -> firestoreStatusMessage = msg },
                                                     onFailure = { err ->

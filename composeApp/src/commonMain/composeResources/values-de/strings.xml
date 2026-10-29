@@ -251,6 +251,9 @@
     <string name="settings_scraper_custom_hint">URL deines curl-cffi oder Microservice-Endpoints. Die Auktions-URL wird als Parameter übergeben.</string>
     <string name="settings_firebase_subtitle">SQLite &amp; Firestore Synchronisierung</string>
     <string name="settings_firebase_desc">Synchronisiert verifizierte Spielkäufe über Mac, Android und Web.</string>
+    <string name="settings_firebase_api_key_label">Firebase Web-API-Schlüssel (Produktions-Auth)</string>
+    <string name="settings_firebase_api_key_hint">AIzaSy...</string>
+    <string name="settings_firebase_api_key_desc">Ermöglicht authentifizierten Firestore-Produktionszugriff (verhindert 30-Tage-Ablauf im Testmodus). Aktivieren Sie anonyme Authentifizierung in der Firebase-Konsole.</string>
 
     <string name="toast_edition_sku_set">Editions-SKU auf %1$s gesetzt</string>
     <string name="toast_offer_saved">Angebot von %1$s gespeichert.</string>

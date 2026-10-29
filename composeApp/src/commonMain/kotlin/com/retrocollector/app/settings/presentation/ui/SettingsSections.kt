@@ -1151,6 +1151,8 @@ fun SettingsMarketplaceSection(
 fun SettingsFirebaseSection(
     firebaseProjectId: String,
     onFirebaseProjectIdChange: (String) -> Unit,
+    firebaseApiKey: String,
+    onFirebaseApiKeyChange: (String) -> Unit,
     isTestingFirestore: Boolean,
     firestoreStatusMessage: String?,
     onTestFirestore: () -> Unit
@@ -1194,6 +1196,24 @@ fun SettingsFirebaseSection(
                 )
                 Text(
                     text = stringResource(Res.string.settings_firebase_desc),
+                    style = BodySm.copy(fontSize = 11.sp),
+                    color = TextSecondary
+                )
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(text = stringResource(Res.string.settings_firebase_api_key_label), style = LabelFilterStyle, color = TextPrimary)
+                TactileTextField(
+                    value = firebaseApiKey,
+                    onValueChange = onFirebaseApiKeyChange,
+                    placeholder = stringResource(Res.string.settings_firebase_api_key_hint),
+                    textStyle = CodeSkuStyle.copy(color = TextPrimary),
+                    placeholderStyle = CodeSkuStyle.copy(color = StatusUnverifiedFg),
+                    backgroundColor = SurfaceCard,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text(
+                    text = stringResource(Res.string.settings_firebase_api_key_desc),
                     style = BodySm.copy(fontSize = 11.sp),
                     color = TextSecondary
                 )

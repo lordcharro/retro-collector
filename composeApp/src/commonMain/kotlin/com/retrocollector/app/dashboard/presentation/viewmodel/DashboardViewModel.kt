@@ -271,7 +271,7 @@ class DashboardViewModel(
         _uiState.update { it.copy(isSettingsOpen = isOpen, firestoreTestStatusMessage = if (isOpen) null else it.firestoreTestStatusMessage) }
     }
 
-    fun testFirestoreConnection(projectId: String, onResult: (Result<String>) -> Unit) {
+    fun testFirestoreConnection(projectId: String, apiKey: String = "", onResult: (Result<String>) -> Unit) {
         if (projectId.isBlank()) {
             val err = IllegalArgumentException("Enter a Firebase Project ID first.")
             _uiState.update { it.copy(firestoreTestStatusMessage = "Enter a Firebase Project ID first.") }
@@ -282,19 +282,19 @@ class DashboardViewModel(
         scope.launch {
             try {
                 val current = repository.settings.value
-                if (current.firebaseProjectId != projectId) {
-                    repository.updateSettings(current.copy(firebaseProjectId = projectId))
+                if (current.firebaseProjectId != projectId || current.firebaseApiKey != apiKey) {
+                    repository.updateSettings(current.copy(firebaseProjectId = projectId, firebaseApiKey = apiKey))
                 }
-                val syncResult = repository.syncFromFirestore()
-                syncResult.fold(
-                    onSuccess = {
+                val testResult = repository.testFirestoreConnection(projectId, apiKey)
+                testResult.fold(
+                    onSuccess = { msg ->
                         _uiState.update {
                             it.copy(
                                 isTestingFirestore = false,
-                                firestoreTestStatusMessage = "Firestore connected & synced successfully!"
+                                firestoreTestStatusMessage = msg
                             )
                         }
-                        onResult(Result.success("Firestore connected & synced successfully!"))
+                        onResult(Result.success(msg))
                     },
                     onFailure = { err ->
                         val msg = err.message ?: "Firestore connection failed. Check Project ID and permissions."
