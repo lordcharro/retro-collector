@@ -9,6 +9,7 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.time.Clock
@@ -23,10 +24,10 @@ internal data class FirebaseSignUpResponse(
 
 @Serializable
 internal data class FirebaseRefreshTokenResponse(
-    val id_token: String? = null,
-    val refresh_token: String? = null,
-    val expires_in: String? = null,
-    val user_id: String? = null
+    @SerialName("id_token") val idToken: String? = null,
+    @SerialName("refresh_token") val refreshToken: String? = null,
+    @SerialName("expires_in") val expiresIn: String? = null,
+    @SerialName("user_id") val userId: String? = null
 )
 
 class FirebaseAuthService(
@@ -110,17 +111,17 @@ class FirebaseAuthService(
                 setBody("grant_type=refresh_token&refresh_token=$refreshToken")
             }.body()
 
-            val idToken = response.id_token
+            val idToken = response.idToken
                 ?: return Result.failure(IllegalStateException("No id_token in refresh response"))
-            val newRefreshToken = response.refresh_token ?: refreshToken
-            val expiresIn = response.expires_in?.toLongOrNull() ?: 3600L
+            val newRefreshToken = response.refreshToken ?: refreshToken
+            val expiresIn = response.expiresIn?.toLongOrNull() ?: 3600L
             val nowMs = Clock.System.now().toEpochMilliseconds()
 
             val token = FirebaseAuthToken(
                 idToken = idToken,
                 refreshToken = newRefreshToken,
                 expiresInSeconds = expiresIn,
-                localId = response.user_id.orEmpty(),
+                localId = response.userId.orEmpty(),
                 expiresAtEpochMs = nowMs + (expiresIn * 1000L)
             )
             cachedToken = token

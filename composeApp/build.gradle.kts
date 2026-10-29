@@ -142,6 +142,7 @@ detekt {
 }
 
 tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    jvmTarget = "17"
     setSource(
         files(
             "src/commonMain/kotlin",

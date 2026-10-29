@@ -25,6 +25,7 @@ data class FirestoreListResponse(
     val documents: List<FirestoreDocument>? = null
 )
 
+@Suppress("LargeClass", "TooManyFunctions")
 class FirestoreService(
     private val client: HttpClient = HttpClient {
         install(ContentNegotiation) {
